@@ -11,18 +11,25 @@ import { Typography } from '@mui/material';
 // import notices from '../notices.json';
 
 
-const ColorButton = styled(Button)({
-    color: 'white',
-    backgroundColor: purple[500],
-    '&:hover': {
-        backgroundColor: purple[700],
-    },
-    });
+
 
 export default function AddNotice() {
-
+    
     const [notices, setNotices] = React.useState<any[]>([]);
     React.useEffect(() => {
+        //check to see if there is a button colour value in the lcal storage
+        // if (localStorage.getItem('buttonColour') === null) {
+        //    // get the colours from the database
+        //    fetch('http://localhost:3001/colours')
+        //       .then(response => response.json())    
+        //         .then(data => {
+        //              localStorage.setItem('buttonColour', data[0].buttonColour);
+        //              localStorage.setItem('backgroundColour', data[0].backgroundColour);
+        //                 localStorage.setItem('textColour', data[0].textColour);
+        //         }
+        //         ) 
+        //     localStorage.setItem('buttonColour', 'purple');
+        // }
         fetch('http://localhost:3001/notices')
         .then(response => response.json())
         .then(data => {
@@ -32,6 +39,8 @@ export default function AddNotice() {
             console.log(error)
         })
     }, [])
+
+    
 
     return (
         <Container>
@@ -48,7 +57,7 @@ export default function AddNotice() {
                                 <Card.Text>{entry.Date}</Card.Text>
                                 <Card.Text>{entry.Description}</Card.Text>
                                 <Link to={`/AddNotice/${index}`}>
-                                    <ColorButton variant="contained">Read More</ColorButton>
+                                    <Button variant="contained">Read More</Button>
                                 </Link>
                             </Card.Body>
                         </Card>

@@ -8,6 +8,9 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { TransitionProps } from '@mui/material/transitions';
+import { User, EmptyUser } from '../types/types.d';
+import { useNavigate } from 'react-router-dom';
+
 
 const ColorButton = styled(Button)({
     color: 'white',
@@ -26,6 +29,11 @@ export default function Settings() {
     const { register, handleSubmit, control, formState: { errors } } = useForm({
         resolver: yupResolver(schema),
     });
+    const history= useNavigate();
+
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+  
     const [snackOpen, setSnackOpen] = useState(false);
     const [open, setOpen] = useState(false);
     const [openError, setOpenError] = useState(false);
@@ -42,87 +50,82 @@ export default function Settings() {
         console.log(open);
     };
 
-    const onSubmit = (data: any) => {
-        if (data.username === 'admin' && data.password === 'RWTChoir') {
-            handleClick();
-        } else {
+    const handleLogin = () => {
+        const user: User = { ...EmptyUser() };
+        user.username = username;
+        user.password = password;
+        user.role = 'admin';
+         // send the user info to the login endpoint
+        // if the user is authenticated, redirect to the music page
+        fetch('http://localhost:3001/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(user),
+        }).then((response) => {
+          if (response.status === 200) {
+            // set a cookie to remember the user
+            document.cookie = `username=${username}`;
+            history('/adminDashboard');
+          } else {
             setOpenError(true);
-        }
-    };
+          }
+        });
+      }
+
 
     return (
         <>
-                <form onSubmit={handleSubmit(onSubmit)}>
-        <Grid container spacing={2} >
-            <Grid item xs={12} sx={{ paddingBottom: 2 }}>
-                <Typography variant="h2" component="h2">
-                    Login
-                </Typography>
-            </Grid>
-                        <Grid item xs={5}   >
-                            <TextField
-                                id="username"
-                                label="Username"
-                                fullWidth
-                                {...register('username')}
-                                error={errors.username ? true : false}
-                                helperText={errors.username ? errors.username.message : ''}
-                            />
-                        </Grid>
-                        <Grid item   xs={2}>
-                            &nbsp;
-                        </Grid>
-                        <Grid item   xs={5}>
-                            <TextField
-                                id="password"
-                                label="Password"
-                                fullWidth
-                                type="password"
-                                {...register('password')}
-                                error={errors.password ? true : false}
-                                helperText={errors.password ? errors.password.message : ''}
-                            />
-                        </Grid>
-                        <Grid item   xs={12}>
-                            <ColorButton variant="contained" type="submit">
-                                Login
-                            </ColorButton>
-                        </Grid>
-                            { open && 
-                                <>
-                                <Grid item   xs={4}>
-                                <Link href="/CreateArchive" >
-                                    <Button>Create Archive Entry</Button>
-                                </Link>
-                                </Grid>
-                                <Grid item   xs={4}>
-                                <Link href="/CreateEvent">
-                                    <Button>Create Event</Button>
-                                </Link>
-                                </Grid>
-                                <Grid item   xs={4}>
-                                <Link href="/EditAbout">
-                                    <Button>Edit About</Button>
-                                </Link>
-                                </Grid>
-                                </>                       
-                            }
 
-            </Grid>
-                </form>
-
-            <Snackbar
-                open={snackOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackOpen(false)}
-                message="Login successful"
-            />
-            <Snackbar
-                open={openError}
-                autoHideDuration={6000}
-                onClose={() => setOpenError(false)}
-                message="Login failed"
-            />
+      <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
+      <Grid item xs={12} sm={6} md={4} lg={3}>
+        <Paper sx={{ padding: 2 }}>
+          <Typography variant="h4" align="center" gutterBottom>
+            Admin Login
+          </Typography>
+          <TextField
+            label="Username"
+            
+            fullWidth
+            margin="normal"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <TextField
+            label="Password"
+            
+            fullWidth
+            margin="normal"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button variant="contained" color="primary" fullWidth onClick={handleLogin}>
+            Login
+          </Button>
+          <Divider sx={{ marginY: 2 }} />
+          {/* <Link href="#" align="center">
+            Forgot password?
+          </Link> */}
+        </Paper>
+      </Grid>
+    </Grid>
+      <Snackbar
+        open={openError}
+        autoHideDuration={6000}
+        onClose={() => setOpenError(false)}
+        TransitionComponent={Fade}
+        message="Invalid username or password"
+      />
+      <Snackbar
+        open={snackOpen}
+        autoHideDuration={6000}
+        onClose={() => setOpen(false)}
+        message="Login successful"
+      />
+        
         </>
+
     );
 }

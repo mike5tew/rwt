@@ -3,7 +3,7 @@ import * as React from 'react';
 
 import { styled } from '@mui/material/styles';
 import { Container, Row, Col } from 'react-bootstrap';
-import { Button, TextField, Typography, Link, Grid } from '@mui/material';
+import { Button, TextField, Typography, Link, Grid, Paper } from '@mui/material';
 // Divider, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, List, ListItem, ListItemText, ListSubheader, DialogProps, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Icon, ButtonGroup,  ListItemButton, colors
 
 import { purple } from '@mui/material/colors';
@@ -92,8 +92,10 @@ export default function BookingForm () {
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
         <Container>
-            <Typography variant="h4">Booking Form</Typography>
-            <Typography variant="h6">Please fill out the form below to book the choir for your event</Typography>
+            <Paper>
+            <Typography variant="h4">{localStorage.getItem("BookingTitle")}</Typography>
+            <Typography variant="h6">{localStorage.getItem("BookingText")}</Typography>
+            </Paper>
             <Grid container spacing={2}>
             <Grid item xs={6}>
                 

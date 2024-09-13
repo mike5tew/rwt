@@ -13,35 +13,42 @@ export default function Music() {
     const history= useNavigate();
 
     return (
-      <Box sx={{ height: 220, flexGrow: 1, maxWidth: 400 }}>
-        {/* back button */}
-        <Button onClick={() => history('/')} variant="contained">Back</Button>
-        {/* music list */}
-        <SimpleTreeView>
-            {music.map((entry, index) => (
-                entry.id === 0) ? null : (  
-                <TreeItem itemId={index.toString()} label={entry.trackName}>
-                <Link href={entry.lyrics} >
-                    <TreeItem itemId={index.toString()+"l"} label="Lyrics" >Download</TreeItem>
-                </Link>
-                <Link href={entry.piano} >
-                    <TreeItem itemId={index.toString()+"p"} label="Piano" >Download</TreeItem>
-                </Link>
-                <Link href={entry.allParts} >
-                    <TreeItem itemId={index.toString()+"ap"} label="All Parts" >Download</TreeItem>
-                </Link>
-                <Link href={entry.soprano} >
-                    <TreeItem itemId={index.toString()+"s"} label="Soprano" >Download</TreeItem>
-                </Link>
-                <Link href={entry.alto} >
-                    <TreeItem itemId={index.toString()+"a"} label="Alto" >Download</TreeItem>
-                </Link>
-                <Link href={entry.tenor} >
-                    <TreeItem itemId={index.toString()+"t"} label="Tenor" >Download</TreeItem>
-                </Link>
-                </TreeItem>
-            ))}
-        </SimpleTreeView>
-      </Box>
+        <Grid container spacing={2}>
+            <Grid item xs={10}>
+                <Paper>
+                    <Typography variant="h3">Music List</Typography>
+                </Paper>
+            </Grid>
+            <Grid item xs={2}>
+                <Button onClick={() => history('/')} variant="contained">Back</Button>
+            </Grid>
+            <Grid item xs={12}>
+                <SimpleTreeView>
+                    {music.map((entry, index) => (
+                        entry.id === 0) ? null : (  
+                        <TreeItem itemId={index.toString()} label={entry.trackName}>
+                        <Link href={entry.lyrics} >
+                            <TreeItem itemId={index.toString()+"l"} label="Lyrics" >Download</TreeItem>
+                        </Link>
+                        <Link href={entry.piano} >
+                            <TreeItem itemId={index.toString()+"p"} label="Piano" >Download</TreeItem>
+                        </Link>
+                        <Link href={entry.allParts} >
+                            <TreeItem itemId={index.toString()+"ap"} label="All Parts" >Download</TreeItem>
+                        </Link>
+                        <Link href={entry.soprano} >
+                            <TreeItem itemId={index.toString()+"s"} label="Soprano" >Download</TreeItem>
+                        </Link>
+                        <Link href={entry.alto} >
+                            <TreeItem itemId={index.toString()+"a"} label="Alto" >Download</TreeItem>
+                        </Link>
+                        <Link href={entry.tenor} >
+                            <TreeItem itemId={index.toString()+"t"} label="Tenor" >Download</TreeItem>
+                        </Link>
+                        </TreeItem>
+                    ))}
+                </SimpleTreeView>
+            </Grid>
+        </Grid>
     );
   }

@@ -1,9 +1,7 @@
 // This page allows you to add the googledrive Links for the tracks.  It is a form using react-hook-form
 
 import React, { useState } from 'react'
-import { styled } from '@mui/material/styles';
 import { Container, Grid, Button, TextField, Typography, Select, FormControl, InputLabel, MenuItem, Snackbar, Alert, Fade } from '@mui/material';
-import { purple } from '@mui/material/colors';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -11,18 +9,10 @@ import { Link } from 'react-router-dom';
 import Music from '../music.json';
 import { TransitionProps } from '@mui/material/transitions';
 
-const ColorButton = styled(Button)({
-    color: 'white',
-    backgroundColor: purple[500],
-    '&:hover': {
-        backgroundColor: purple[700],
-    },
-    });
 
 const schema = yup.object().shape({
     title: yup.string().required(),
     link: yup.string().required(),
-    
 
 });
 
@@ -241,10 +231,10 @@ export default function AddMusic() {
                                 />
                             </Grid>
                             <Grid item xs={3}>
-                                <ColorButton type="submit" variant="contained">Save Details</ColorButton>
+                                <Button type="submit" variant="contained">Save Details</Button>
                             </Grid>
                             <Grid item xs={9} sx={{align: 'right'}}>
-                                <ColorButton variant="contained" onClick={deleteTrack}   >Delete Track</ColorButton>
+                                <Button variant="contained" onClick={deleteTrack}   >Delete Track</Button>
                             </Grid>
                             <Grid item xs={12}>
                                 <Link to="/Music">

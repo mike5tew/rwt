@@ -4,68 +4,83 @@
 // It will also have a link to the choir's facebook and instagram pages
 
 import React, { useEffect } from 'react';
-import Carousel from 'react-bootstrap/Carousel';
-import { Container, Row, Col } from 'react-bootstrap';
-import { styled } from '@mui/material/styles';
-import { Grid, Button, Typography, Link, Divider, Paper, Snackbar } from '@mui/material';
-import { purple } from '@mui/material/colors';
+import { Grid, Typography } from '@mui/material';
 // the filenames for the images are in a json file in the src folder
 // import images from '../images.json';
-import Image from 'react-bootstrap/Image';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
+import { EmptyImageDetail, ImageDetail } from '../types/types.d';
 
-function srcset(image: string, size: number, rows = 1, cols = 1) {
+function srcset(image: string, width: number, rows: number, cols: number) {   
   return {
-    // we want the size of the 
-    src: `${image}?w=${size * cols}&h=${size * rows}&fit=crop&auto=format`,
-    srcSet: `${image}?w=${size * cols}&h=${
-      size * rows
-    }&fit=crop&auto=format&dpr=2 2x`,
+    src: `${image}?w=${width * cols}&h=${width * rows}&fit=crop&auto=format`,
+    srcSet: `${image}?w=${width * cols}&h=${width * rows}&fit=crop&auto=format&dpr=1 1x, ${image}?w=${width * cols}&h=${width * rows}&fit=crop&auto=format&dpr=2 2x, ${image}?w=${width * cols}&h=${width * rows}&fit=crop&auto=format&dpr=3 3x`,
   };
 }
 
 
-
-
-const ColorButton = styled(Button)({
-    color: 'white',
-    backgroundColor: purple[500],
-    '&:hover': {
-        backgroundColor: purple[700],
-    },
-    });
-
-
-
-
 export default function Home() {
-const [images, setImages] = React.useState<any[]>([]);
+const [images1to3, setImages1to3] = React.useState<ImageDetail[]>([]);
+const [images4to6, setImages4to6] = React.useState<ImageDetail[]>([]);
 useEffect(() => {
-    fetch('http://localhost:3001/images')
+  if (images1to3.length === 0) {
+    fetch('http://localhost:3001/images/6')
     .then(response => response.json())
     .then(data => {
-        setImages(data)
-    })
+   //this is adding the images to the images array twice
+   // this is because the images array is being set to the data array twice on lines 116 and 117
+   var imagesTp: ImageDetail[] = []   
+   for (let i = 0; i < data.length; i++) {
+        var imgDetail= EmptyImageDetail()
+        imgDetail.imageID = data[i].imageID
+        imgDetail.filename = data[i].filename
+        imgDetail.caption = data[i].caption
+        imgDetail.eventDetails.eventID = data[i].eventID
+        if (data[i].width>data[i].height) {
+          imgDetail.rows = 1
+          imgDetail.cols = 2
+        } else {
+          imgDetail.rows = 2
+          imgDetail.cols = 1
+      }  
+      imagesTp = [...imagesTp, imgDetail]
+    }
+    var images1to3tp: ImageDetail[] = []
+    for (let i = 0; i < imagesTp.length; i++) {
+      images1to3tp = [...images1to3tp, imagesTp[i]]
+      if (i === 2) {
+        break
+    }
+  }
+    setImages1to3(images1to3tp)
+    var images4to6tp: ImageDetail[] = []
+  if (imagesTp.length > 3) {
+    for (let i = 3; i < imagesTp.length; i++) {
+      images4to6tp = [...images4to6tp, imagesTp[i]]
+    }    
+    }
+  setImages4to6(images4to6tp)
+  }
+    )
     .catch((error) => {
-        console.log(error)
-    })
-} , [])
-
-// we have an array of image names from the images.json file
-// we map over the array and create a carousel item for each image
+      console.error('Error:', error);
+    }
+    )
+  }
+}
+, []);
 
 
     return (
-    <Container>
-      <Row>
-        <Col>
-        <ImageList variant="masonry" gap={8} cols={3}>
-      {images.map((item) => (
-        <ImageListItem key={item.img} cols={item.cols || 1} rows={item.rows || 1}>
+      <Grid container spacing={3} >
+        <Grid item xs={2}>
+        <ImageList variant="masonry" gap={8} cols={1}>
+      {//map the first three images in the images array to the carousel 
+      images1to3.map((item) => (
+        <ImageListItem key={item.imageID} >
           <img
-            {...srcset("/images/"+item.img, 121, item.rows, item.cols)}
+            src={srcset("/images/"+item.filename, 121, item.rows, item.cols).src}
             alt={item.caption}
             loading="lazy"
           />
@@ -73,31 +88,33 @@ useEffect(() => {
         </ImageListItem>
       ))}
     </ImageList>
-
-        </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Typography variant="h2" component="h2">
-              Welcome to our Choir Website
+    </Grid>
+    <Grid item xs={8}>
+            <Typography variant="h2" component="div" line-break='auto' display='inline-block' sx={{ whiteSpace: "pre-wrap" }}>
+              {localStorage.getItem('HomeTitle')}
+              {/* //?.replace(/(\r\n|\r|\n)/g, '<br>')} */}
             </Typography>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Typography variant="h4" component="h4">
-              We are a group of people who love to sing
+          <br/>
+            <Typography variant="h4" component="h4" display='inline-block' sx={{ whiteSpace: "pre-wrap" }}>
+              {localStorage.getItem('HomeText')}
             </Typography>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <Typography variant="h4" component="h4">
-              We have a lot of fun and we would love for you to join us
-            </Typography>
-          </Col>
-        </Row>
-</Container>
+            </Grid>
+            <Grid item xs={2}>
+            <ImageList variant="masonry" gap={8} cols={1}>
+      {images4to6.map((item) => (
+        <ImageListItem key={item.imageID} >
+          <img
+            src={srcset("/images/"+item.filename, 121, item.rows, item.cols).src}
+            alt={item.caption}
+            loading="lazy"
+          />
+          <ImageListItemBar title={item.caption} />
+        </ImageListItem>
+      ))}
+    </ImageList>
+    </Grid> 
+    </Grid>
     );
-}   
+}
+
 

@@ -1,19 +1,4 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
+/* .App-header {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -22,17 +7,70 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-}
+} */
 
-.App-link {
-  color: #61dafb;
-}
+/* .inputfile {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+  color: yellowgreen;
+} */
+/* looking to make this like the mui button */
+/* .inputfile + label {
+  font-size: 0.90em;
+  font-weight: 500;
+  color: white;
+  background-color: #4CAF50;
+  display: inline-block;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin-right: 10px;
+  margin-top: 10px;
+  text-align: center;
+  text-transform: uppercase;
+  transition: background-color 0.3s;
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+} */
+
+@font-face {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: 400;
+  src: url(../public/fonts/Roboto.ttf) format('truetype');
+}
+.Roboto {
+  font-family: Roboto, sans-serif;
+}
+@font-face {
+  font-family: Playwrite;
+  font-style: normal;
+  font-weight: 500;
+  src: url(../public/fonts/Playwrite.ttf) format('truetype');
+}
+.Playwrite {
+  font-family: Playwrite, sans-serif;
+}
+@font-face {
+  font-family: Montserrat;
+  font-style: normal;
+  font-weight: 500;
+  src: url(../public/fonts/Montserrat.ttf) format('truetype');
+}
+.Playwrite {
+  font-family: Montserrat, sans-serif;
+}
+@font-face {
+  font-family: GreyQo;
+  /* the body text is too small to read and so we need to enlarge this  */
+  font-size: 8.0em;
+  font-size-adjust: 0.58;
+  font-size-adjust: ch-width from-font;
+  src: url(../public/fonts/GreyQo.ttf) format('truetype');
+}
+.Playwrite {
+  font-family: GreyQo, sans-serif;
 }

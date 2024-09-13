@@ -22,24 +22,40 @@ import AddMusic from '../src/components/AddMusic';
 import AddNotice from '../src/components/AddNotice';
 import EditAbout from '../src/components/EditAbout';
 import About from '../src/components/About';
+import EventAdd from '../src/components/EventAdd';
+import PlayListAdd from '../src/components/playlistAdd';
+import AddArchive from '../src/components/AddArchive';
+import EditTheme from './components/editTheme'; 
+import AdminDashboard from './components/AdminDashboard';
+import ViewMessages from './components/ViewMessages';
+import MembersPage from './components/MembersPage';
 
 
 const router = createBrowserRouter([
   { path: "/", element: <MiniDrawer />, errorElement: <ErrorPage />,
-    children: [{ path: "/Notices", element: <Notices />, },
+    children: [
+    { path: "/Notices", element: <Notices />, },
     { path: "/Archive", element: <Archive />, },
-    // { path: "/Upcoming", element: <Upcoming />, },
     { path: "/Appeal", element: <Appeal />, },
     { path: "/About", element: <About />,},
     { path: "/BookingForm", element: <BookingForm />, },
     { path: "/Home", element: <Home />, },
+    { path: "/upload"},
+    { path: "/files"},
     { path: "/Music", element: <Music />, },
     { path: "/Members", element: <Members />, },
     { path: "/AddMusic", element: <AddMusic />, },
     { path: "/AddNotice", element: <AddNotice />, },
     { path: "/EditAbout", element: <EditAbout />, }, 
+    { path: "/EventAdd", element: <EventAdd />, }, 
+    { path: "/PlayListAdd", element: <PlayListAdd />, }, 
+    { path: "/AddArchive", element: <AddArchive />, },
+    { path: "/EditTheme", element: <EditTheme />, },
     { path: "/", element: <Home />, },
     { path: "/Settings", element: <Settings />, },
+    { path: "/AdminDashboard", element: <AdminDashboard />, },
+    { path: "/ViewMessages", element: <ViewMessages />, },
+    { path: "/MembersPage", element: <MembersPage />, },
 
     { path: "*", element: <ErrorPage />, },
   ],
