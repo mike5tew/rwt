@@ -3,12 +3,30 @@
 // It will have links to an archive of past performances, a calendar of upcoming events, an appeal for new members, and a contact form
 // It will also have a link to the choir's facebook and instagram pages
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Carousel from 'react-bootstrap/Carousel';
 import { Container, Row, Col } from 'react-bootstrap';
 import { styled } from '@mui/material/styles';
-import { Grid, Button, TextField, Typography, Link, Divider, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, List, ListItem, ListItemText, ListSubheader, DialogProps, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Icon, ButtonGroup,  ListItemButton, colors } from '@mui/material';
+import { Grid, Button, Typography, Link, Divider, Paper, Snackbar } from '@mui/material';
 import { purple } from '@mui/material/colors';
+// the filenames for the images are in a json file in the src folder
+// import images from '../images.json';
+import Image from 'react-bootstrap/Image';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import ImageListItemBar from '@mui/material/ImageListItemBar';
+
+function srcset(image: string, size: number, rows = 1, cols = 1) {
+  return {
+    // we want the size of the 
+    src: `${image}?w=${size * cols}&h=${size * rows}&fit=crop&auto=format`,
+    srcSet: `${image}?w=${size * cols}&h=${
+      size * rows
+    }&fit=crop&auto=format&dpr=2 2x`,
+  };
+}
+
+
 
 
 const ColorButton = styled(Button)({
@@ -20,53 +38,48 @@ const ColorButton = styled(Button)({
     });
 
 
+
+
 export default function Home() {
+const [images, setImages] = React.useState<any[]>([]);
+useEffect(() => {
+    fetch('http://localhost:3001/images')
+    .then(response => response.json())
+    .then(data => {
+        setImages(data)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+} , [])
+
+// we have an array of image names from the images.json file
+// we map over the array and create a carousel item for each image
+
 
     return (
     <Container>
       <Row>
         <Col>
-          <Carousel>
-            <Carousel.Item>
-              <img
-                className="d-block w-100"
-                src="https://www.thespruce.com/thmb/7w2V9y0H3Zr4a2yVz5y6r7Z4K5Q=/960x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/choir-56a6b6f15f9b58b7d0e4b5c6.jpg"
-                alt="First slide"
-              />
-              <Carousel.Caption>
-                <h3>Choir</h3>
-                <p>Choir is a group of people who sing together</p>
-              </Carousel.Caption>
-            </Carousel.Item>
-            <Carousel.Item>
-              <img
-                className="d-block w-100"
-                src="https://www.thespruce.com/thmb/7w2V9y0H3Zr4a2yVz5y6r7Z4K5Q=/960x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/choir-56a6b6f15f9b58b7d0e4b5c6.jpg"
-                alt="Second slide"
-              />
-              <Carousel.Caption>
-                <h3>Choir</h3>
-                <p>Choir is a group of people who sing together</p>
-              </Carousel.Caption>
-            </Carousel.Item>
-            <Carousel.Item>
-              <img
-                className="d-block w-100"
-                src="https://www.thespruce.com/thmb/7w2V9y0H3Zr4a2yVz5y6r7Z4K5Q=/960x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/choir-56a6b6f15f9b58b7d0e4b5c6.jpg"
-                alt="Third slide"
-              />
-              <Carousel.Caption>
-                <h3>Choir</h3>
-                <p>Choir is a group of people who sing together</p>
-                </Carousel.Caption>
-            </Carousel.Item>
-            </Carousel>
+        <ImageList variant="masonry" gap={8} cols={3}>
+      {images.map((item) => (
+        <ImageListItem key={item.img} cols={item.cols || 1} rows={item.rows || 1}>
+          <img
+            {...srcset("/images/"+item.img, 121, item.rows, item.cols)}
+            alt={item.caption}
+            loading="lazy"
+          />
+          <ImageListItemBar title={item.caption} />
+        </ImageListItem>
+      ))}
+    </ImageList>
+
         </Col>
         </Row>
         <Row>
           <Col>
             <Typography variant="h2" component="h2">
-              Welcome to the Choir Website
+              Welcome to our Choir Website
             </Typography>
           </Col>
         </Row>
@@ -87,3 +100,4 @@ export default function Home() {
 </Container>
     );
 }   
+

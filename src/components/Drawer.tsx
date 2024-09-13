@@ -13,7 +13,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
+// import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import HomeIcon from '@mui/icons-material/Home';
@@ -25,33 +25,37 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import GroupsIcon from '@mui/icons-material/Groups';
 import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople';
-import LocationCitySharpIcon from '@mui/icons-material/LocationCitySharp';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import DescriptionIcon from '@mui/icons-material/Description';
-import DateRangeIcon from '@mui/icons-material/DateRange';
-import KeyboardBackspaceSharpIcon from '@mui/icons-material/KeyboardBackspaceSharp';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import InfoIcon from '@mui/icons-material/Info';
+// import LocationCitySharpIcon from '@mui/icons-material/LocationCitySharp';
+// import AccountTreeIcon from '@mui/icons-material/AccountTree';
+// import DescriptionIcon from '@mui/icons-material/Description';
+// import DateRangeIcon from '@mui/icons-material/DateRange';
+// import KeyboardBackspaceSharpIcon from '@mui/icons-material/KeyboardBackspaceSharp';
+import { Outlet, useNavigate } from 'react-router-dom';
 // import { Link } from 'react-router-native';
 import Grid from '@mui/material/Grid'; // Grid version 1
 import SettingsIcon from '@mui/icons-material/Settings';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import CampaignIcon from '@mui/icons-material/Campaign';
 // import '../styles/mgtStyles.css'
 import { teal } from '@mui/material/colors';
-import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
+// import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
 //  import LoginStyle from 'LoginStyle';
 const drawerWidth = 240;
 
-const theme = createTheme({
-  palette: {
-    primary: teal
-  },
-  typography: {
-    fontFamily: 'Montserrat',
-    fontWeightLight: 400,
-    fontWeightRegular: 500,
-    fontWeightMedium: 600,
-    fontWeightBold: 700,
-  }
-})
+// const theme = createTheme({
+//   palette: {
+//     primary: teal
+//   },
+//   typography: {
+//     fontFamily: 'Montserrat',
+//     fontWeightLight: 400,
+//     fontWeightRegular: 500,
+//     fontWeightMedium: 600,
+//     fontWeightBold: 700,
+//   }
+// })
 
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -127,26 +131,26 @@ const AppBar = styled(MuiAppBar, {
 
 export default function MiniDrawer() {
 
-  //  sessionStorage.setItem("windowName", this);
   const [sidebar, setSidebar] = React.useState(false);
-  const showSidebar = () => setSidebar(!sidebar);
+  //const showSidebar = () => setSidebar(!sidebar);
   const [menuName, setMenuName] = React.useState([
     { EntName: 'Home', type: 'page', icon: <HomeIcon />, link: '/home' },
-    { EntName: 'Archive', type: 'page', icon: <LightbulbIcon />, link: '/planning' },
-    { EntName: 'Notices', type: 'page', icon: <MailIcon />, link: '/students' },
-    { EntName: 'Booking', type: 'page', icon: <TrendingUpIcon />, link: '/data' },
-    { EntName: 'Appeal', type: 'page', icon: <CalendarMonthIcon />, link: '/appeal' },
+    { EntName: 'About', type: 'page', icon: <InfoIcon />, link: '/About' },
+    { EntName: 'Archive', type: 'page', icon: <AutoStoriesIcon />, link: '/Archive' },
+    { EntName: 'Notices', type: 'page', icon: <CampaignIcon />, link: '/' },
+    { EntName: 'Booking', type: 'page', icon: <CalendarMonthIcon />, link: '/BookingForm' },
+    { EntName: 'Members', type: 'page', icon: <GroupsIcon />, link: '/Members' },
+    { EntName: 'Appeal', type: 'page', icon: <PersonAddAlt1Icon />, link: '/appeal' },
     { EntName: 'Admin', type: 'page', icon: <SettingsIcon />, link: '/Settings' },
   ]);
-
 
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const handleDrawerOpen = () => {
-  //  setOpen(true);
+    setOpen(true);
   };
   const handleDrawerClose = () => {
-   // setOpen(false);
+    setOpen(false);
   };
   // A menuitem is a single entry in the menu, e.g. Home, Planning, Students, etc.
   interface menuItem { EntName: string, type: string, icon: any, link: string }
@@ -168,7 +172,6 @@ export default function MiniDrawer() {
           { EntName: 'Calendar', type: 'page', icon: <CalendarMonthIcon />, link: '/calendar' },
           { EntName: 'Tasks', type: 'page', icon: <PlaylistAddCheckIcon />, link: '/tasks' },
           { EntName: 'SkillsOptions', type: 'menu', icon: <ThumbsUpDownOutlinedIcon />, link: 'SkillsOptions' },
-          { EntName: 'Meetings', type: 'page', icon: <GroupsIcon />, link: '/meetings' },
           { EntName: 'Notices', type: 'page', icon: <EmojiPeopleIcon />, link: '/notices' },
           // clicking on settings should replace the list of modules with a list of settings options
           { EntName: 'Settings', type: 'menu', icon: <SettingsIcon />, link: 'Settings' }
@@ -178,11 +181,11 @@ export default function MiniDrawer() {
   }
 
 
-  let activeStyle = {
-    textDecoration: "underline",
-  };
+  // let activeStyle = {
+  //   textDecoration: "underline",
+  // };
 
-  let activeClassName = "underline";
+  // let activeClassName = "underline";
 
   const navigate = useNavigate();
 
@@ -230,7 +233,7 @@ export default function MiniDrawer() {
               </Grid>
               <Grid item xs={12} display="flex" justifyContent="left" alignItems="center">
                 <Typography variant="h6" noWrap component="div">
-                  ESP Data
+                  The Royal Wolverhampton NHS Trust Staff Choir
                 </Typography>
               </Grid>
               <Grid item xs="auto" justifyContent="right" alignItems="center">
@@ -266,7 +269,7 @@ export default function MiniDrawer() {
             )) : null}
           </List>
         </Drawer>
-        <Box component="span" sx={{ p: 10, pt: 15, border: 1, flexBasis: '100%' }}>
+        <Box component="span" sx={{ p: 10, pt: 15, flexBasis: '100%' }}>
           <Outlet />
         </Box>
       </Box>

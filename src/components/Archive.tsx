@@ -1,12 +1,13 @@
 // This page is a blog style format showing images of past events and a brief description of the event. It will have links to the full archive of past events, a calendar of upcoming events, an appeal for new members, and a contact form. It will also have a link to the choir's facebook and instagram pages.
-import React from 'react';
-import { useState } from 'react';
-import { useEffect } from 'react';
+import * as React from 'react';
+// import { useState } from 'react';
+// import { useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { purple } from '@mui/material/colors';
 import { Link } from 'react-router-dom';
 import { Typography } from '@mui/material';
+import axios from 'axios';
 
 const ColorButton = styled(Button)({
     color: 'white',
@@ -25,45 +26,36 @@ interface ArchiveEntry {
 }
 
 export default function Archive () {
+const [archive, setArchive] = React.useState<ArchiveEntry[]>([]);
 
-// open the archive.json file and display the contents in a blog style format
-// each entry will have a title, date, and imagenames
-// the images will be displayed in a carousel
+React.useEffect(() => {
 
-// the archive.json file will be in the public folder
-// it will be an array of objects
-// each object will have a title, date, content and imagenames
-// the imagenames will be an array of strings
-// the images will be in the public folder
-// the imagenames will be the filenames of the images
-const [archive, setArchive] = useState([] as ArchiveEntry[])
-
-useEffect(() => {
-    getArchive().then(data => setArchive(data));
-}, []);
-
-
-
-    async function getArchive() {
-    try {
-        const response = await fetch('archive.json');
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        return console.error(error);
-    }
-
+    // we need to use axios to get the data from the mysql  database 
+    axios.get('http://localhost:3001/archive')
+    .then((response) => {
+        setArchive(response.data)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
 }
+, [])
+
+
 
 return (
     <Container>
         <Row>
-            {archive.map((entry, index) => (
+            {archive && archive.map((entry, index) => (
                 <Col key={index}>
                     <Card style={{ width: '18rem' }}>
                         <Card.Img variant="top" src={entry.imagenames[0]} />
                         <Card.Body>
-                            <Card.Title>{entry.title}</Card.Title>
+                            <Card.Title>
+                                <Typography variant="h2" component="h2">
+                                {entry.title}
+                                </Typography>
+                                </Card.Title>
                             <Card.Text>{entry.date}</Card.Text>
                             <Link to={`/Archive/${index}`}>
                                 <ColorButton variant="contained">Read More</ColorButton>
@@ -74,6 +66,7 @@ return (
             ))}
         </Row>
     </Container>
+// you can write to a json file which is in the public folder but you cannot write to a json file which is in the src folder
 )
 }
 

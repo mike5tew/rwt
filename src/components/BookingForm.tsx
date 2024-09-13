@@ -1,22 +1,24 @@
 //This page an email form for booking the choir for events. It will have fields for the name of the event, the date of the event, the location of the event, the time of the event, the type of event, the number of attendees, the contact person, the contact person's email, and the contact person's phone number. It will also have a submit button that will send the information to the choir's email address. It will also have a link to the choir's facebook and instagram pages.
-import React from 'react';
-import {useState} from 'react'; 
-import {useEffect} from 'react';
+import * as React from 'react';
+
 import { styled } from '@mui/material/styles';
 import { Container, Row, Col } from 'react-bootstrap';
-import { Button, TextField, Typography, Link, Divider, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, List, ListItem, ListItemText, ListSubheader, DialogProps, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Icon, ButtonGroup,  ListItemButton, colors } from '@mui/material';
+import { Button, TextField, Typography, Link, Grid } from '@mui/material';
+// Divider, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, List, ListItem, ListItemText, ListSubheader, DialogProps, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Icon, ButtonGroup,  ListItemButton, colors
+
 import { purple } from '@mui/material/colors';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Email } from '@mui/icons-material';
-import { Send } from '@mui/icons-material';
-import { Alert } from '@mui/material';
+// import { Email } from '@mui/icons-material';
+// import { Send } from '@mui/icons-material';
+// import { Alert } from '@mui/material';
 import { EmailJSResponseStatus, init } from 'emailjs-com';
 import emailjs from 'emailjs-com';
 import { TransitionProps } from '@mui/material/transitions';
 import Fade from '@mui/material/Fade';
-
+import FacebookIcon from '@mui/icons-material/Facebook';
+import InstagramIcon from '@mui/icons-material/Instagram';
 
 const ColorButton = styled(Button)({
     color: 'white',
@@ -43,15 +45,11 @@ export default function BookingForm () {
         resolver: yupResolver(schema),
     });
 
-    const [open, setOpen] = useState(false);
-    const [openError, setOpenError] = useState(false);
-    const [state, setState
-        
-    ] = useState<{
+    const [open, setOpen] = React.useState(false);
+    const [openError, setOpenError] = React.useState(false);
+    const [state, setState] = React.useState<{
         open: boolean;
-        Transition: React.ComponentType<
-          TransitionProps & {children: React.ReactElement<any, any>;}
-        >;
+        Transition: React.ComponentType<TransitionProps & {children: React.ReactElement<any, any>;}>;
       }>({
         open: false,
         Transition: Fade,
@@ -92,11 +90,13 @@ export default function BookingForm () {
     };
 
     return (
+        <form onSubmit={handleSubmit(onSubmit)}>
         <Container>
-            <Row>
-                <Col>
-                    <Typography variant="h4">Booking Form</Typography>
-                    <form onSubmit={handleSubmit(onSubmit)}>
+            <Typography variant="h4">Booking Form</Typography>
+            <Typography variant="h6">Please fill out the form below to book the choir for your event</Typography>
+            <Grid container spacing={2}>
+            <Grid item xs={6}>
+                
                         <TextField
                             label="Event Name"
                             fullWidth
@@ -104,29 +104,38 @@ export default function BookingForm () {
                             error={errors.eventname ? true : false}
                             helperText={errors.eventname ? errors.eventname.message : ''}
                         />
-                        <TextField
-                            label="Event Date"
-                            type="date"
-                            fullWidth
-                            {...register('eventdate')}
-                            error={errors.eventdate ? true : false}
-                            helperText={errors.eventdate ? errors.eventdate.message : ''}
-                        />
-                        <TextField
+                        </Grid>
+                                  <Grid item xs={6}> 
+                                  <TextField
                             label="Event Location"
                             fullWidth
                             {...register('eventlocation')}
                             error={errors.eventlocation ? true : false}
                             helperText={errors.eventlocation ? errors.eventlocation.message : ''}
                         />
+                        </Grid>
+                       <Grid item xs={6}>   
+                       <TextField
+                            type="date"
+                            fullWidth
+                            {...register('eventdate')}
+                            error={errors.eventdate ? true : false}
+                            helperText={errors.eventdate ? errors.eventdate.message : ''}
+                        />
+                      
+                        </Grid>
+                        <Grid item xs={6}>
                         <TextField
-                            label="Event Time"
                             type="time"
                             fullWidth
                             {...register('eventtime')}
                             error={errors.eventtime ? true : false}
                             helperText={errors.eventtime ? errors.eventtime.message : ''}
                         />
+                        
+                        </Grid>
+                       <Grid item xs={6}>
+                        
                         <TextField
                             label="Event Type"
                             fullWidth
@@ -134,14 +143,8 @@ export default function BookingForm () {
                             error={errors.eventtype ? true : false}
                             helperText={errors.eventtype ? errors.eventtype.message : ''}
                         />
-                        <TextField
-                            label="Number of Attendees"
-                            type="number"
-                            fullWidth
-                            {...register('eventattendees')}
-                            error={errors.eventattendees ? true : false}
-                            helperText={errors.eventattendees ? errors.eventattendees.message : ''}
-                        />
+                        </Grid>
+                          <Grid item xs={6}>    
                         <TextField
                             label="Contact Person"
                             fullWidth
@@ -149,6 +152,10 @@ export default function BookingForm () {
                             error={errors.contactperson ? true : false}
                             helperText={errors.contactperson ? errors.contactperson.message : ''}
                         />
+                        
+                        </Grid>
+                       <Grid item xs={6}>
+                        
                         <TextField
                             label="Contact Email"
                             fullWidth
@@ -156,6 +163,8 @@ export default function BookingForm () {
                             error={errors.contactemail ? true : false}
                             helperText={errors.contactemail ? errors.contactemail.message : ''}
                         />
+                        </Grid>
+                        <Grid item xs={6}>
                         <TextField
                             label="Contact Phone"
                             fullWidth
@@ -163,28 +172,37 @@ export default function BookingForm () {
                             error={errors.contactphone ? true : false}
                             helperText={errors.contactphone ? errors.contactphone.message : ''}
                         />
+                        
+                        </Grid>
+                       <Grid item xs={12} paddingBottom={2}>
+                        
                         <ColorButton variant="contained" type="submit">Submit</ColorButton>
-                    </form>
-                </Col>
-            </Row>
-            <Row>
-                <Col>
-                    <Typography variant="h4">Follow Us</Typography>
-                    <Link href="https://www.facebook.com" target="_blank">Facebook</Link>
-                    <Link href="https://www.instagram.com" target="_blank">Instagram</Link>
-                </Col>
-            </Row>
+                        
+                        </Grid >
+                
+                    <Typography variant="h5">Follow Us  </Typography>&nbsp;&nbsp;
+                    {/* // add the icons for facebook and instagram */}
+                    
+
+                    <Link href="https://www.facebook.com/RWTSingers2" target="_blank">
+                        <FacebookIcon />
+                            </Link>&nbsp;&nbsp;
+                    <Link href="https://www.instagram.com" target="_blank">
+                        <InstagramIcon />
+                    </Link>
+                
             {/* <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
                 <Alert onClose={handleClose} severity="success">
-                    Booking submitted successfully!
+                Booking submitted successfully!
                 </Alert>
-            </Snackbar>
-            <Snackbar open={openError} autoHideDuration={6000} onClose={handleCloseError}>
+                </Snackbar>
+                <Snackbar open={openError} autoHideDuration={6000} onClose={handleCloseError}>
                 <Alert onClose={handleCloseError} severity="error">
-                    Error submitting booking!
+                Error submitting booking!
                 </Alert>    
             </Snackbar> */}
+            </Grid>
         </Container>
+            </form>
     );
 }
-

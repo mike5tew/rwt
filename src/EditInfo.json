@@ -1,0 +1,14 @@
+[
+    {
+    "id": 1,
+    "type": "About",
+    "title": "Welcome to our choir",
+    "description": "The RWT Choir was set up in October 2016.  The main concept behind the choir was to enable staff to come together across the Trust and improve staff morale.  It was anticipated that this would help with staff retention and further enhance the patient and visitor experience through the choir performing throughout the Trust.</br></br>  The Musical Director who leads all the rehearsals prior to rehearsals is Martin Trotman.  Martin is a freelance pianist, vocalist, composer, musical director and producer.  The choir meets weekly and is made up of staff across the Trust who work in various departments.  The choir is supported by a Choir Organiser (who is also a part of the choir) and the Royal Wolverhampton NHS Trust Charity."
+   },
+   {
+    "id": 2,
+    "type": "Appeal",
+    "title": "Appeal for new members",
+    "description": "This is a simple example of a single page application using React and React Router."
+    }
+]
