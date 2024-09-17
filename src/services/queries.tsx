@@ -1,5 +1,5 @@
 require('dotenv').config(__dirname + '/.env')
-import { EmptyEventDetails } from "../types/types"; 
+import { EmptyEventDetails, EmptyArchiveEntry, EventDetails, ArchiveEntry } from "../types/types"; 
 const express = require('express');
 const db = require('./config/db');
 // on the server the upload folder is in the public folder
@@ -148,25 +148,25 @@ export function uploadBackground(body: any, res: any) {
     })
 })
 
-//This endpoint receives an image type from the client 
-//the filename is retrieved from the database and then the image is sent to the client
-export function imagetypes(req: any, res: any) {
-    new Promise((resolve: File, reject) => {
-//app.get('/imagetypes/:filetype/:filesize', (req, res) => {
-    db.query("SELECT filename FROM imagetypes WHERE imagetype = ?", req.params.filetype, (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            var filename = result[0].filename
-            var filesize = req.params.filesize;
-            if (filesize == 'mobile') {
-                location += 'mobile/'
-            }
-            // send the filename to the client
-            resolve(res.send(filename))
-        }
-    })
-})
+// //This endpoint receives an image type from the client 
+// //the filename is retrieved from the database and then the image is sent to the client
+// export function imagetypes(req: any, res: any) {
+//     new Promise((resolve: File, reject) => {
+// //app.get('/imagetypes/:filetype/:filesize', (req, res) => {
+//     db.query("SELECT filename FROM imagetypes WHERE imagetype = ?", req.params.filetype, (err: any, result: any) => {
+//         if(err) {
+//             console.log(err)
+//         } else {
+//             var filename = result[0].filename
+//             var filesize = req.params.filesize;
+//             if (filesize == 'mobile') {
+//                 location += 'mobile/'
+//             }
+//             // send the filename to the client
+//             resolve(res.send(filename))
+//         }
+//     })
+// })
 
 // get eventarchive data
 // this function is giving the error Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
@@ -174,9 +174,11 @@ export function imagetypes(req: any, res: any) {
 // archiveID, eventID, report, images, clips
 
 
-export function archives(req: any, res: any) {
+export function archives(req: number, res: any) {
 // app.get('/archives/:lastReq', (req, res) => {
-new Promise((resolve, reject) => {
+    let archs: ArchiveEntry[] = [];
+    // create a promise to get the archive data that returns an array of archive objects
+    
     var archivesRequired = req.params.lastReq;
 // make sure that the archivesRequired is a number
 archivesRequired = parseInt(archivesRequired)
@@ -187,14 +189,13 @@ let archivePromise = new Promise((resolve, reject) => {
             console.log("scadC "+err.message)
         } else {
             // archs is an array of archive objects
-            let archs = archives
             for (var i = 0; i < result.length; i++) {
-                var EventD = emptyEventDetails();
+                var EventD: EventDetails = EmptyEventDetails();
                 EventD.eventID = result[i].eventID;
                 EventD.location = result[i].location;
                 EventD.eventDate = result[i].eventDate;
                 EventD.title = result[i].title;
-                var archive = emptyArchiveEntry();
+                var archive = EmptyArchiveEntry();
                 archive.archiveID = result[i].archiveID,
                 archive.report= result[i].report
                 archive.eventDetails = EventD;
@@ -208,12 +209,12 @@ let archivePromise = new Promise((resolve, reject) => {
     
 
     // wait for the promise to resolve and then send the data to the client
-archivePromise.then((archives) => {
+archivePromise.then((archs) => {
     
    // console.log(archives)
-    var events = [];
+    var events: number[] = []
     for (var i = 0; i < archives.length; i++) {
-        events = [...events, archives[i].eventDetails.eventID]
+        events = [...events, archs[i].eventDetails.eventID]
     }
    // console.log(events)
         // set up a promise to get all of the images and pass the array of events to the promise
@@ -495,14 +496,14 @@ function emptyEventDetails() {
         playlist: []
     }
 }
-function emptyArchiveEntry() {
-    return {
-        archiveID: 0,
-        report: "",
-        images: [],
-        clips: []
-    }
-}
+// function emptyArchiveEntry() {
+//     return {
+//         archiveID: 0,
+//         report: "",
+//         images: [],
+//         clips: []
+//     }
+// }
 
 app.get('/eventarchive/:id', (req, res) => {
     const id = req.params.id;
