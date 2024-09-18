@@ -83,20 +83,11 @@ export function upload(req: any, res: any) {
     })
 })
 
-// // currently the uploadMobile endpoint is not working
-// // the error is that the upload2 object is not defined
-// app.post('/uploadMobile', upload2.single('file'), (req, res) => {
-//     //console.log("mobile file : "+req.file.filename)
-//     res.json({ file: req.file });
-// }
-// )
 
 //app.post('/uploadLogo', upload.single('file'), (req, res) => {
 export function uploadLogo(body: any, res: any) {
     new Promise((resolve, reject) => {
-    // console.log("**************")
-    // console.log(req)
-    // console.log("/////***********")
+
     let eventID = -1;
     let filename = body.filename;
     let width = body.width;
@@ -147,31 +138,6 @@ export function uploadBackground(body: any, res: any) {
         }
     })
 })
-
-// //This endpoint receives an image type from the client 
-// //the filename is retrieved from the database and then the image is sent to the client
-// export function imagetypes(req: any, res: any) {
-//     new Promise((resolve: File, reject) => {
-// //app.get('/imagetypes/:filetype/:filesize', (req, res) => {
-//     db.query("SELECT filename FROM imagetypes WHERE imagetype = ?", req.params.filetype, (err: any, result: any) => {
-//         if(err) {
-//             console.log(err)
-//         } else {
-//             var filename = result[0].filename
-//             var filesize = req.params.filesize;
-//             if (filesize == 'mobile') {
-//                 location += 'mobile/'
-//             }
-//             // send the filename to the client
-//             resolve(res.send(filename))
-//         }
-//     })
-// })
-
-// get eventarchive data
-// this function is giving the error Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client
-// this is because the res.send() function is being called twice in the function
-// archiveID, eventID, report, images, clips
 
 
 export function archives(req: number, res: any) {
