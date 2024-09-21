@@ -21,9 +21,12 @@ export function EmptyImageDetail(): ImageDetail {
         cols: 1,
         height: 0,
         width: 0,
+        eventID: 0,
         imagetype: 0
     };
 }
+
+
 
 export interface DatURLResponse {
     returnedFile: File;
@@ -186,7 +189,8 @@ export function EmptyMusicTrack(): MusicTrack {
         soprano: "",
         alto: "",
         tenor: "",
-        allParts: ""
+        allParts: "",
+        piano: ""
     };
 }
 
@@ -259,6 +263,50 @@ export interface ImageFiles {
     mainImage: File;
     mobileImage: File;
     eventID: number;
+}
+
+//id, HomeTitle, HomeText, AboutTitle, AboutText, ArchiveTitle, ArchiveText, NoticesTitle, NoticesText, BookingTitle, BookingText, MembersTitle, MembersText, AppealTitle, AppealText, SettingsTitle, SettingsText
+
+export interface SiteInfo {
+    id: number;
+    HomeTitle: string;
+    HomeText: string;
+    AboutTitle: string;
+    AboutText: string;
+    ArchiveTitle: string;
+    ArchiveText: string;
+    NoticesTitle: string;
+    NoticesText: string;
+    BookingTitle: string;
+    BookingText: string;
+    MembersTitle: string;
+    MembersText: string;
+    AppealTitle: string;
+    AppealText: string;
+    SettingsTitle: string;
+    SettingsText: string;
+}
+
+export function EmptySiteInfo(): siteInfo {
+    return {
+        id: 0,
+        HomeTitle: "",
+        HomeText: "",
+        AboutTitle: "",
+        AboutText: "",
+        ArchiveTitle: "",
+        ArchiveText: "",
+        NoticesTitle: "",
+        NoticesText: "",
+        BookingTitle: "",
+        BookingText: "",
+        MembersTitle: "",
+        MembersText: "",
+        AppealTitle: "",
+        AppealText: "",
+        SettingsTitle: "",
+        SettingsText: ""
+    };
 }
 
 declare module '*.ttf';

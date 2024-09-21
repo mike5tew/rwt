@@ -1,12 +1,15 @@
 require('dotenv').config(__dirname + '/.env')
-import { EmptyEventDetails, EmptyArchiveEntry, EventDetails, ArchiveEntry } from "../types/types"; 
-const express = require('express');
+import exp from "constants";
+import { EmptyEventDetails, EmptyArchiveEntry, EventDetails, ArchiveEntry, Clip, EmptyClip, ImageDetail, EmptyImageDetail, Message,  User, PlaylistEntry, EmptyMusicTrack, EmptyPlaylistEntry, MusicTrack, SiteInfo } from "../types/types"; 
+//const express = require('express');
 const db = require('./config/db');
 // on the server the upload folder is in the public folder
 const cors = require('cors');
 const fs = require('fs');
 const multer = require('multer');
 const app = express();
+import express, {Request, Response} from 'express';
+
 
 app.use(cors());
 app.use(express.json())
@@ -86,7 +89,7 @@ export function upload(req: any, res: any) {
 
 //app.post('/uploadLogo', upload.single('file'), (req, res) => {
 export function uploadLogo(body: any, res: any) {
-    new Promise((resolve, reject) => {
+    new Promise<string>((resolve, reject) => {
 
     let eventID = -1;
     let filename = body.filename;
@@ -114,7 +117,7 @@ export function uploadLogo(body: any, res: any) {
 
 //app.post('/uploadBackground', upload.single('file'), (req, res) => {
 export function uploadBackground(body: any, res: any) {
-    new Promise((resolve, reject) => {
+    new Promise<string>((resolve, reject) => {
     let eventID = 0;
     let filename = body.filename;
     let width = body.width;
@@ -141,18 +144,17 @@ export function uploadBackground(body: any, res: any) {
 
 
 export function archives(req: number, res: any) {
-// app.get('/archives/:lastReq', (req, res) => {
+    new Promise<ArchiveEntry[]>((resolve, reject) => {
+
     let archs: ArchiveEntry[] = [];
     // create a promise to get the archive data that returns an array of archive objects
     
-    var archivesRequired = req.params.lastReq;
+    var archivesRequired = req
 // make sure that the archivesRequired is a number
-archivesRequired = parseInt(archivesRequired)
 // create a promise to get the archive data
-let archivePromise = new Promise((resolve, reject) => {
     db.query("SELECT archive.archiveID, choirevents.location, choirevents.eventDate, choirevents.title, archive.report, archive.eventID FROM choirevents join archive on archive.eventID=choirevents.eventID order by choirevents.eventDate LIMIT ?;", archivesRequired, (err: any, result: any) => {
         if(err) {
-            console.log("scadC "+err.message)
+            reject("scadC "+err.message)
         } else {
             // archs is an array of archive objects
             for (var i = 0; i < result.length; i++) {
@@ -168,36 +170,26 @@ let archivePromise = new Promise((resolve, reject) => {
                 archs = [...archs, archive]   
             }
             }
-            resolve(archives)
+            resolve(archs)
         }
     )}
-)
-    
-
-    // wait for the promise to resolve and then send the data to the client
-archivePromise.then((archs) => {
-    
+).then((archives) => {   
    // console.log(archives)
     var events: number[] = []
     for (var i = 0; i < archives.length; i++) {
-        events = [...events, archs[i].eventDetails.eventID]
+        events = [...events, archives[i].eventDetails.eventID]
     }
    // console.log(events)
         // set up a promise to get all of the images and pass the array of events to the promise
-    let imagesPromise = new Promise((resolve, reject) => {
+    let imagesPromise = new Promise<ImageDetail[]>((resolve, reject) => {
         db.query("SELECT * FROM images WHERE eventID = ?", events, (err: any, result: any) => {
             if(err) {
                 console.log(err)
                 reject(err)
             } else {
-                var images = []
+                let images: ImageDetail[] = []
                 for (var i = 0; i < result.length; i++) {
-                    var image = {
-                        imageID: 0,
-                        filename: "",
-                        caption: "",
-                        eventID: 0
-                    }
+                    var image = EmptyImageDetail();
                     image.imageID = result[i].imageID;
                     image.filename = result[i].filename;
                     image.caption = result[i].caption;
@@ -210,20 +202,19 @@ archivePromise.then((archs) => {
         )
     })
 
-    let clipsPromise = new Promise((resolve, reject) => {   
+    const clipsPromise = new Promise<Clip[]>((resolve, reject) => {   
         db.query("SELECT * FROM clips WHERE eventID = ?", events, (err: any, result: any) => {
             if(err) {
                 console.log(err)
                 reject(err)
             } else {
-                var clips = []
+                var clips: Clip[] = []
                 for (var i = 0; i < result.length; i++) {
-                    var clip = {
-                        clipID: result[i].clipID,
-                        clipURL: result[i].clipURL,
-                        eventID: result[i].eventID,
-                        caption: result[i].caption
-                    }
+                    var clip:Clip = EmptyClip();
+                        clip.id= result[i].clipID,
+                        clip.clipURL= result[i].clipURL,
+                        clip.eventID= result[i].eventID,
+                        clip.caption= result[i].caption
                     clips = [...clips, clip]
                 }
                 resolve(clips)
@@ -235,8 +226,8 @@ archivePromise.then((archs) => {
     // we need to use the Promise.all() method to get the data from the promises
     Promise.all([imagesPromise, clipsPromise])
     .then((values) => {
-        var images = values[0];
-        var clips = values[1];
+        let images: ImageDetail[] = values[0];
+        var clips: Clip[] = values[1];
         for (var i = 0; i < archives.length; i++) {
             for (var j = 0; j < images.length; j++) {
                 if (archives[i].eventDetails.eventID == images[j].eventID) {
@@ -260,23 +251,26 @@ archivePromise.then((archs) => {
     })
 }
 )
-})
+}
+
 // the getArchive function is not defined in the code above
 
-
-app.get('/messages', (req, res) => {
+export function messages(req: any, res: any) {
+new Promise<Message>((resolve, reject) => {
+    // app.get('/messages', (req, res) => {
     db.query("SELECT * FROM messages", (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send(result)
+            resolve(res.send(result))
         }
     })
 })
 
 // messageID, messageDate, messageFrom, messageContent
-
-app.post('/messages', (req, res) => {
+export function messagesPOST(req: any, res: any) {
+    new Promise<Message>((resolve, reject) => {
+        // app.get('/messages', (req, res) => {
     const data = req.body;
     // the time stamp is not being set in the data object and so the server needs to set the time stamp
     data.messageDate = new Date();
@@ -300,32 +294,40 @@ app.post('/messages', (req, res) => {
     )
 })
 
-app.delete('/messages/:id', (req, res) => {
+export function messagesDELETE(req: any, res: any) {
+    new Promise<Message>((resolve, reject) => {
     const id = req.params.id;
     db.query("DELETE FROM messages WHERE messageID = ?", id, (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send("Value Deleted")
+            resolve(res.send("Value Deleted"))
         }
     })
 })
+
 
 // This section is the username and password section.  We obviously want this section to be secure
 // and so we need to use a secure method to store the username and password
 // the usernames and passwords are stored in the .env file and are accessed using the process.env object
 // the .env file is not included in the repository and so the username and password are not available to the public
 
-app.post('/login', (req, res) => {
+export function login(req: any, res: any) {
+new Promise<string>((resolve, reject) => {
+//app.post('/login', (req, res) => {
     console.log(req.body)
+    let loginUser: User = JSON.parse(req.body);
     // retrieve the users array from the .env file
-    let users = process.env.users
     // users is a json object and so we need to parse the json object to get the array
-    users = JSON.parse(users)    
+    if (process.env.users == undefined) {
+        process.env.users = "[]"
+    }
+    let users: User[] = JSON.parse(process.env.users)    
     console.log(users) 
     console.log(users.length)
+
     for (let i = 0; i < users.length; i++) {
-        if (req.body.username === users[i].username && req.body.password === users[i].password && req.body.role === users[i].role) {
+        if (loginUser.username === users[i].username && loginUser.password === users[i].password && loginUser.role === users[i].role) {
             // return staus 200 if the login is successful
             res.status(200).send({message: "Updated post successfuly"})
             return
@@ -336,68 +338,46 @@ app.post('/login', (req, res) => {
 }
 )
 
-
-app.post('/loginAddUser', (req, res) => {
+export function loginAddUser(req: any, res: any) {
+new Promise<string>((resolve, reject) => {
+    //app.post('/loginAddUser', (req, res) => {
     // add the username and password to the .env file
-    process.env.users = [...process.env.users, { username: req.body.username, password: req.body.password, role: req.body.role }]
-    res.send("User Added")
+    process.env.users += "{ username: "+req.body.username+", password:"+ req.body.password+", role:" + req.body.role +"}]"
+    resolve(res.send("User Added"))
 })
 
-app.post('/loginDeleteUser', (req, res) => {
+
+export function loginDeleteUser(req: any, res: any) {
+    new Promise<string>((resolve, reject) => {
+// app.post('/loginDeleteUser', (req, res) => {
     // delete the username and password from the .env file
-    process.env.users = process.env.users.filter(user => user.username !== req.body.username)
-    res.send("User Deleted")
-})
-
-// // there is an unclosed bracket in theabove.  This is most likely from line 
-// function EmptyEventDetails() {
-//     return {
-//         eventID: 0,
-//         location: "",
-//         eventDate: new Date(),
-//         startTime: "",
-//         endTime: "",
-//         invitation: "",
-//         meetingPoint: "",
-//         price: "",
-//         title: "",
-//         playlist: [],
-//     };
-// }
- function EmptyPlaylistEntry() {
-    return {
-        playlistID: 0,
-        eventID: 0,
-        musicTrack: EmptyMusicTrack(),
-        playorder: 0
-    };
+    let users: User[]
+    if (process.env.users == undefined) {
+        process.env.users = "[]"
+    } else {
+    users = JSON.parse(process.env.users)
+    users = users.filter(user => user.username !== req.body.username)
+    process.env.users = JSON.stringify(users)
+    resolve("User Deleted")
+    }
 }
-function EmptyMusicTrack() {
-    return {
-        musicTrackID: 0,
-        trackName: "",
-        artist: "",
-        lyrics: "",
-        soprano: "",
-        alto: "",
-        tenor: "",
-        allParts: ""
-    };
-}
+)
 
 
-app.get('/upcomingPlaylists', (req, res) => {
-    let event = emptyEventDetails();
-    let plist = [];
+
+export function upcomingPlaylists() {
+    new Promise<PlaylistEntry[]>((resolve, reject) => {
+        var events: EventDetails[] = []
+        var pList: PlaylistEntry[] = []
+        var event: EventDetails = EmptyEventDetails();
+//app.get('/upcomingPlaylists', (req, res) => {
     db.query("SELECT choirevents.eventID, choirevents.location, choirevents.eventDate, choirevents.startTime, choirevents.endTime, choirevents.title, choirevents.meetingPoint, playlists.playlistID, playlists.musicID, playlists.playorder, music.musicTrackID, music.trackName, music.artist, music.lyrics, music.soprano, music.alto, music.tenor, music.allParts FROM choirevents LEFT OUTER JOIN (playlists JOIN music on playlists.musicID=music.musicTrackID) on choirevents.eventID=playlists.eventID where choirevents.eventDate>= curdate() order by choirevents.eventDate, playlists.playorder")
-    .then((result) => {
-        var events = []
-        var pList = []
-        id = 0;
+    .then((result: any) => {
+        var id: number = 0
         var len = result.length;
         for (var i = 0; i < len; i++) {
             if (result[i].eventID != id) {
-                var event = emptyEventDetails();
+                 event = EmptyEventDetails();
                  
                     event.eventID= result[i].eventID,
                     event.location= result[i].location,
@@ -410,7 +390,7 @@ app.get('/upcomingPlaylists', (req, res) => {
                 }
             var plEntry = EmptyPlaylistEntry();
             plEntry.playlistID= result[i].playlistID
-            mTrack = EmptyMusicTrack();
+            var mTrack:MusicTrack = EmptyMusicTrack();
             mTrack.musicTrackID= result[i].musicID,
             mTrack.trackName= result[i].trackName,
             mTrack.artist= result[i].artist,
@@ -432,7 +412,7 @@ app.get('/upcomingPlaylists', (req, res) => {
         }
         res.send(events)
     })
-    .catch((err) => {
+    .catch((err: any) => {
         console.log(err)
         res.send("No events found")
     })
@@ -440,28 +420,28 @@ app.get('/upcomingPlaylists', (req, res) => {
 
 
 
-const EventDetails = {
-    eventID: 0,
-    location: "",
-    eventDate: "",
-    startTime: "",
-    endTime: "",
-    price: 0,
-    title: "",
-    playlist: []
-}
-function emptyEventDetails() {
-    return {
-        eventID: 0,
-        location: "",
-        eventDate: "",
-        startTime: "",
-        endTime: "",
-        price: 0,
-        title: "",
-        playlist: []
-    }
-}
+// const EventDetails = {
+//     eventID: 0,
+//     location: "",
+//     eventDate: "",
+//     startTime: "",
+//     endTime: "",
+//     price: 0,
+//     title: "",
+//     playlist: []
+// }
+// function EmptyEventDetails() {
+//     return {
+//         eventID: 0,
+//         location: "",
+//         eventDate: "",
+//         startTime: "",
+//         endTime: "",
+//         price: 0,
+//         title: "",
+//         playlist: []
+//     }
+// }
 // function emptyArchiveEntry() {
 //     return {
 //         archiveID: 0,
@@ -470,21 +450,15 @@ function emptyEventDetails() {
 //         clips: []
 //     }
 // }
-
-app.get('/eventarchive/:id', (req, res) => {
-    const id = req.params.id;
+export function eventArchive(id: number) {
+// app.get('/eventarchive/:id', (req, res) => {
+    // const id = req.par
 
 
     // we want the archive function to act as a promise so that we can use the data in the function
     // we need to use the .then() method to get the data from the function by using the syuntax 
-let archivePromise = new Promise((resolve, reject) => { 
-    var archive = {
-        archiveID: 0,
-        eventDetails: emptyEventDetails(),
-        report: "",
-        images: [],
-        clips: []
-    }
+let archivePromise = new Promise<ArchiveEntry>((resolve, reject) => { 
+    var archive: ArchiveEntry = EmptyArchiveEntry();
     // console.log("id : "+id)
     
      db.query("SELECT archive.archiveID, choirevents.location, choirevents.eventDate, choirevents.title, archive.report FROM choirevents join archive on archive.eventID=choirevents.eventID WHERE archive.eventID= ? ", id, (err: any, result: any) => {
@@ -493,6 +467,7 @@ let archivePromise = new Promise((resolve, reject) => {
         } else {
             // create an archive object
 
+            var archive: ArchiveEntry = EmptyArchiveEntry();
             // console.log("result archive : "+result.length)
             for (var i = 0; i < result.length; i++) {
                 archive.archiveID = result[i].archiveID;
@@ -507,19 +482,14 @@ let archivePromise = new Promise((resolve, reject) => {
     )
 })
  
-imagesPromise = new Promise((resolve, reject) => {
+let imagesPromise = new Promise<ImageDetail[]>((resolve, reject) => {
     db.query("SELECT * FROM images WHERE eventID = ?", id, (err: any, result: any) => {
         if(err) {
             reject(err)
         } else {
-            var images = []
+            var images: ImageDetail[] = []
             for (var i = 0; i < result.length; i++) {
-                var image = {
-                    imageID: 0,
-                    filename: "",
-                    caption: "",
-                    eventID: 0
-                }
+                var image: ImageDetail = EmptyImageDetail();
                 image.imageID = result[i].imageID;
                 image.filename = result[i].filename;
                 image.caption = result[i].caption;
@@ -532,19 +502,19 @@ imagesPromise = new Promise((resolve, reject) => {
     }
     )
 })
-clipsPromise = new Promise((resolve, reject) => {
+
+let clipsPromise = new Promise<Clip[]>((resolve, reject) => {
     db.query("SELECT * FROM clips WHERE eventID = ?", id, (err: any, result: any) => {
         if(err) {
             reject(err)
         } else {
-            var clips=[]
+            var clips: Clip[] = []
             for (var i = 0; i < result.length; i++) {
-                var clip = {
-                    clipID: result[i].clipID,
-                    clipURL: result[i].clipURL,
-                    eventID: result[i].eventID,
-                    caption: result[i].caption
-                }
+                var clip: Clip = EmptyClip();
+                    clip.id= result[i].clipID,
+                    clip.clipURL= result[i].clipURL,
+                    clip.eventID= result[i].eventID,
+                    clip.caption= result[i].caption
 
                 clips = [...clips, clip]
             }
@@ -560,27 +530,18 @@ Promise.all([archivePromise, imagesPromise, clipsPromise])
     archive.images = values[1];
     archive.clips = values[2];
     // return the archive object
-
-   res.send(archive)
+    res.send(archive)
 })
 .catch((err) => {
     console.log(err)
     res.send("Archive not found")
-})
 }
 )
+}
 
-app.get('/colors', (req, res) => {
-    db.query("SELECT * FROM colors", (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            res.send(result)
-        }
-    })
-})
-
-app.get('/themedetails', (req, res) => {
+export function themeDetails() {
+    
+    new Promise<string>((resolve, reject) => {
     db.query("SELECT * FROM themedetails", (err: any, result: any) => {
         if(err) {
             console.log(err)
@@ -591,21 +552,25 @@ app.get('/themedetails', (req, res) => {
 })
 
 //themeDetails, boxColour, textColour, textFont, backgroundImage, textboxColour, logoimage, bannerColour, menuColour, buttonColour, buttonHover, buttonTextColour, menuTextColour
-app.put('/themedetailsPUT', (req, res) => {
+export function themeDetailsPUT() {
+    new Promise<string>((resolve, reject) => {
+// app.put('/themedetailsPUT', (req, res) => {
     const data = req.body;
     db.query("UPDATE themedetails SET boxColour = ?, textColour = ?, textFont = ?, backgroundImage = ?, textboxColour = ?, logoimage = ?, bannerColour = ?, menuColour = ?, buttonColour = ?, buttonHover = ?, buttonTextColour = ?, menuTextColour = ?, textSize = ?", [data.boxColour, data.textColour, data.textFont, data.backgroundImage, data.textboxColour, data.logoimage, data.bannerColour, data.menuColour, data.buttonColour, data.buttonHover, data.buttonTextColour, data.menuTextColour, data.textSize], (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send("Values Updated")
+            resolve("Values Updated")
         }
     })
 })
 
 // create an SQL statement updating the colour value of the themeDetails table to random colors with the textfont being impact and the logoimage being the choir logo
-app.get('/themedetailsRandom', (req, res) => {
+export function themeDetailsRandom() {
+    new Promise<string>((resolve, reject) => {
+// app.get('/themedetailsRandom', (req, res) => {
     // create an array of colours
-    data = {
+    let data = {
         boxColour: '#'+Math.floor(Math.random()*16777215).toString(16),
         textColour: '#'+Math.floor(Math.random()*16777215).toString(16),
         textFont: 'Impact',
@@ -621,52 +586,51 @@ app.get('/themedetailsRandom', (req, res) => {
     }
     db.query("UPDATE themedetails SET boxColour = ?, textColour = ?, textFont = ?, backgroundImage = ?, textboxColour = ?, logoimage = ?, bannerColour = ?, menuColour = ?, buttonColour = ?, buttonHover = ?, buttonTextColour = ?, menuTextColour = ?", [data.boxColour, data.textColour, data.textFont, data.backgroundImage, data.textboxColour, data.logoimage, data.bannerColour, data.menuColour, data.buttonColour, data.buttonHover, data.buttonTextColour, data.menuTextColour], (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send("Values Updated")
+            resolve("Values Updated")
         }
     })
 })
 
 // get music list
 //musicTrackID, trackName, lyrics, soprano, alto, tenor, allParts
-app.get('/trackList', (req, res) => {
+export function musicList() {
+    new Promise<MusicTrack>((resolve, reject) => {
+// app.get('/trackList', (req, res) => {
     db.query("SELECT musicTrackID, trackName, artist FROM music", (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
+            let musicTrack:MusicTrack = EmptyMusicTrack();
             for(var i = 0; i < result.length; i++) {
-                var musicTrackID = result[i].musicTrackID;
-                var trackName = result[i].trackName;
-                var artist = result[i].artist;
-                var musicTrack = {
-                    id: i,
-                    musicTrackID: musicTrackID,
-                    trackName: trackName,
-                    artist: artist
-                }
-                result[i] = musicTrack;
+                musicTrack.musicTrackID = result[i].musicTrackID;
+                musicTrack.trackName = result[i].trackName;
+                musicTrack.artist = result[i].artist;
             }
-            res.send(result)
+            resolve(musicTrack)
         }
     })
 })
 
+// export function archive() {
+//     new Promise<ArchiveEntry>((resolve, reject) => {
+//             // app.get('/archive', (req, res) => {
+//     db.query("SELECT * FROM archive", (err: any, result: any) => {
+//         if(err) {
+//             reject(console.log(err))
+//         } else {
+//             // we need to send the result to the client as a json object
 
-app.get('/archive', (req, res) => {
-    db.query("SELECT * FROM archive", (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            // we need to send the result to the client as a json object
-
-            res.send(result)
-        }
-    })
-})
+//             res.send(result)
+//         }
+//     })
+// })
 
 // save archive data
-app.post('/archivePOST', (req, res) => {
+export function archivePOST(arch: ArchiveEntry) {
+    new Promise<string>((resolve, reject) => {
+// app.post('/archivePOST', (req, res) => {
     const data = req.body;
     // check for any archive entries with the same eventID
     db.query("SELECT * FROM archive WHERE eventID = ?", [data.eventID], (err: any, result: any) => {
@@ -677,20 +641,20 @@ app.post('/archivePOST', (req, res) => {
                 // if there is an entry with the same eventID then update the entry
                 db.query("UPDATE archive SET report = ? WHERE eventID = ?", [data.report, data.eventID], (err: any, result: any) => {
                     if(err) {
-                        console.log(err)
+                        reject(console.log(err))
                     } else {
                         uploadClips(data.clips)
-                        res.send("Value Updated")
+                        resolve("Value Updated")
                     }
                 })
             } else {
                 // if there is no entry with the same eventID then insert a new entry
                 db.query("INSERT INTO archive  (report, eventID) VALUES (?,?)", [data.report, data.eventID], (err: any, result: any) => {
                     if(err) {
-                        console.log(err)
+                        reject(console.log(err))
                     } else {
                         uploadClips(data.clips)
-                        res.send("Values Inserted")
+                        resolve("Values Inserted")
                     }
                 })
             }
@@ -699,7 +663,7 @@ app.post('/archivePOST', (req, res) => {
 
 })
 
-function uploadClips(clips) {
+function uploadClips(clips: Clip[]) {
     // if the clipID is >10000 then it is a new clip, otherwisw it needs to be updated
     for(var i = 0; i < clips.length; i++) {
         if (clips[i].id > 10000) {
@@ -721,62 +685,68 @@ function uploadClips(clips) {
 
 
 // delete archive entry
-app.delete('/archiveDELETE/:id', (req, res) => {
+export function archiveDELETE(id: number) {
+    new Promise<string>((resolve, reject) => {
+// app.delete('/archiveDELETE/:id', (req, res) => {
     const id = req.params.id;
     db.query("DELETE FROM archive WHERE id = ?", id, (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send("Value Deleted")
+            resolve("Value Deleted")
         }
     })
 })
 
 // update archive entry
-app.put('/archivePUT', (req, res) => {
+export function archivePUT(arch: ArchiveEntry) {
+    new Promise<string>((resolve, reject) => {
+// app.put('/archivePUT', (req, res) => {
     const id = req.body.id;
     const title = req.body.title;
     const description = req.body.description;
     db.query("UPDATE archive SET title = ?, description = ? WHERE id = ?", [title, description, id], (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send("Value Updated")
+            resolve("Value Updated")
         }
     })
 })
 
 // get a playlist for an event
-app.get('/playlists/:id', (req, res) => {
+export function playlist(id: number) {
+    new Promise<PlaylistEntry[]>((resolve, reject) => {
+// app.get('/playlists/:id', (req, res) => {
     const id = req.params.id;
     db.query("SELECT playlistID, playorder, musicTrackID, trackName, artist from playlists join music on playlists.musicID=music.musicTrackID WHERE playlists.eventID=? order by playorder", id, (err: any, result: any) => {
         if(err) {
             console.log(err)
         } else {
             //console.log(result)
-            let playlist = [];
+            let playlist: PlaylistEntry[] = []
             for(var i = 0; i < result.length; i++) {
-                var playlistEntry = {
-                    id: i,
-                    playlistID: result[i].playlistID,
-                    playorder: result[i].playorder,
-                    eventID: id,
-                    musicTrack: {
-                        musicTrackID: result[i].musicID,
-                        trackName: result[i].trackName,
-                        artist: result[i].artist
-                    },
-                }
-                // add the playlistEntry to the playlist array using the spread operator
+                var playlistEntry: PlaylistEntry = EmptyPlaylistEntry();
+                playlistEntry.id = i;
+                playlistEntry.playlistID = result[i].playlistID;
+                playlistEntry.playorder = result[i].playorder;
+                playlistEntry.eventID = id;
+                var musicTrack: MusicTrack = EmptyMusicTrack();
+                musicTrack.musicTrackID = result[i].musicTrackID;
+                musicTrack.trackName = result[i].trackName;
+                musicTrack.artist = result[i].artist;
+                playlistEntry.musicTrack = musicTrack;
                 playlist = [...playlist, playlistEntry]
-
             }
             res.send(playlist)
         }
     })
 })
 
-app.post('/playlistsPOST', (req, res) => {
+// save playlist data
+export function playlistsPOST(data: PlaylistEntry[]) {
+    new Promise<string>((resolve, reject) => {
+// app.post('/playlistsPOST', (req, res) => {
     // convert the data to a json object.  The data is sent as an array of playlistEntry objects
     const data = req.body;
     // find the eventID from the first entry in the array
@@ -784,107 +754,211 @@ app.post('/playlistsPOST', (req, res) => {
     // delete all of the existing playlist entries for the event
     db.query("DELETE FROM playlists WHERE eventID = ?", eventID, (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         }
     })
     for(var i = 0; i < data.length; i++) {
         db.query("INSERT INTO playlists (eventID, musicID, playorder) VALUES (?, ?, ?)", [data[i].eventID, data[i].musicTrack.musicTrackID, data[i].playorder], (err: any, result: any) => {
             if(err) {
-                console.log(err)
+                reject(console.log(err))
             } else {
-                result.send("Values Inserted")
+                resolve("Values Inserted")
             }
         })
     }
 })
 
+
 //event table structure
 //eventID, location, eventDate, startTime, endTime, price, title
 
-// get all of the event data
-app.get('/events', (req, res) => {
-    db.query("SELECT * FROM choirevents", (err: any, result: any) => {
+
+const events = (id: number): Promise<EventDetails[]> => {
+    return new Promise<EventDetails[]>((resolve, reject) => {
+        let sQuery: string
+if (id == -1) {
+    sQuery = "SELECT * FROM choirevents"
+} else {
+    sQuery = "SELECT * FROM choirevents WHERE eventID = " + id
+}
+    db.query(sQuery, (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
             // load the results into an array of eventDetails
+            let events: EventDetails[] = []
             for(var i = 0; i < result.length; i++) {
-                var eventID = result[i].eventID;
-                var location = result[i].location;
-                var eventDate = result[i].eventDate;
-                var startTime = result[i].startTime;
-                var endTime = result[i].endTime;
-                var price = result[i].price;
-                var title = result[i].title;
-                var playlist = [];
-                var eventDetails = {
-                    id: i,
-                    eventID: eventID,
-                    location: location,
-                    eventDate: eventDate,
-                    startTime: startTime,
-                    endTime: endTime,
-                    price: price,
-                    title: title,
-                    playlist: playlist,
-                    archive: {
-                        archiveID: 0,
-                        eventID: 0,
-                        report: "",
-                        images: [],
-                        clips: []
-                    }
-                }
-                result[i] = eventDetails;
+                var event: EventDetails = EmptyEventDetails();
+                event.eventID = result[i].eventID;
+                event.location = result[i].location;
+                event.eventDate = result[i].eventDate;
+                event.startTime = result[i].startTime;
+                event.endTime = result[i].endTime;
+                event.price = result[i].price;
+                event.title = result[i].title;
+                events = [...events, event]
             }
-            res.send(result)
+            resolve(events)
         }
     })
+    .catch((err: any) => {
+        console.log(err);
+        return Promise.reject<ArchiveEntry>(err); // Return a rejected promise with the error
+      });
 })
 
+const playlist = (id: number): Promise<PlaylistEntry[]> => {
+    return new Promise<PlaylistEntry[]>((resolve, reject) => {
+        var sQuery: string
+        if (id == -1) {
+            sQuery = "SELECT * FROM playlists"
+        } else {
+            sQuery = "SELECT * FROM playlists WHERE eventID = " + id
+        }
+        db.query(sQuery, (err: any, result: any) => {
+            if(err) {
+                reject(console.log(err))
+            } else {
+                let playlist: PlaylistEntry[] = []
+                for(var i = 0; i < result.length; i++) {
+                    var playlistEntry: PlaylistEntry = EmptyPlaylistEntry();
+                    playlistEntry.playlistID = result[i].playlistID;
+                    playlistEntry.playorder = result[i].playorder;
+                    playlistEntry.eventID = result[i].eventID;
+                    playlistEntry.musicTrack = result[i].musicID;
+                    playlist = [...playlist, playlistEntry]
+                }
+                resolve(playlist)
+            }
+        })
+    }
+    )
+}
+
+const images = (id: number): Promise<ImageDetail[]> => {
+    return new Promise<ImageDetail[]>((resolve, reject) => {
+        db.query("SELECT * FROM images WHERE eventID = ?", id, (err: any, result: any) => {
+            if(err) {
+                console.log(err)
+                reject(err)
+            } else {
+                let images: ImageDetail[] = []
+                for (var i = 0; i < result.length; i++) {
+                    var image = EmptyImageDetail();
+                    image.imageID = result[i].imageID;
+                    image.filename = result[i].filename;
+                    image.caption = result[i].caption;
+                    image.eventID = result[i].eventID;
+                    images = [...images, image]
+                }
+                resolve(images)
+            }
+        }
+        )
+    }
+    )
+}
+
+const clips = (id: number): Promise<Clip[]> => {
+    return new Promise<Clip[]>((resolve, reject) => {
+        db.query("SELECT * FROM clips WHERE eventID = ?", id, (err: any, result: any) => {
+            if(err) {
+                console.log(err)
+                reject(err)
+            } else {
+                var clips: Clip[] = []
+                for (var i = 0; i < result.length; i++) {
+                    var clip:Clip = EmptyClip();
+                        clip.id= result[i].clipID,
+                        clip.clipURL= result[i].clipURL,
+                        clip.eventID= result[i].eventID,
+                        clip.caption= result[i].caption
+                    clips = [...clips, clip]
+                }
+                resolve(clips)
+            }
+        }
+        ).catch((err: any) => {
+                console.log(err);
+                return Promise.reject<Clip[]>(err); // Return a rejected promise with the error
+              });
+    }
+    )
+} 
+
+// we need to use the Promise.all() method to get the data from the promises
+export function eventComplete(id: number): Promise<EventDetails[]> {
+    return Promise.all([events(id), playlist(id)])
+    .then((values) => {
+        let events: EventDetails[] = values[0];
+        let playlist: PlaylistEntry[] = values[1];
+        for (var i = 0; i < events.length; i++) {
+            for (var j = 0; j < playlist.length; j++) {
+                if (events[i].eventID == playlist[j].eventID) {
+                    events[i].playlist = [...events[i].playlist, playlist[j]]
+                }
+            }
+        }
+        return events
+    }
+    )
+    .catch((err) => {
+        console.log(err)
+        return []
+    }
+    )
+}
+
 // save event data
-app.post('/eventPOST', (req, res) => {
+export function eventsPOST(data: EventDetails) {
+    new Promise<string>((resolve, reject) => {
+//app.post('/eventPOST', (req, res) => {
     // the event data is sent as an eventDetails json object. So we need to extract the data from the object
     // create a new eventDetails object and load the data into it
    // console.log(req.body)
-    var location = req.body.location;
-    var invitation = req.body.invitation;
-    var eventDate = req.body.eventDate;
-    var startTime = req.body.startTime;
-    var endTime = req.body.endTime;
-    var meetingPoint = req.body.meetingPoint;
-    var price = req.body.price;
-    var title = req.body.title;
+    var location = data.location;
+    var invitation = data.invitation;
+    var eventDate = data.eventDate;
+    var startTime = data.startTime;
+    var endTime = data.endTime;
+    var meetingPoint = data.meetingPoint;
+    var price = data.price;
+    var title = data.title;
 
     db.query("INSERT INTO choirevents SET location = ?, eventDate = ?, startTime = ?, endTime = ?, price = ?, title = ?, invitation = ?, meetingPoint = ? ", [location, eventDate, startTime, endTime, price, title, invitation, meetingPoint], (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send("Values Inserted")
+            resolve("Values Inserted")
         }
     })
 })
 
 // delete event entry
-app.delete('/eventDELETE/:id', (req, res) => {
+
+export function eventsDELETE(id: number) {
+    new Promise<string>((resolve, reject) => {
+//app.delete('/eventDELETE/:id', (req, res) => {
     const id = req.params.id;
     db.query("DELETE FROM event WHERE id = ?", id, (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send("Value Deleted")
+            resolve("Value Deleted")
         }
     })
 })
 
 // update event entry
-app.put('/eventPUT', (req, res) => {
-    var location = req.body.location;
-    var eventDate = req.body.eventDate;
-    var startTime = req.body.startTime;
-    var endTime = req.body.endTime;
-    var price = req.body.price;
-    var title = req.body.title;
+export function eventsPUT(data: EventDetails) {
+    new Promise<string>((resolve, reject) => {
+// app.put('/eventPUT', (req, res) => {
+    var location = data.location;
+    var eventDate = data.eventDate;
+    var startTime = data.startTime;
+    var endTime = data.endTime;
+    var price = data.price;
+    var title = data.title;
     db.query("UPDATE event SET location = ?, eventDate = ?, startTime = ?, endTime = ?, price = ?, title = ? WHERE id = ?", [location, eventDate, startTime, endTime, price, title], (err: any, result: any) => {
         if(err) {
             console.log(err)
@@ -894,7 +968,9 @@ app.put('/eventPUT', (req, res) => {
     })
 })
 
-app.get('/siteinfo', (req, res) => {
+export function siteinfo() {
+    new Promise<string>((resolve, reject) => {
+//app.get('/siteinfo', (req, res) => {
     db.query("SELECT * FROM siteinfo", (err: any, result: any) => {
         if(err) {
             console.log(err)
@@ -906,156 +982,258 @@ app.get('/siteinfo', (req, res) => {
 
 
 //id, HomeTitle, HomeText, AboutTitle, AboutText, ArchiveTitle, ArchiveText, NoticesTitle, NoticesText, BookingTitle, BookingText, MembersTitle, MembersText, AppealTitle, AppealText, SettingsTitle, SettingsText
-app.post('/siteinfoPUT', (req, res) => {
+export function siteinfoPUT(data: SiteInfo) {
+    new Promise<string>((resolve, reject) => {
+// app.post('/siteinfoPUT', (req, res) => {
     const data = req.body;
     //console.log(req.body)
     db.query("UPDATE siteinfo SET HomeTitle = ?, HomeText = ?, AboutTitle = ?, AboutText = ?, ArchiveTitle = ?, ArchiveText = ?, NoticesTitle = ?, NoticesText = ?, BookingTitle = ?, BookingText = ?, MembersTitle = ?, MembersText = ?, AppealTitle = ?, AppealText = ?, SettingsTitle = ?, SettingsText = ? ", [data.titleHome, data.descriptionHome, data.titleAbout, data.descriptionAbout, data.titleArchive, data.descriptionArchive, data.titleNotices, data.descriptionNotices, data.titleBooking, data.descriptionBooking, data.titleMembers, data.descriptionMembers, data.titleAppeal, data.descriptionAppeal, data.titleSettings, data.descriptionSettings], (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
-            res.send("Values Updated")
+            resolve("Values Updated")
         }
     })
 })
 
+//eventID, location, eventDate, startTime, endTime, price, title, meetingPoint, invitation
+//musicTrackID, trackName, artist, lyrics, soprano, alto, tenor, allParts, piano
 
-// clip table: clipID, clipURL, eventID, caption
-// playlist table: playlistID, eventID, musicID, playorder
 
-// get single event details
-app.get('/event/:id', (req, res) => {
-    const id = req.params.id;
-    db.query("SELECT * FROM event WHERE id = ?", id, (err: any, result: any) => {
-        if(err) {
-            console.log(err)
+
+const EventBasics = (id: number): Promise<EventDetails[]> => {
+    return new Promise<EventDetails[]>((resolve, reject) => {
+    var sQuery = "SELECT eventID, location, eventDate, startTime, endTime, price, title, meetingPoint, invitation, musictrackID, trackName, artist, lyrics, soprano, alto, tenor, allParts, piano FROM choirevents LEFT OUTER JOIN music ON choirevents.eventID = music.eventID"
+    if (id != -1) {
+        sQuery += " WHERE eventID = " + id
+    }
+      db.query(sQuery, id, (err: any, result: any[]) => {
+        if (err) {
+          console.log(err);
+          reject(err);
         } else {
-
-            var allInfo = {
-                title: result[0].title,
-                date: result[0].date,
-                startTime: result[0].startTime,
-                endTime: result[0].endTime,
-                meetingPoint: result[0].meetingPoint,
-                description: result[0].description,
-                imagenames: getImages(id),
-                musicTracks: getMusic(id),
-                youTube: getClip(id)
+            //convert the result into an array of EventDetails objects (containing the playlist)
+            var events: EventDetails[] = []
+            var event: EventDetails = EmptyEventDetails();
+            for (var i = 0; i < result.length; i++) {
+                if (result[i].eventID != event.eventID) {
+                    event = EmptyEventDetails();
+                    event.eventID = result[i].eventID;
+                    event.location = result[i].location;
+                    event.eventDate = result[i].eventDate;
+                    event.startTime = result[i].startTime;
+                    event.endTime = result[i].endTime;
+                    event.price = result[i].price;
+                    event.title = result[i].title;
+                    event.meetingPoint = result[i].meetingPoint;
+                    event.invitation = result[i].invitation;
+                    event.playlist = []
+                }
+                var plEntry = EmptyPlaylistEntry();
+                plEntry.playlistID = result[i].playlistID;
+                var mTrack: MusicTrack = EmptyMusicTrack();
+                mTrack.musicTrackID = result[i].musicTrackID;
+                mTrack.trackName = result[i].trackName;
+                mTrack.artist = result[i].artist;
+                mTrack.lyrics = result[i].lyrics;
+                mTrack.soprano = result[i].soprano;
+                mTrack.alto = result[i].alto;
+                mTrack.tenor = result[i].tenor;
+                mTrack.allParts = result[i].allParts;
+                mTrack.piano = result[i].piano;
+                plEntry.musicTrack = mTrack;
+                event.playlist = [...event.playlist, plEntry]
+                events = [...events, event]
             }
-            res.send(allInfo)
+
+            resolve(events)
+            }
         }
+    )
     }
     )
-})
+}
 
-function postImage(data) {
+
+//musicTrackID, trackName, artist, lyrics, soprano, alto, tenor, allParts, piano
+
+const Music = (id: number): Promise<MusicTrack[]> => {
+    return new Promise<MusicTrack[]>((resolve, reject) => {
+        var sQuery: string
+        if (id == -1) {
+            sQuery = "SELECT * FROM music"
+        } else {
+            sQuery = "SELECT * FROM music WHERE eventID = " + id
+        }  
+        db.query(sQuery, (err: any, result: MusicTrack[]) => {
+            if (err) {
+            console.log(err);
+            reject(err);
+            } else {
+                var music: MusicTrack[] = []
+                for (var i = 0; i < result.length; i++) {
+                    var mTrack: MusicTrack = EmptyMusicTrack();
+                    mTrack.musicTrackID = result[i].musicTrackID;
+                    mTrack.trackName = result[i].trackName;
+                    mTrack.artist = result[i].artist;
+                    mTrack.lyrics = result[i].lyrics;
+                    mTrack.soprano = result[i].soprano;
+                    mTrack.alto = result[i].alto;
+                    mTrack.tenor = result[i].tenor;
+                    mTrack.allParts = result[i].allParts;
+                    mTrack.piano = result[i].piano;
+                    music = [...music, mTrack]
+                }
+                resolve(music)
+            }
+        }
+    )
+    }
+    )
+}
+
+
+//imageID, filename, caption, eventID, height, width
+    const ImageDetail = (id: number): Promise<ImageDetail[]> => {
+        return new Promise<ImageDetail[]>((resolve, reject) => {
+        db.query("SELECT * FROM images WHERE eventID = ?", id, (err: any, result: ImageDetail[]) => {
+            if (err) {
+            console.log(err);
+            reject(err);
+            } else {
+            var images: ImageDetail[] = []
+            for (var i = 0; i < result.length; i++) {
+                var image: ImageDetail = EmptyImageDetail();
+                image.imageID = result[i].imageID;
+                image.filename = result[i].filename;
+                image.caption = result[i].caption;
+                image.eventID = result[i].eventID;
+                images = [...images, image]
+            }
+            resolve(images)
+            }
+        });
+        });
+    };
+
+    const Clip = (id: number): Promise<Clip[]> => {
+        return new Promise<Clip[]>((resolve, reject) => {
+        db.query("SELECT * FROM clips WHERE eventID = ?", id, (err: any, result: Clip[]) => {
+            if (err) {
+            console.log(err);
+            reject(err);
+            } else {
+            resolve(result);
+            }
+        });
+        });
+    };
+    const ArchiveBasics = (id: number): Promise<ArchiveEntry> => {
+        return new Promise<ArchiveEntry>((resolve, reject) => {
+          db.query("SELECT * FROM archive WHERE archiveID = ?", id, (err: any, result: ArchiveEntry[]) => {
+            if (err) {
+              console.log(err);
+              reject(err);
+            } else {
+              const archive: ArchiveEntry = result[0];
+              resolve(archive);
+            }
+          });
+        });
+      }
+
+    export function ArchiveDetail(id: number): Promise<ArchiveEntry> {
+        return Promise.all([ArchiveBasics(id), EventBasics(id), ImageDetail(id), Clip(id)])
+          .then((values) => {
+            const arch: ArchiveEntry = values[0];
+            arch.eventDetails = values[1][0];
+            arch.images = values[2];
+            arch.clips = values[3];
+            return Promise.resolve<ArchiveEntry>(arch);
+          })
+          .catch((err) => {
+            console.log(err);
+            return Promise.reject<ArchiveEntry>(err); // Return a rejected promise with the error
+          });
+      }
+
+
+
+
+
+export function postImage(data: ImageDetail) {
+    new Promise<ImageDetail>((resolve, reject) => {
+//function postImage(data) {
     var filename = data.filename;
     var caption = data.caption;
     var eventID = data.eventID;
     db.query("INSERT INTO images SET filename = ?, caption = ?, eventID = ?", [filename, caption, eventID], (err: any, result: any) => {
             if(err) {
-            console.log(err)
+            reject(console.log(err))
         } else {
             //retrive the imageID of the last inserted image
             db.query("SELECT LAST_INSERT_ID()", (err: any, result: any) => {
                 if(err) {
-                    console.log(err)
+                    reject(console.log(err))
                 } else {
                     //add the imageID to the data object and send it to the client
                     data.imageID = result[0];
-
-                    return data
+                    resolve(data)
                 }
-            })
+            }
+            )
         }
-    })
+    }
+    )
 }
 
-function postMusic(data) {
+export function postMusic(data: MusicTrack, res: Response) {
     db.query("INSERT INTO music SET ?", data, (err: any, result: any) => {
         if(err) {
-            console.log(err)
+            res.status(500).send("Error inserting music");
         } else {
-            return "Values Inserted"
+            res.send("Values Inserted")
         }
-    })
+    }
+    )
 }
 
-function postClip(data) {
-    db.query("INSERT INTO clip SET ?", data, (err) => {
+
+export function postClip(data: Clip) {
+//function postClip(data) {
+    db.query("INSERT INTO clip SET ?", data, (err: any, result: any) => {
         if(err) {
             console.log(err)
+            res.status(500).send("Error inserting clip");
         } else {
             // send a status message to the client
-        return "Values Inserted"
+            res.send("Values Inserted")
         }
     }
     )
 }
-// get all images for an event
-function getImages(id) {
-    db.query("SELECT * FROM images WHERE eventID = ?", id, (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            return result
-        }
-    })
-}
-
-        
-
-// get all music for an event
-function getMusic(id) {
-    db.query("SELECT * FROM music WHERE eventID = ?", id, (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            return result
-        }
-    }
-    )
-}
-
-
-
-// get a defined number of images
-app.get('/images/:noReq', (req, res) => {
-    var noReq = req.params.noReq;
-    db.query("SELECT DISTINCT * FROM images order by RAND() LIMIT "+noReq, (err: any, result: any) => {
-        if(err) {
-            console.log(err) 
-        } else {
-            //console.log(result)
-            res.send(result)
-        }
-    })
-})
-// one of the functions is not closed properly  this is most likeley the getImages function
 
 // save image data
-app.post('/imagesPOST', (req, res) => {
-    const data = req.body;
-    db.query("INSERT INTO images SET ?", data, (err: any, res) => {
-        if(err) {
-            console.log(err)
-        } else {
-            // get the imageID of the last inserted image
-            db.query("SELECT LAST_INSERT_ID()", (err: any, result: any) => {
-                if(err) {
-                    console.log(err)
-                } else {
-                    let imageID = result[0];
-                    res.json({ imageID: imageID });
-                }
-            })
-        }
-    })
-})
-
+export function imagesPOST(data: ImageDetail, res: Response) {
+    db.query("INSERT INTO images SET ?", data, (err: any) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send("Error inserting image");
+      } else {
+        db.query("SELECT LAST_INSERT_ID()", (err: any, result: number[]) => {
+          if (err) {
+            console.log(err);
+            res.status(500).send("Error getting image ID");
+          } else {
+            const imageID = result[0];
+            res.json({ imageID: imageID });
+          }
+        });
+      }
+    });
+  }  
 // delete image entry
-app.delete('/images/:id', (req, res) => {
-    const id = req.params.id;
-    //console.log("*************************id : "+id)
+export function imagesDELETE(id: number) {
     //retrieve the filename of the image
     db.query("SELECT filename, eventID FROM images WHERE imageID = ?", id, (err: any, result: any) => {
         if(err) {
@@ -1076,10 +1254,10 @@ app.delete('/images/:id', (req, res) => {
         }
     })
 }
-)
 
-function removeImageFile(filename) {
-    fs.unlink(filename, (err) => {
+
+function removeImageFile(filename: string) {
+    fs.unlink(filename, (err:any ) => {
         if(err) {
             console.log(err)
         } else {
@@ -1088,7 +1266,7 @@ function removeImageFile(filename) {
     })
 }
 
-function deleteImageRecord(id) {
+function deleteImageRecord(id: number) {
     db.query("DELETE FROM images WHERE imageID = ?", id, (err: any, result: any) => {
         if(err) {
             console.log(err)
@@ -1098,11 +1276,11 @@ function deleteImageRecord(id) {
     })
 }
 // update image entry
-app.put('/imagesPUT', (req, res) => {
-    const imageID = req.body.imageID;
-    const title = req.body.title;
-    const description = req.body.caption;
-    const eventID = req.body.eventID;
+export function imagesPUT(data: ImageDetail) {
+    const imageID = data.imageID;
+    const title = data.filename;
+    const description = data.caption;
+    const eventID = data.eventID;
 
     //// imageID, filename, caption, eventID
     db.query("UPDATE images SET filename = ?, caption = ?, eventID = ? WHERE imageID = ?", [title, description, id], (err: any, result: any) => {
@@ -1112,105 +1290,44 @@ app.put('/imagesPUT', (req, res) => {
             res.send("Value Updated")
         }
     })
-})
-
-app.get('/imagesEvent/:id', (req, res) => {
-    
-    const id = req.params.id;
-    if (id <= 0) {
-        db.query("SELECT * FROM images WHERE eventID <1", (err: any, result: any) => {
-            if(err) {
-                console.log(err)
-            } else {
-                res.send(result)
-            }
-        })
-    } else {    
-    db.query("SELECT * FROM images WHERE eventID = ?", id, (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            res.send(result)
-        }
-    })
 }
-})
 
 
-//music table structure
-//musicTrackID, trackName, lyrics, soprano, alto, tenor, allParts
 
-// get all of the music data
-app.get('/music', (req, res) => {
-    db.query("SELECT * FROM music", (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            res.send(result)
-        }
-    })
-})
-
-app.post('/musicPOST', (req, res) => {
-    const data = req.body;
+// get the music list
+export function musicListPOST(data: MusicTrack) {
     db.query("INSERT INTO music SET ?", data, (err: any, result: any) => {
         if(err) {
             console.log(err)
+            res.status(500).send("Error inserting music"); 
         } else {
             res.send("Values Inserted")
         }
     })
-})
+}
 
-app.delete('/musicDELETE/:id', (req, res) => {
-    const id = req.params.id;
+export function musicListDELETE(id: number) {
     db.query("DELETE FROM music WHERE id = ?", id, (err: any, result: any) => {
         if(err) {
             console.log(err)
+            res.status(500).send("Error deleting music");
         } else {
             res.send("Value Deleted")
         }
     })
-})
+}
 
 // update music entry
-app.put('/musicPUT', (req, res) => {
-    const id = req.body.id;
-    const
-    title = req.body.title;
-    const description = req.body.description;
-    db.query("UPDATE music SET trackName=? lyrics=? soprano=? alto=? tenor=? allParts=? WHERE id = ?", [title, description, id], (err: any, result: any) => {
+export function musicListPUT(data: MusicTrack) {
+    db.query("UPDATE music SET trackName=? lyrics=? soprano=? alto=? tenor=? allParts=? WHERE musicTrackID = ?", [data.trackName, data.lyrics, data.soprano, data.alto, data.tenor, data.allParts, data.musicTrackID], (err: any, result: any) => {
         if(err) {
             console.log(err)
+            res.status(500).send("Error updating music");
         } else {
-            res.send("Value Updated")
+            res.send("Music Updated")
         }
-    })
-})
+    }
+    )
+}
 
-// get the songlist for an event
-app.get('/songlist/:id', (req, res) => {
-    db.query("SELECT * FROM songlist", (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            res.send(result)
-        }
-    })
-})
-// get the app to listen to the port defined in the .env file
-app.listen(process.env.PORT, () => {
-    console.log("Server is running")
-})
-
-// get all of the upcoming events on or after the current date
-app.get('/upcomingEvents', (req, res) => {
-    db.query("SELECT * FROM choirevents WHERE eventDate >= CURDATE() order by eventDate", (err: any, result: any) => {
-        if(err) {
-            console.log(err)
-        } else {
-            res.send(result)
-        }
-    })
-})
 
