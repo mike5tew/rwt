@@ -29,7 +29,23 @@ import EditTheme from './components/editTheme';
 import AdminDashboard from './components/AdminDashboard';
 import ViewMessages from './components/ViewMessages';
 import MembersPage from './components/MembersPage';
+// Import the functions you need from the SDKs you need
+//import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBs8J9i9EVXedPuEFMfkmq_KIIL_InZrr0",
+  authDomain: "rwttest-c4005.firebaseapp.com",
+  projectId: "rwttest-c4005",
+  storageBucket: "rwttest-c4005.appspot.com",
+  messagingSenderId: "763161592006",
+  appId: "1:763161592006:web:4c05715c3f6d535763d7c7"
+};
+
+// Initialize Firebase
+//const app = initializeApp(firebaseConfig);
 
 const router = createBrowserRouter([
   { path: "/", element: <MiniDrawer />, errorElement: <ErrorPage />,

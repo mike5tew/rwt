@@ -4,8 +4,8 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { set, useForm } from 'react-hook-form';
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import { Grid, Paper, Snackbar, Typography } from '@mui/material';
-import axios from 'axios';
+import { Paper, Snackbar, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { TextField } from '@mui/material';
 import { ThemeDetails, EmptyImageDetail, ImageDetail } from '../types/types.d';
 import { Box } from '@mui/system';
@@ -18,6 +18,7 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid';
 import { render } from '@testing-library/react';
 import { CloudUpload, ImageSearch } from '@mui/icons-material';
 import ImageSelect, { ImageSelection } from './ImageSelect';
+import { themeDetails, themeDetailsPUT } from '../services/queries';
 
 // There is an error TypeError: path.split is not a function
 // This is because the path is not a string.  It is an object.  We need to use path.toString() to convert it to a string on line 41 of editTheme.tsx, which should read as follows:
@@ -71,8 +72,7 @@ export default function EditTheme() {
         // we need to use axios to post the data to the mysql database
         // we need to retrieve the logoimage, backgroundimage and the mobileimage from the imageselect component
         console.log(data)
-        axios.put('http://localhost:3001/themedetailsPUT', data)
-            .then(() => {
+        themeDetailsPUT(data).then(() => {
                 //snackbar display the message using the response.data 
                 setSnackMessage("Theme Saved.  Please refresh the page to see the changes")
                 setSnackOpen(true)
@@ -90,52 +90,52 @@ export default function EditTheme() {
     // this useeffect is being run twice.  This is because the page is being rendered twice.  The first time it is rendered, the default values are set.  The second time it is rendered, the values are set from the database
     useEffect(() => {
         // we need to use axios to get the data from the mysql  database 
-        axios.get('http://localhost:3001/themedetails')
+        themeDetails()
             .then((response) => {
                 //console.log(response.data)
-                if (typeof response.data[0].buttonColour != null) {
-                setValue("buttonColour", response.data[0].buttonColour)
+                if (typeof response.buttonColour != null) {
+                setValue("buttonColour", response.buttonColour)
                 }
-                if (typeof response.data[0].buttonHover != null) {
-                setValue("buttonHover", response.data[0].buttonHover)
+                if (typeof response.buttonHover != null) {
+                setValue("buttonHover", response.buttonHover)
                 }
-                if (typeof response.data[0].buttonTextColour != null) {
-                setValue("buttonTextColour", response.data[0].buttonTextColour)
+                if (typeof response.buttonTextColour != null) {
+                setValue("buttonTextColour", response.buttonTextColour)
                 }
-                if (typeof response.data[0].menuColour != null) {
-                setValue("menuColour", response.data[0].menuColour)
+                if (typeof response.menuColour != null) {
+                setValue("menuColour", response.menuColour)
                 }
-                if (typeof response.data[0].menuTextColour != null) {
-                setValue("menuTextColour", response.data[0].menuTextColour)
+                if (typeof response.menuTextColour != null) {
+                setValue("menuTextColour", response.menuTextColour)
                 }
-                if (typeof response.data[0].bannerColour != null) {
-                setValue("bannerColour", response.data[0].bannerColour)
+                if (typeof response.bannerColour != null) {
+                setValue("bannerColour", response.bannerColour)
                 }
-                if (typeof response.data[0].boxColour != null) {
-                setValue("boxColour", response.data[0].boxColour)
+                if (typeof response.boxColour != null) {
+                setValue("boxColour", response.boxColour)
                 }
                 // console.log(watch("buttonColour"))
-                if (typeof response.data[0].textColour != null) {
-                setValue("textColour", response.data[0].textColour)
+                if (typeof response.textColour != null) {
+                setValue("textColour", response.textColour)
                 }
-                if (typeof response.data[0].textboxColour != null) {
-                setValue("textboxColour", response.data[0].textboxColour)
+                if (typeof response.textboxColour != null) {
+                setValue("textboxColour", response.textboxColour)
                 }
-                //console.log(response.data[0].textFont)
-                if (typeof response.data[0].textFont != null) {
-                setValue("textFont", response.data[0].textFont)
+                //console.log(response.textFont)
+                if (typeof response.textFont != null) {
+                setValue("textFont", response.textFont)
                 }
                 var imgChoice: ImageChoice 
-                if (typeof response.data[0].backgroundImage != null) {
-                setValue("backgroundImage", response.data[0].backgroundImage)
-                imgChoices.backgroundImage = response.data[0].backgroundImage
+                if (typeof response.backgroundImage != null) {
+                setValue("backgroundImage", response.backgroundImage)
+                imgChoices.backgroundImage = response.backgroundImage
                 } 
-                if (typeof response.data[0].logoImage != null) {
-                setValue("logoImage", response.data[0].logoImage)
-                imgChoices.logoImage = response.data[0].logoImage
+                if (typeof response.logoImage != null) {
+                setValue("logoImage", response.logoImage)
+                imgChoices.logoImage = response.logoImage
                 }
-                if (typeof response.data[0].textSize != null) {
-                setValue("textSize", response.data[0].textSize)
+                if (typeof response.textSize != null) {
+                setValue("textSize", response.textSize)
                 }
             })
             .catch((error) => {
@@ -169,26 +169,26 @@ export default function EditTheme() {
     return (
         <>
         <Grid container spacing={3} >
-            <Grid item xs={12}>
+            <Grid size={12}>
                 <Paper>
                     <Typography variant="h2">Edit Theme</Typography>
                 </Paper>
             </Grid>
-            <Grid item xs={12} alignContent={"center"}>
+            <Grid size={12} alignContent={"center"}>
                 <Typography variant="h4" align="center">Select the colours for the elements of the theme</Typography>
             </Grid>
-            <Grid item xs={8}>
+            <Grid size={8}>
                 <DataGrid rows={tableRows} columns={tableColumns} autoHeight={true} />
             </Grid>
-            <Grid item xs={4} alignContent={"center"}>
+            <Grid size={4} alignContent={"center"}>
                 <Grid container spacing={1}>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         {/* now we have the colour picker which should be aligned to the center of the box */}
                         <Paper sx={{ display: 'flex', justifyContent: 'center', alignContent: "center" }}>
                             <Typography variant="h4">Item Selected: {selectedItem}</Typography>
                         </Paper>
                     </Grid>
-                    <Grid item xs={12} justifyContent={"center"}>
+                    <Grid size={12} justifyContent={"center"}>
                         <Paper sx={{ display: 'flex', justifyContent: 'center', alignContent: "center" }}>
                             <HexColorPicker
                                 // uses the selected item to set the colour in the form
@@ -198,8 +198,8 @@ export default function EditTheme() {
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid item xs={12}><Typography variant="h4" align='center'>Select the font for the text</Typography></Grid>
-            <Grid item xs={6}>
+            <Grid size={12}><Typography variant="h4" align='center'>Select the font for the text</Typography></Grid>
+            <Grid size={6}>
                 {/* Now we have the font select box */}
                 <FormControl fullWidth>
                     <InputLabel id="font-select">Font</InputLabel>
@@ -224,7 +224,7 @@ export default function EditTheme() {
                     </Select>
                 </FormControl>
             </Grid>
-            <Grid item xs={6} >
+            <Grid size={6} >
                 <TextField
                     {...register("textSize")}
                     label="Text Size"
@@ -234,10 +234,10 @@ export default function EditTheme() {
                     value={watch("textSize") ?? 12}
                 />
             </Grid>
-            <Grid item xs={12} >
+            <Grid size={12} >
                 <ImageSelect onSelect={handleSelected} logoImage={imgChoices.logoImage} backgroundImage={imgChoices.backgroundImage} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
                 <Button onClick={savechanges}>Save Change</Button>
             </Grid>
         </Grid>

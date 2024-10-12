@@ -4,7 +4,6 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import { Card, CardBody, CardTitle, CardText } from 'reactstrap';
-import { Button } from 'reactstrap';
 import Grid from '@mui/material/Grid';
 import { Paper, Typography } from '@mui/material';
 import { EventDetails, EmptyEventDetails } from '../types/types.d';

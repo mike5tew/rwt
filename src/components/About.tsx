@@ -3,13 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Grid, Paper, ImageList, ImageListItem, ImageListItemBar } from '@mui/material';
 import { Box } from '@mui/system';
-import Info from "../EditInfo.json"
-import axios from 'axios';
-import { ImageDetail, EmptyImageDetail, IsMobile } from '../types/types.d';
+import { randomImages } from '../services/queries';
+import { ImageDetail, IsMobile } from '../types/types.d';
 
 export default function About() {
     // we need to create a grid to display the information from the aboutinfo.json file.  This should also have pictures of three random images (no image appearing twice) from the images.json file (not including images one or two).
-const [images, setImages] = useState<ImageDetail[]>([]);
+// const [images, setImages] = useState<ImageDetail[]>([]);
 const [mobile, setMobile] = useState<string>(IsMobile());
 const [images1to3, setImages1to3] = React.useState<ImageDetail[]>([]);
 const [images4to6, setImages4to6] = React.useState<ImageDetail[]>([]);
@@ -27,28 +26,10 @@ function srcset(image: string, width: number, rows: number, cols: number) {
 useEffect(() => {
     // we need to establish the size of the display
     // to do this we
-    fetch('http://localhost:3001/images/3')
-    .then(response => response.json())
-    .then(data => {
    //this is adding the images to the images array twice
    // this is because the images array is being set to the data array twice on lines 116 and 117
-   var imagesTp: ImageDetail[] = []   
-   for (let i = 0; i < data.length; i++) {
-        var imgDetail= EmptyImageDetail()
-        imgDetail.imageID = data[i].imageID
-        imgDetail.filename = data[i].filename
-        imgDetail.caption = data[i].caption
-        imgDetail.eventDetails.eventID = data[i].eventID
-        if (data[i].width>data[i].height) {
-          imgDetail.rows = 1
-          imgDetail.cols = 2
-        } else {
-          imgDetail.rows = 2
-          imgDetail.cols = 1
-      }  
-      imagesTp = [...imagesTp, imgDetail]
-    }
-    var images1to3tp: ImageDetail[] = []
+   var imagesTp: ImageDetail[] = randomImages(6)
+     var images1to3tp: ImageDetail[] = []
     for (let i = 0; i < imagesTp.length; i++) {
       images1to3tp = [...images1to3tp, imagesTp[i]]
       if (i === 2) {
@@ -64,14 +45,7 @@ useEffect(() => {
     }
   setImages4to6(images4to6tp)
   }
-    )
-    .catch((error) => {
-      console.error('Error:', error);
-    }
-    )
-  }
-
-, [])
+  , []); // the empty array means that this will only run once when the page is loaded
 
 
 // {imageID: 6, filename: 'PHOTO-2024-05-12-21-16-31.jpg', caption: '', eventID: 0}
@@ -79,8 +53,7 @@ useEffect(() => {
 
 //console.log(images);
     return (
-        <Box>
-            
+        <Box> 
             <Grid container spacing={2}>
                 <Grid item xs={12}>
                     <Paper>

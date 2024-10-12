@@ -9,32 +9,120 @@ import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { purple } from '@mui/material/colors';
 import { Link } from 'react-router-dom';
 import { Typography } from '@mui/material';
-import axios from 'axios';
 // import the archive entry interface from the types file
-import { ArchiveEntry } from  '../types/types.d';
+import { ArchiveEntry, Clip, ImageDetail, EmptyArchiveEntry, EmptyClip, EmptyEventDetails, EmptyImageDetail, EventDetails } from  '../types/types.d';
 import { BorderOuter } from '@mui/icons-material';
-    
+import {archives  } from '../services/queries';
+import { resolve } from 'dns';
+import db from '../services/db';
 
 
 export default function Archive () {
-const [archive, setArchive] = React.useState<ArchiveEntry[]>([]);
+const [archiveList, setArchiveList] = React.useState<ArchiveEntry[]>([]);
 
 React.useEffect(() => {
 
-    // we need to use axios to get the data from the mysql  database 
-    axios.get('http://localhost:3001/archives/5')
-    .then((response) => {
-        console.log(response.data)
-        setArchive(response.data)
+var archives: ArchiveEntry[] = []
+let archiveRetrieve = new Promise<ArchiveEntry[]>((resolve, reject) => {
+db.query("SELECT archive.archiveID, choirevents.location, choirevents.eventDate, choirevents.title, archive.report, archive.eventID FROM choirevents join archive on archive.eventID=choirevents.eventID order by choirevents.eventDate LIMIT ?;", 5, (err: any, result: any) => {
+    if(err) {
+        reject("scadC "+err.message)
+    } else {
+        // archs is an array of archive objects
+        for (var i = 0; i < result.length; i++) {
+            var EventD: EventDetails = EmptyEventDetails();
+            EventD.eventID = result[i].eventID;
+            EventD.location = result[i].location;
+            EventD.eventDate = result[i].eventDate;
+            EventD.title = result[i].title;
+            var archive = EmptyArchiveEntry();
+            archive.archiveID = result[i].archiveID,
+            archive.report= result[i].report
+            archive.eventDetails = EventD;
+            archives = [...archives, archive]   
+        }
+        resolve(archives)
+        }
+        for (var i = 0; i < archives.length; i++) {
+            events = [...events, archives[i].eventDetails.eventID]
+        }
+    }
+)
+}
+)
+let events: number[] = []
+// console.log(archives)
+// console.log(events)
+    // set up a promise to get all of the images and pass the array of events to the promise.  This requires a list of eventsID's to be passed to the promise
+let imagesPromise = new Promise<ImageDetail[]>((resolve, reject) => {
+    db.query("SELECT * FROM images WHERE eventID = ?", events, (err: any, result: any) => {
+        if(err) {
+            console.log(err)
+            reject(err)
+        } else {
+            let images: ImageDetail[] = []
+            for (var i = 0; i < result.length; i++) {
+                var image = EmptyImageDetail();
+                image.imageID = result[i].imageID;
+                image.filename = result[i].filename;
+                image.caption = result[i].caption;
+                image.eventID = result[i].eventID;
+                images = [...images, image]
+            }
+            resolve(images)
+        }
+    }
+    )
+})
 
-    })
-    .catch((error) => {
-        console.log(error)
-    })
+const clipsPromise = new Promise<Clip[]>((resolve, reject) => {   
+    db.query("SELECT * FROM clips WHERE eventID = ?", events, (err: any, result: any) => {
+        if(err) {
+            console.log(err)
+            reject(err)
+        } else {
+            var clips: Clip[] = []
+            for (var i = 0; i < result.length; i++) {
+                var clp:Clip = EmptyClip();
+                    clp.id= result[i].clipID,
+                    clp.clipURL= result[i].clipURL,
+                    clp.eventID= result[i].eventID,
+                    clp.caption= result[i].caption
+                clips = [...clips, clp]
+            }
+            resolve(clips)
+        }
+    }
+    )
+})
+
+// we need to use the Promise.all() method to get the data from the promises
+Promise.all([imagesPromise, clipsPromise])
+.then((values) => {
+    let images: ImageDetail[] = values[0];
+    var clips: Clip[] = values[1];
+    for (var i = 0; i < archives.length; i++) {
+        for (var j = 0; j < images.length; j++) {
+            if (archives[i].eventDetails.eventID == images[j].eventID) {
+                archives[i].images = [...archives[i].images, images[j]]
+            }
+        }
+        for (var j = 0; j < clips.length; j++) {
+            if (archives[i].eventDetails.eventID == clips[j].eventID) {
+                archives[i].clips = [...archives[i].clips, clips[j]]
+            }
+        }
+    }
+//        console.log(archives)
+    setArchiveList(archives)
+}
+)
+.catch((err) => {
+    console.log(err)
+    console.log("Archive not found")
+})
 }
 , [])
-
-
 
     function updateclipname(clipURL: string) {
         var clipname = clipURL.replace("https://www.youtube.com/watch?v=", "")
@@ -73,7 +161,7 @@ return (
                     {localStorage.getItem("ArchiveText")}</Typography>
             </Paper>
         </Grid>
-            {archive && archive.map((item, index) => (
+            {archiveList && archiveList.map((item, index) => (
             <>    {console.log("index: "+index)}
             <Grid item md={3} key={index}>
                 <Paper>

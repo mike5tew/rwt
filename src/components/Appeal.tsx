@@ -1,15 +1,14 @@
 // This is just a flat page with a title and a message. It is an appeal to visitors to join the choir or suggest to friends who might be interested. It will have a link to the contact form.
 
 import React from 'react';
-import { Container } from 'react-bootstrap';
-import { Grid, Button, Typography, Divider, Snackbar, TextField, Fade, Paper } from '@mui/material';
+import { Button, Typography, Divider, Snackbar, TextField, Fade, Paper } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 // import { Button } from 'reactstrap';
 import { useForm, SubmitHandler, Controller, set } from 'react-hook-form';
 import { Form, Link, useNavigate } from 'react-router-dom'; 
 // Import useHistory
-import { Padding } from '@mui/icons-material';
 import { Message } from '../types/types.d';
-
+import db from '../services/db';
 export default function Appeal() {
     const { register, handleSubmit, watch, setValue } = useForm<Message>(
         {
@@ -21,6 +20,8 @@ export default function Appeal() {
             },
         }
     );
+    const [alertOpen, setAlertOpen] = React.useState(false);
+    const [alertMessage, setAlertMessage] = React.useState('');
 
    const navigate = useNavigate(); // Create a history object
 
@@ -36,40 +37,46 @@ export default function Appeal() {
             alert('Please enter a message');
             return;
         }
-        fetch('http://localhost:3001/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                // the message has been sent redirect to the home page
-                console.log('Success:', data);
-                 navigate('/'); // Redirect to the home page
-                       })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+        var dt = new Date();
+        // Format the date
+        var sDate = dt.getFullYear() + "-" + (dt.getMonth() + 1) + "-" + dt.getDate();
+        // Add the message to the database
+        db.query('INSERT INTO messages SET messageDate = ?, messageFrom = ?, messageContent = ?', [sDate, data.messageFrom, data.messageContent], (err: any) => {
+            if (err) {
+                console.log(err);
+                setAlertMessage('Error: ' + err.message);
+                setAlertOpen(true);
+            } else {
+                setAlertMessage('Message sent');
+                setAlertOpen(true);
+                // Clear the form
+                setValue('messageFrom', '');
+                setValue('messageContent', '');
+            }
+        }
+        );
     }
+
+
+  
+
 
     
 
     return (
         <form onSubmit={handleSubmit(FormSubmitHandler)}>
         <Grid container spacing={2}>
-            <Grid item xs={12}   sx={{gap:2}}>
+            <Grid size={12}   sx={{gap:2}}>
                 <Paper>
                     <Typography variant="h3">{localStorage.getItem("AppealTitle")}</Typography>
                 </Paper>
             </Grid>
-            <Grid item xs={12} sx={{gap:2}}>
+            <Grid size={12} sx={{gap:2}}>
                 <Paper>
                     <Typography variant="h5">{localStorage.getItem("AppealText")}</Typography>
                 </Paper>
             </Grid>
-            <Grid item xs={12} sx={{gap:2}}>
+            <Grid size={12} sx={{gap:2}}>
             <TextField
               label="Email Address"
               fullWidth
@@ -78,7 +85,7 @@ export default function Appeal() {
               {...register('messageFrom')}
             />
             </Grid>
-            <Grid item xs={12}  sx={{gap:2}}>
+            <Grid size={12}  sx={{gap:2}}>
                         <TextField
               label="Event Report"
               fullWidth
@@ -88,10 +95,17 @@ export default function Appeal() {
               {...register('messageContent')}
             />
         </Grid>
-        <Grid item xs={12}  sx={{gap:2}}>
+        <Grid size={12}  sx={{gap:2}}>
          <Button type="submit" variant="contained">Submit</Button>
         </Grid>
         </Grid>
+        <Snackbar
+            open={alertOpen}
+            autoHideDuration={6000}
+            onClose={() => setAlertOpen(false)}
+            TransitionComponent={Fade}
+            message={alertMessage}
+        />
         </form>
     );
 }

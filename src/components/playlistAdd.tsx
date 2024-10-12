@@ -4,11 +4,11 @@
 import React, { useEffect, useState } from 'react';
 import { EventDetails, EmptyEventDetails, PlaylistEntry, EmptyPlaylistEntry, MusicTrack, EmptyMusicTrack, StringtoDate } from '../types/types.d';
 import { DataGrid, GridColDef, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import axios from 'axios';
 import { Button, Select, MenuItem, Grid, Paper, SelectChangeEvent, Typography, IconButton,  } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useNavigate } from 'react-router-dom';
+import { playlistGET, musicList, MusicPOST, playlistPOST } from '../services/queries';
 
 // This is the column definition for the playlist table with a button to remove the track from the playlist
 
@@ -44,19 +44,14 @@ export default function PlayListAdd() {
         playorder: number;
     }
 
-    useEffect(() => {
-        if (document.cookie === '') {
-            history('/Settings');
-        }
-        axios.get('http://localhost:3001/events')
-            .then(response => setEventList(response.data)); 
-    }, []);
+
 
     useEffect(() => {
+        musicList().then(response => setTrackList(response)).catch(error => console.log(error));
         setTablePlaylist([]);
         if (eventID > 0) {
-            axios.get(`http://localhost:3001/playlists/${eventID}`)
-                .then(response => setPlaylist(response.data));
+            playlistGET(eventID)
+                .then(response => setPlaylist(response));
             // create  an empty array to hold the playlist entries
             let holdingPlaylist: TableListEntries[] = [];
             
@@ -73,8 +68,6 @@ export default function PlayListAdd() {
             }
             console.log(holdingPlaylist);
             setTablePlaylist(holdingPlaylist);
-            axios.get(`http://localhost:3001/trackList`)
-                .then(response => setTrackList(response.data));
         }
     }, [eventID]);
 
@@ -122,8 +115,9 @@ export default function PlayListAdd() {
         });
 
 
-        axios.post('http://localhost:3001/playlistsPOST', playlist)
-            .then(response => console.log(response.data));
+        // save the playlist to the database
+        playlistPOST(playlist)
+            .then(response => console.log(response));
             // reset the playlist
             setPlaylist([]);
             setTablePlaylist([]);

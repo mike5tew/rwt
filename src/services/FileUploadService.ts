@@ -1,6 +1,21 @@
-import http from "../http-common";
+// import http from "../http-common";
 
 //this function is used to upload a file to the server and returns the imageID of the uploaded file
+// import firebase from 'firebase/app';
+// import 'firebase/storage';
+
+
+// // Upload an image
+// const storageRef = firebase.storage().ref();
+// const fileRef = storageRef.child('images/myimage.jpg');
+
+// fileRef.put(file).then((snapshot) => {
+//   // Image uploaded successfully
+//   const downloadURL = snapshot.ref.getDownloadURL();
+//   console.log('Download URL:', downloadURL);
+// });
+
+
 
 interface tempResponse {
   fData: FormData;
@@ -55,21 +70,22 @@ const uploadMobile = async (file: File, eventID: number, onUploadProgress: any):
   let formData = new FormData();
   formData.append("file", file);
   formData.append("eventID", eventID.toString());
-  try {
-    const response = await http.post('http://localhost:3001/uploadMobile', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      body: formData
-    });
-    const result = response.data;
-    console.log('Success:', result);
-    return result;
-  } catch (error) {
-    console.error('Error:', error);
-  }
+  // save the file to the public/images/mobile folder
+  return fetch("http://localhost:3001/uploadMobile/", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(formData)
+  }).then((response) => {
+    return response.json();
+  }).then((data) => {
+    return data;
+  }).catch((error) => {
+    return error;
+  });
 }
+    
 
 
 const uploadLogo = (file: File, filename: string, width: number, height: number, onUploadProgress: any): Promise<any> => {
@@ -81,13 +97,21 @@ const uploadLogo = (file: File, filename: string, width: number, height: number,
   formData.append("height", height.toString());
   formData.append("caption", "");
 //the post function on the server will return the imageID of the uploaded logo
-  return http.post("http://localhost:3001/uploadLogo/", formData, {
+  return fetch("http://localhost:3001/uploadLogo/", {
+    method: 'POST',
     headers: {
-      "Content-Type": "multipart/form-data",
+      'Content-Type': 'application/json',
     },
-    onUploadProgress,
+    body: JSON.stringify(formData)
+  }).then((response) => {
+    return response.json();
+  }).then((data) => {
+    return data;
+  }).catch((error) => {
+    return error;
   });
 }
+
 
 const upLoadBackground = (file: File, filename: string, width: number, height: number, onUploadProgress: any): Promise<any> => {
 
@@ -98,18 +122,26 @@ const upLoadBackground = (file: File, filename: string, width: number, height: n
   formData.append("width", width.toString());
   formData.append("height", height.toString());
   formData.append("caption", "");
-
-  return http.post("/uploadBackground/", formData, {
+  return fetch("http://localhost:3001/uploadBackground/", {
+    method: 'POST',
     headers: {
-      "Content-Type": "multipart/form-data",
+      'Content-Type': 'application/json',
     },
-    onUploadProgress,
+    body: JSON.stringify(formData)
+  }).then((response) => {
+    return response.json();
+  }).then((data) => {
+    return data;
+  }).catch((error) => {
+    return error;
   });
+
 }
 
-const getFiles = () : Promise<any> => {
-  return http.get("/files");
-};
+
+// const getFiles = () : Promise<any> => {
+//   return http.get("/files");
+// };
 
 
 
@@ -117,9 +149,13 @@ const FileUploadService = {
   upload,
   sendFile,
   uploadMobile,
-  getFiles,
+//  getFiles,
   uploadLogo,
   upLoadBackground
 };
+
+
+//  1 | 'use strict'; How is this done?
+//  2 | 
 
 export default FileUploadService;

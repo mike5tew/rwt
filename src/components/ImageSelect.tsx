@@ -1,7 +1,8 @@
 //This component allows the user to add or select images for the logo or background image of the website.
 
 import React, { useState, useEffect } from 'react';
-import { Grid, Button, Typography, Snackbar } from '@mui/material';
+import { Button, Typography, Snackbar } from '@mui/material';
+import { Grid2 } from '@mui/material';
 import styled from '@emotion/styled';
 import { ImageSearch, CloudUpload } from '@mui/icons-material';
 import { TextField, RadioGroup, FormControlLabel, Radio, IconButton } from '@mui/material';
@@ -9,12 +10,11 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid';
 import { EmptyImageDetail, ImageDetail } from '../types/types.d';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import UploadService from '../services/FileUploadService';
-import axios from 'axios';
 import { set } from 'react-hook-form';
 import FileResizeService from '../services/ResizeImage';
 import FileUploadService from '../services/FileUploadService';
 import { EmptyURLdetails } from '../types/types.d';
-
+import { deleteImageRecord, ImagesFromEvent } from '../services/queries';
 
 interface ImagesSelectedProps {
     logoImage: string;
@@ -26,6 +26,11 @@ export interface ImageSelection {
     logoImage: string;
     backgroundImage: string;
 }
+
+// to migrate from Grid2 to grid2 you need to change the import statement to 
+// npx @mui/codemod@latest v6.0.0/grid-v2-props <path/to/your/project>
+
+// in this case the path is ../src/components/ImageSelect.tsx
 
 const ImageSelect = (props: ImagesSelectedProps) => {
     const { logoImage, backgroundImage, onSelect } = props;
@@ -47,8 +52,8 @@ const ImageSelect = (props: ImagesSelectedProps) => {
     function DeleteImage(id: number): void {
         console.log("delete image: " + id)
         // delete the image from the database
-        axios.delete(`http://localhost:3001/images/${id}`)
-            .then(() => {
+        deleteImageRecord(id).
+            then(() => {
                 // remove the image from the images array
                 console.log("images length before delete: " + images.length)
                 const newImages = images.filter((image) => image.imageID !== id);
@@ -159,19 +164,19 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         // assign the logo and background images to the logo and background image objects
         setLogoImageName(logoImage);
         setBackgroundImageName(backgroundImage);
-        axios.get('http://localhost:3001/imagesEvent/0')
+        ImagesFromEvent(0)
             .then((response) => {
                 // console.log(response.data)
                 // the data needs converting to an array of imagedetail objects
                 var newImages: ImageDetail[] = []
-                for (var i = 0; i < response.data.length; i++) {
+                for (var i = 0; i < response.length; i++) {
                     var newImage: ImageDetail = EmptyImageDetail()
-                    newImage.imageID = response.data[i].imageID
-                    newImage.caption = imageURL(response.data[i].filename)
-                    newImage.eventID = response.data[i].eventID
-                    newImage.filename = response.data[i].filename
-                    newImage.height = response.data[i].height
-                    newImage.width = response.data[i].width
+                    newImage.imageID = response[i].imageID
+                    newImage.caption = imageURL(response[i].filename)
+                    newImage.eventID = response[i].eventID
+                    newImage.filename = response[i].filename
+                    newImage.height = response[i].height
+                    newImage.width = response[i].width
                     newImages.push(newImage)
                 }
                 setImages(newImages)
@@ -275,14 +280,14 @@ const ImageSelect = (props: ImagesSelectedProps) => {
 
                             return(
         <>
-            <Grid container spacing={3} >
-                <Grid item xs={12}>
+            <Grid2 container spacing={3} >
+                <Grid2 size={12}>
                     <Typography variant="h4" align="center">Select Images</Typography>
-                </Grid>
-                <Grid item xs={6}>
-                    <Grid container spacing={3} >
+                </Grid2>
+                <Grid2 size={6}>
+                    <Grid2 container spacing={3} >
 
-                        <Grid item xs={4} alignContent="center">
+                        <Grid2 size={4} alignContent="center">
                             <Button component="label"
                                 role={undefined}
                                 variant="contained"
@@ -292,8 +297,8 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                     // we need to run the selectFile function without triggering a re-render
                                     onChange={selectFile} />
                             </Button>
-                        </Grid>
-                        <Grid item xs={8} alignContent="center">
+                        </Grid2>
+                        <Grid2 size={8} alignContent="center">
                             <TextField
                                 label="Selected image file"
                                 fullWidth
@@ -302,8 +307,8 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                 // tihis is the file that is selected but is not updating when the file is selected
                                 value={nextFile}
                             />
-                        </Grid>
-                        <Grid item xs={4} alignContent="center">
+                        </Grid2>
+                        <Grid2 size={4} alignContent="center">
                             <Button
                                 //sx={{ marginTop: 1 }}
                                 disabled={!currentFile}
@@ -313,14 +318,14 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                             >
                                 Upload Image
                             </Button>
-                        </Grid>
-                        <Grid item xs={8} alignContent={"center"}>
+                        </Grid2>
+                        <Grid2 size={8} alignContent={"center"}>
                             <RadioGroup row aria-label="position" name="position" defaultValue="top" value={ImageSelect} onChange={handleImageSelect()}>
                                 <FormControlLabel value="Logo" control={<Radio />} label="Logo" />
                                 <FormControlLabel value="Background" control={<Radio />} label="Background" />
                             </RadioGroup>
-                        </Grid>
-                        <Grid item xs={12}>
+                        </Grid2>
+                        <Grid2 size={12}>
 
                             <TextField
                                 id="LogoUpload"
@@ -338,15 +343,15 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                 fullWidth
                                 value={BackgroundImageName}
                             />
-                        </Grid>
-                    </Grid>
-                </Grid>
-                <Grid item xs={6}>
+                        </Grid2>
+                    </Grid2>
+                </Grid2>
+                <Grid2 size={6}>
                     {/* table of the images */}
                     <DataGrid rows={tableRowsImages} columns={tableColsImages} autoHeight={true} disableColumnMenu={false} />
-                </Grid>
+                </Grid2>
 
-            </Grid>
+            </Grid2>
             <Snackbar
                 open={Snackopen}
                 autoHideDuration={6000}

@@ -40,11 +40,9 @@ import Grid from '@mui/material/Grid'; // Grid version 1
 import SettingsIcon from '@mui/icons-material/Settings';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CampaignIcon from '@mui/icons-material/Campaign';
-import axios from 'axios';
 // import '../styles/mgtStyles.css'
 import { teal } from '@mui/material/colors';
-import { text } from 'stream/consumers';
-import { get } from 'http';
+import { siteinfo, themeDetails } from '../services/queries';
 // import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
 //  import LoginStyle from 'LoginStyle';
 //themeDetails, boxColour, textColour, textFont, backgroundImage, textboxColour, logoimage
@@ -146,10 +144,9 @@ export default function MiniDrawer() {
 
   useEffect(() => {
     // get the background image from the server
-    axios.get('http://localhost:3001/themedetails')
-      .then(response => {
+    themeDetails().then(response => {
        // console.log(response.data);
-        const themeDetails = response.data[0];
+        const themeDetails = response
         setBoxColour(themeDetails.boxColour);
         setTextColour(themeDetails.textColour);
         setTextFont(themeDetails.textFont);
@@ -178,13 +175,13 @@ export default function MiniDrawer() {
     , []);
   
 function getSiteDetails() {
-      axios.get('http://localhost:3001/siteinfo')
-        .then(response => {
+  siteinfo().then(response => {
+    
           // we need carruage returns in the text so we need to replace the \n with a carruage return
           // using the syntax response.data[0].HomeText.replace(/\\n/g, '\n')
-          localStorage.setItem('HomeTitle', response.data[0].HomeTitle);
+          localStorage.setItem('HomeTitle', response.HomeTitle);
           // count the number of carruage returns in the text
-          var txt: string = response.data[0].HomeText;
+          var txt: string = response.HomeText;
             const matches = txt.match(/\n/g);
             console.log(matches ? matches.length : 0);
           // in order to insert a line break inside a div we need to replace the carruage return with a <br>
@@ -198,21 +195,21 @@ function getSiteDetails() {
           //   console.log(typeof(response.data[0].HomeText));
           // }
 //          console.log(response.data[0].HomeText.match(/\\n/g).length);
-          console.log(response.data[0].HomeText);
-          localStorage.setItem('AboutTitle', response.data[0].AboutTitle);
-          localStorage.setItem('AboutText', response.data[0].AboutText.replace(/\\n/g, '\n'));
-          localStorage.setItem('ArchiveTitle', response.data[0].ArchiveTitle);
-          localStorage.setItem('ArchiveText', response.data[0].ArchiveText.replace(/\\n/g, '\n'));
-          localStorage.setItem('NoticesTitle', response.data[0].NoticesTitle);
-          localStorage.setItem('NoticesText', response.data[0].NoticesText.replace(/\\n/g, '\n'));
-          localStorage.setItem('BookingTitle', response.data[0].BookingTitle);
-          localStorage.setItem('BookingText', response.data[0].BookingText.replace(/\\n/g, '\n'));
-          localStorage.setItem('MembersTitle', response.data[0].MembersTitle);
-          localStorage.setItem('MembersText', response.data[0].MembersText.replace(/\\n/g, '\n'));
-          localStorage.setItem('AppealTitle', response.data[0].AppealTitle);
-          localStorage.setItem('AppealText', response.data[0].AppealText.replace(/\\n/g, '\n'));
-          localStorage.setItem('SettingsTitle', response.data[0].SettingsTitle);
-          localStorage.setItem('SettingsText', response.data[0].SettingsText.replace(/\\n/g, '\n'));
+          //console.log(response.data[0].HomeText);
+          localStorage.setItem('AboutTitle', response.AboutTitle);
+          localStorage.setItem('AboutText', response.AboutText.replace(/\\n/g, '\n'));
+          localStorage.setItem('ArchiveTitle', response.ArchiveTitle);
+          localStorage.setItem('ArchiveText', response.ArchiveText.replace(/\\n/g, '\n'));
+          localStorage.setItem('NoticesTitle', response.NoticesTitle);
+          localStorage.setItem('NoticesText', response.NoticesText.replace(/\\n/g, '\n'));
+          localStorage.setItem('BookingTitle', response.BookingTitle);
+          localStorage.setItem('BookingText', response.BookingText.replace(/\\n/g, '\n'));
+          localStorage.setItem('MembersTitle', response.MembersTitle);
+          localStorage.setItem('MembersText', response.MembersText.replace(/\\n/g, '\n'));
+          localStorage.setItem('AppealTitle', response.AppealTitle);
+          localStorage.setItem('AppealText', response.AppealText.replace(/\\n/g, '\n'));
+          localStorage.setItem('SettingsTitle', response.SettingsTitle);
+          localStorage.setItem('SettingsText', response.SettingsText.replace(/\\n/g, '\n'));
         }
         )
         .catch((error) => {
@@ -379,7 +376,7 @@ const clickListener = (mItem: menuItem) => {
     navigate(mItem.link);
   }
 }
-
+//console.log("HERE "+require.resolve('fs'))
 return (
   <ThemeProvider theme={theme2} >
     {/* add the musical background.png to the Box */}

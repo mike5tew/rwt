@@ -2,37 +2,42 @@
 
 import React from 'react'
 import { styled } from '@mui/material/styles';  
-import { Container, Grid, Button } from '@mui/material';
+import { Container, Button } from '@mui/material';
+import { Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
-import { purple } from '@mui/material/colors';
+import db from '../services/db';
+
 import { Typography } from '@mui/material';
-// import from the public folder
-// import notices from '../notices.json';
+import { EmptyEventDetails, EventDetails } from '../types/types.d';
 
 
 
 
 export default function AddNotice() {
     
-    const [notices, setNotices] = React.useState<any[]>([]);
+    const [notices, setNotices] = React.useState<EventDetails[]>([]);
     React.useEffect(() => {
-        //check to see if there is a button colour value in the lcal storage
-        // if (localStorage.getItem('buttonColour') === null) {
-        //    // get the colours from the database
-        //    fetch('http://localhost:3001/colours')
-        //       .then(response => response.json())    
-        //         .then(data => {
-        //              localStorage.setItem('buttonColour', data[0].buttonColour);
-        //              localStorage.setItem('backgroundColour', data[0].backgroundColour);
-        //                 localStorage.setItem('textColour', data[0].textColour);
-        //         }
-        //         ) 
-        //     localStorage.setItem('buttonColour', 'purple');
-        // }
+
+        //eventID, location, eventDate, startTime, endTime, price, title, meetingPoint, invitation
+        db.query('SELECT * FROM choirevents WHERE eventDate > NOW() ORDER BY eventDate ASC')
         fetch('http://localhost:3001/notices')
         .then(response => response.json())
         .then(data => {
+            var notices: EventDetails[] = [];
+            for (let i = 0; i < data.length; i++) {
+                var ev: EventDetails = EmptyEventDetails();
+                ev.eventID= data[i].EventID,
+                ev.location= data[i].Location,
+                ev.eventDate= data[i].EventDate,
+                ev.startTime= data[i].StartTime,
+                ev.endTime= data[i].EndTime,
+                ev.price= data[i].Price,
+                ev.title= data[i].Title,
+                ev.meetingPoint= data[i].MeetingPoint,
+                ev.invitation= data[i].Invitation
+                notices.push(ev);
+            }
             setNotices(data)
         })
         .catch((error) => {
@@ -40,7 +45,7 @@ export default function AddNotice() {
         })
     }, [])
 
-    
+
 
     return (
         <Container>
@@ -51,11 +56,11 @@ export default function AddNotice() {
                             <Card.Body>
                                 <Card.Title>
                                     <Typography variant="h2" component="h2">
-                                        {entry.Title}
+                                        {entry.title}
                                     </Typography>
                                 </Card.Title>
-                                <Card.Text>{entry.Date}</Card.Text>
-                                <Card.Text>{entry.Description}</Card.Text>
+                                <Card.Text>{entry.eventDate.toDateString()}</Card.Text>
+                                <Card.Text>{entry.location}</Card.Text>
                                 <Link to={`/AddNotice/${index}`}>
                                     <Button variant="contained">Read More</Button>
                                 </Link>

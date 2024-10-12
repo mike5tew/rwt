@@ -1,21 +1,22 @@
 // This page allows the admin to add an event to the database.  The event will have a title, a date, a description, and a picture.  The picture will be uploaded to the server and the filename will be stored in the database.  The event will be displayed on the home page of the website.
 // There will be a Select to display all of the events so that you can edit existing ones and add images and reports.  This way the infomration added on this page can act as a Notice and an archive entry
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
-import { Grid, Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
+import { Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
+import  Grid  from '@mui/material/Grid2';
 import { purple } from '@mui/material/colors';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import axios from 'axios';
 import { TransitionProps } from '@mui/material/transitions';
-import { ImageDetail, EmptyImageDetail, IsMobile, EventDetails, DatetoString } from '../types/types.d';
+import { ImageDetail, EmptyImageDetail, IsMobile, EventDetails, DatetoString, EmptyEventDetails } from '../types/types.d';
 import { LocalizationProvider, DatePicker, TimePicker as MuiTimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/en-gb';
 import { useNavigate } from 'react-router-dom';
+import {eventsPOST} from '../services/queries';
 
 const ColorButton = styled(Button)({
     color: 'white',
@@ -116,17 +117,24 @@ export default function EventAdd() {
         // convert the daysjs date to a date object
         var evDt = evDate.toDate();
         var eventDate = DatetoString(evDt);
-        var newEvent = {title: data.title, location:data.location, eventDate: eventDate, startTime: data.startTime, endTime: data.endTime, meetingPoint: data.meetingPoint, price: data.price, invitation: data.invitation};    
-        console.log(newEvent);
-        axios.post('http://localhost:3001/eventPOST', newEvent)
-        .then((response) => {
-            console.log(response);
+        var newEvent: EventDetails = EmptyEventDetails();
+        newEvent.title= data.title;
+        newEvent.location= data.location;
+        newEvent.eventDate= evDt;
+        newEvent.startTime= data.startTime;
+        newEvent.endTime= data.endTime;
+        newEvent.price= data.price;
+        newEvent.meetingPoint= data.meetingPoint;
+        newEvent.invitation= data.invitation;
+
+        var res = eventsPOST(newEvent);
+        if (res=== "Values Inserted")   {
             handleClick();
-        })
-        .catch((error) => {
-            console.log(error);
+        } else {
             setOpenError(true);
-        });
+        }
+
+
     };
 
     return (
@@ -134,7 +142,7 @@ export default function EventAdd() {
             <Typography variant="h2" align="center" gutterBottom>Add Event</Typography>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={12} >
                         <TextField
                             id="title" required
                             label="Title"
@@ -146,7 +154,7 @@ export default function EventAdd() {
                             helperText={errors.title ? errors.title.message : ""}
                         />
                     </Grid>
-                    <Grid item xs={12} md={6} >
+                    <Grid size={12} >
                         <TextField
                             id="location" required
                             label="Location"
@@ -158,7 +166,7 @@ export default function EventAdd() {
                             helperText={errors.title ? errors.title.message : ""}
                         />
                     </Grid>
-                    <Grid item xs={6} md={3}>
+                    <Grid size={6} >
                     <Controller name="eventDate" control={control} render={({ field: { ref, name, ...field }}) => (
                   <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='en-gb' >
                      <DatePicker label="Event Date" value={evDate} 
@@ -168,7 +176,7 @@ export default function EventAdd() {
                 )} />
 
                     </Grid>
-                    <Grid item xs={6} md={3}>
+                    <Grid size={6} >
                         <TextField
                             id="startTime"
                             label="Start Time"
@@ -179,7 +187,7 @@ export default function EventAdd() {
                             helperText={errors.startTime ? errors.startTime.message : ""}
                         />
                     </Grid>
-                    <Grid item xs={6} md={3}>
+                    <Grid size={6} >
                         <TextField
                             id="endTime"
                             label="End Time"
@@ -190,7 +198,7 @@ export default function EventAdd() {
                             helperText={errors.endTime ? errors.endTime.message : ""}
                         />
                     </Grid>
-                    <Grid item xs={6} md={3}>
+                    <Grid size={6} >
                         <TextField
                             id="price"
                             label="price"
@@ -201,7 +209,7 @@ export default function EventAdd() {
                             helperText={errors.endTime ? errors.endTime.message : ""}
                         />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <TextField
                             id="meetingPoint"
                             label="Meeting Point"
@@ -212,7 +220,7 @@ export default function EventAdd() {
                             helperText={errors.meetingPoint ? errors.meetingPoint.message : ""}
                         />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <TextField
                             id="invitation"
                             label="Invitation message"
@@ -224,10 +232,10 @@ export default function EventAdd() {
                         />
                     </Grid>
 
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <Divider />
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={12}>
                         <ColorButton variant="contained" type="submit">
                             Save Changes
                         </ColorButton>

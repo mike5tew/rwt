@@ -4,7 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { ArchiveEntry, EmptyArchiveEntry, ImageDetail, EmptyImageDetail, Clip, EmptyClip, StringtoDate, EventDetails } from '../types/types.d';
 import { DataGrid, GridColDef, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import axios from 'axios';
+import db from '../services/db';
+
 import { Button, Grid, Paper, Typography, TextField, MenuItem, Select, SelectChangeEvent, FormControl, InputLabel, Snackbar } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useForm, SubmitHandler, Controller, set } from 'react-hook-form';
@@ -13,7 +14,8 @@ import '../../src/App.css';
 import { useNavigate } from 'react-router-dom';
 import FileUploadService from '../services/FileUploadService';
 import FileResizeService from '../services/ResizeImage';
-
+// The api requess are being replaced by finctions in the queries file
+import { eventArchive, updateArchiveEntry, archivePOST } from '../services/queries';
 // create a style for the input file button so it is effectively hidden by making it 0.1px high and wide
 
 const styleGridLeft = {
@@ -90,9 +92,13 @@ export default function AddArchive() {
     id = Number(id);
     if (id < 10000) {
       // remove the clip from the database
-      axios.delete(`http://localhost:3001/clip/${id}`)
-        .then(response => console.log(response));
+      db.query('DELETE FROM clips WHERE clipID = ?', [id], (err: any) => {
+        if (err) {
+          console.log(err);
+        }
+      });
     }
+
     setClips(clips.filter((clip) => clip.id !== id));
   };
 
@@ -102,11 +108,14 @@ export default function AddArchive() {
         console.log('No cookie');
         history('/Members');
     }
-  
-    axios.get('http://localhost:3001/events')
-      .then(response => setEventList(response.data));
-  }, []);
-  
+    db.query('SELECT eventID, location, eventDate, title FROM choirevents ', (err: any, results: any) => {
+      if (err) {
+        console.log(err);
+      }
+      setEventList(results);
+    });
+  }
+  , []);  
 
   const clipColumns: GridColDef[] = [
     { field: 'id', headerName: 'ID', flex: 0},
@@ -160,15 +169,7 @@ export default function AddArchive() {
       var ImDetails = EmptyImageDetail();
       var ImageF = new File([], '', { type: '' });
       var addr ='';
-      switch (newWidth) {
-        case 250:
-          addr = 'http://localhost:3001/uploadMobile';
-          break;
-        case 400:
-          addr = 'http://localhost:3001/imagesPOST';
-          break;
-        default:
-      }
+
             FileResizeService.resizeImage(originalImage, newWidth).then(
               FileResizeService.dataURLtoFile).then((res) => {
                 ImDetails = res.fileDetails;
@@ -218,36 +219,35 @@ function handleEventChange(event: SelectChangeEvent<Number>) {
   } else {
     setEventSelected(true);
 
-    axios.get(`http://localhost:3001/eventarchive/${event.target.value}`)
-      .then(response => {
-        // we need to make sure that the images and clips are cleared before adding the new ones to the array
-         
-        console.log(response);
-        if (response.status === 200) {
+    
+  eventArchive(event.target.value as number)
+    .then(response => {
+      if (response) {
+
           // create an empty array of images and clips
           var imagesTp: ImageDetail[] = [];
           var clipsTp: Clip[] = [];
-          for (let i = 0; i < response.data.images.length; i++) {
+          for (let i = 0; i < response.images.length; i++) {
             var imgDetail = EmptyImageDetail();
-            imgDetail.imageID = response.data.images[i].imageID;
-            imgDetail.filename = response.data.images[i].filename;
-            imgDetail.caption = response.data.images[i].caption;
-            imgDetail.eventDetails.eventID = response.data.images[i].eventID;
+            imgDetail.imageID = response.images[i].imageID;
+            imgDetail.filename = response.images[i].filename;
+            imgDetail.caption = response.images[i].caption;
+            imgDetail.eventDetails.eventID = response.images[i].eventID;
 
             imagesTp = [...imagesTp, imgDetail];  
           }
 
-          for (let i = 0; i < response.data.clips.length; i++) {
+          for (let i = 0; i < response.clips.length; i++) {
             var clip = EmptyClip();
-            clip.id = response.data.clips[i].clipID;
-            clip.clipURL = response.data.clips[i].clipURL;
-            clip.caption = response.data.clips[i].caption;
-            clip.eventID = response.data.clips[i].eventID;
+            clip.id = response.clips[i].id  ;
+            clip.clipURL = response.clips[i].clipURL;
+            clip.caption = response.clips[i].caption;
+            clip.eventID = response.clips[i].eventID;
             clipsTp = [...clipsTp, clip];
           }
           setImages(imagesTp);
           setClips(clipsTp);
-          setValue("report", response.data.report);
+          setValue("report", response.report);
         }
       }).catch (error => {
         console.log(error)
@@ -293,11 +293,14 @@ function handleClick() {
   archive2.clips = clips;
   archive2.report = watch('report');
   console.log(archive);
-  axios.post('http://localhost:3001/archivePOST', archive2)
-    .then(response => console.log(response));
-    // clear the form
-    clearForm();   
-
+  archivePOST(archive2).then((response) => {
+    if (response) {
+      setSnackMessage("Archive details saved successfully")
+      setSnackOpen(true)
+      clearForm();   
+    }
+  }
+  );
 };
 
 

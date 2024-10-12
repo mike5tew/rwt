@@ -76,6 +76,24 @@ export interface ThemeDetails {
     menuTextColour: string;
     textSize: number;
 }
+export function EmptyThemeDetails(): ThemeDetails {
+    return {
+        boxColour: "",
+        textColour: "",
+        textFont: "",
+        backgroundImage: "",
+        textboxColour: "",
+        logoImage: "",
+        bannerColour: "",
+        menuColour: "",
+        buttonColour: "",
+        buttonHover: "",
+        buttonTextColour: "",
+        menuTextColour: "",
+        textSize: 0
+    };
+}
+
 export function DefaultThemeDetails(): ThemeDetails {
     return {
         boxColour: "white",
@@ -179,19 +197,6 @@ export interface MusicTrack {
     tenor: string;
     allParts: string;
     piano: string;
-}
-export function EmptyMusicTrack(): MusicTrack {
-    return {
-        musicTrackID: 0,
-        trackName: "",
-        artist: "",
-        lyrics: "",
-        soprano: "",
-        alto: "",
-        tenor: "",
-        allParts: "",
-        piano: ""
-    };
 }
 
 export function IsMobile() {
@@ -308,5 +313,31 @@ export function EmptySiteInfo(): siteInfo {
         SettingsText: ""
     };
 }
+
+export interface MusicTrack {
+    // using the same schema as the music.json file
+    id : number,
+    trackName : string,
+    lyrics : string,
+    soprano : string,
+    alto : string,
+    tenor : string,
+    allParts : string,
+    piano : string
+}
+
+export function EmptyMusicTrack(): MusicTrack {
+    return {
+        id: 0,
+        trackName: "",
+        lyrics: "",
+        soprano: "",
+        alto: "",
+        tenor: "",
+        allParts: "",
+        piano: ""
+    };
+}
+
 
 declare module '*.ttf';
