@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Typography, Snackbar } from '@mui/material';
-import { Grid2 } from '@mui/material';
+import  Grid  from '@mui/material/Grid2';
 import styled from '@emotion/styled';
 import { ImageSearch, CloudUpload } from '@mui/icons-material';
 import { TextField, RadioGroup, FormControlLabel, Radio, IconButton } from '@mui/material';
@@ -27,7 +27,7 @@ export interface ImageSelection {
     backgroundImage: string;
 }
 
-// to migrate from Grid2 to grid2 you need to change the import statement to 
+// to migrate from Grid to Grid you need to change the import statement to 
 // npx @mui/codemod@latest v6.0.0/grid-v2-props <path/to/your/project>
 
 // in this case the path is ../src/components/ImageSelect.tsx
@@ -280,14 +280,14 @@ const ImageSelect = (props: ImagesSelectedProps) => {
 
                             return(
         <>
-            <Grid2 container spacing={3} >
-                <Grid2 size={12}>
+            <Grid container spacing={3} >
+                <Grid size={12}>
                     <Typography variant="h4" align="center">Select Images</Typography>
-                </Grid2>
-                <Grid2 size={6}>
-                    <Grid2 container spacing={3} >
+                </Grid>
+                <Grid size={6}>
+                    <Grid container spacing={3} >
 
-                        <Grid2 size={4} alignContent="center">
+                        <Grid size={4} alignContent="center">
                             <Button component="label"
                                 role={undefined}
                                 variant="contained"
@@ -297,8 +297,8 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                     // we need to run the selectFile function without triggering a re-render
                                     onChange={selectFile} />
                             </Button>
-                        </Grid2>
-                        <Grid2 size={8} alignContent="center">
+                        </Grid>
+                        <Grid size={8} alignContent="center">
                             <TextField
                                 label="Selected image file"
                                 fullWidth
@@ -307,8 +307,8 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                 // tihis is the file that is selected but is not updating when the file is selected
                                 value={nextFile}
                             />
-                        </Grid2>
-                        <Grid2 size={4} alignContent="center">
+                        </Grid>
+                        <Grid size={4} alignContent="center">
                             <Button
                                 //sx={{ marginTop: 1 }}
                                 disabled={!currentFile}
@@ -318,14 +318,14 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                             >
                                 Upload Image
                             </Button>
-                        </Grid2>
-                        <Grid2 size={8} alignContent={"center"}>
+                        </Grid>
+                        <Grid size={8} alignContent={"center"}>
                             <RadioGroup row aria-label="position" name="position" defaultValue="top" value={ImageSelect} onChange={handleImageSelect()}>
                                 <FormControlLabel value="Logo" control={<Radio />} label="Logo" />
                                 <FormControlLabel value="Background" control={<Radio />} label="Background" />
                             </RadioGroup>
-                        </Grid2>
-                        <Grid2 size={12}>
+                        </Grid>
+                        <Grid size={12}>
 
                             <TextField
                                 id="LogoUpload"
@@ -343,15 +343,15 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                 fullWidth
                                 value={BackgroundImageName}
                             />
-                        </Grid2>
-                    </Grid2>
-                </Grid2>
-                <Grid2 size={6}>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <Grid size={6}>
                     {/* table of the images */}
                     <DataGrid rows={tableRowsImages} columns={tableColsImages} autoHeight={true} disableColumnMenu={false} />
-                </Grid2>
+                </Grid>
 
-            </Grid2>
+            </Grid>
             <Snackbar
                 open={Snackopen}
                 autoHideDuration={6000}

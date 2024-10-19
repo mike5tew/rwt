@@ -46,7 +46,6 @@ import { siteinfo, themeDetails } from '../services/queries';
 // import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
 //  import LoginStyle from 'LoginStyle';
 //themeDetails, boxColour, textColour, textFont, backgroundImage, textboxColour, logoimage
-
 export default function MiniDrawer() {
   const [BoxColour, setBoxColour] = React.useState('#222222');
   const [TextColour, setTextColour] = React.useState('#222222');
@@ -376,7 +375,6 @@ const clickListener = (mItem: menuItem) => {
     navigate(mItem.link);
   }
 }
-//console.log("HERE "+require.resolve('fs'))
 return (
   <ThemeProvider theme={theme2} >
     {/* add the musical background.png to the Box */}

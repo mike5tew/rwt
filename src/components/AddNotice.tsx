@@ -3,7 +3,7 @@
 import React from 'react'
 import { styled } from '@mui/material/styles';  
 import { Container, Button } from '@mui/material';
-import { Grid } from '@mui/material';
+import Grid  from '@mui/material/Grid2';
 import { Link } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import db from '../services/db';
@@ -27,21 +27,21 @@ export default function AddNotice() {
             var notices: EventDetails[] = [];
             for (let i = 0; i < data.length; i++) {
                 var ev: EventDetails = EmptyEventDetails();
-                ev.eventID= data[i].EventID,
-                ev.location= data[i].Location,
-                ev.eventDate= data[i].EventDate,
-                ev.startTime= data[i].StartTime,
-                ev.endTime= data[i].EndTime,
-                ev.price= data[i].Price,
-                ev.title= data[i].Title,
-                ev.meetingPoint= data[i].MeetingPoint,
-                ev.invitation= data[i].Invitation
+                ev.eventID= data[i].EventID;
+                ev.location= data[i].Location;
+                ev.eventDate= data[i].EventDate;
+                ev.startTime= data[i].StartTime;
+                ev.endTime= data[i].EndTime;
+                ev.price= data[i].Price;
+                ev.title= data[i].Title;
+                ev.meetingPoint= data[i].MeetingPoint;
+                ev.invitation= data[i].Invitation;
                 notices.push(ev);
             }
-            setNotices(data)
+            setNotices(data);
         })
         .catch((error) => {
-            console.log(error)
+            console.log(error);
         })
     }, [])
 
@@ -51,7 +51,7 @@ export default function AddNotice() {
         <Container>
             <Grid container spacing={2}>
                 {notices && notices.map((entry, index) => (
-                    <Grid item xs={12} key={index}>
+                    <Grid size={12} key={index}>
                         <Card>
                             <Card.Body>
                                 <Card.Title>

@@ -3,7 +3,8 @@ import * as React from 'react';
 import { useState } from 'react';
 import { useEffect } from 'react';
 // import grid from material ui
-import { Grid, ImageList, ImageListItem, ImageListItemBar, Paper } from '@mui/material';
+import { ImageList, ImageListItem, ImageListItemBar, Paper } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { styled } from '@mui/material/styles';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { purple } from '@mui/material/colors';
@@ -36,12 +37,12 @@ db.query("SELECT archive.archiveID, choirevents.location, choirevents.eventDate,
             EventD.eventDate = result[i].eventDate;
             EventD.title = result[i].title;
             var archive = EmptyArchiveEntry();
-            archive.archiveID = result[i].archiveID,
-            archive.report= result[i].report
+            archive.archiveID = result[i].archiveID;
+            archive.report= result[i].report;
             archive.eventDetails = EventD;
-            archives = [...archives, archive]   
+            archives = [...archives, archive];   
         }
-        resolve(archives)
+        resolve(archives);
         }
         for (var i = 0; i < archives.length; i++) {
             events = [...events, archives[i].eventDetails.eventID]
@@ -84,13 +85,13 @@ const clipsPromise = new Promise<Clip[]>((resolve, reject) => {
             var clips: Clip[] = []
             for (var i = 0; i < result.length; i++) {
                 var clp:Clip = EmptyClip();
-                    clp.id= result[i].clipID,
-                    clp.clipURL= result[i].clipURL,
-                    clp.eventID= result[i].eventID,
-                    clp.caption= result[i].caption
-                clips = [...clips, clp]
+                    clp.id= result[i].clipID;
+                    clp.clipURL= result[i].clipURL;
+                    clp.eventID= result[i].eventID;
+                    clp.caption= result[i].caption;
+                clips = [...clips, clp];
             }
-            resolve(clips)
+            resolve(clips);
         }
     }
     )
@@ -150,12 +151,12 @@ Promise.all([imagesPromise, clipsPromise])
 return (
     <>
     <Grid container spacing={3} >
-        <Grid item xs={12}>
+        <Grid size={12}>
             <Paper>
             <Typography variant="h2">{localStorage.getItem("ArchiveTitle")}</Typography>
             </Paper>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
             <Paper>
             <Typography variant="h5" sx={{ whiteSpace: "pre-wrap" }}>
                     {localStorage.getItem("ArchiveText")}</Typography>
@@ -163,7 +164,7 @@ return (
         </Grid>
             {archiveList && archiveList.map((item, index) => (
             <>    {console.log("index: "+index)}
-            <Grid item md={3} key={index}>
+            <Grid size={3} key={index}>
                 <Paper>
                     <ImageList variant="masonry" gap={8} cols={1}>
                         {item.images && item.images.map((image) => (
@@ -174,12 +175,13 @@ return (
                         ))}
                     </ImageList>
                 </Paper>
-                </Grid><Grid item xs={12} sm={6} md={6}>
+                </Grid>
+                <Grid size={12} >
                         <Paper>
                             <Typography variant="h4">{item.eventDetails.title+" ("+returndatestring(item.eventDetails.eventDate)+")"}</Typography>
                             <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>{item.report}</Typography>
                         </Paper>
-                    </Grid><Grid item xs={12} sm={6} md={3}>
+                    </Grid><Grid size={12}>
                         {item.clips && item.clips.map((clip) => (
                             <Paper>
                                 <Typography variant="h6">{clip.caption}</Typography>
@@ -194,8 +196,6 @@ return (
 )
 }
 
-
-    
 
 
 

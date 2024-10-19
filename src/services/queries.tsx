@@ -1,22 +1,20 @@
 // import exp from "constants";
 import { EmptyEventDetails, EmptyArchiveEntry, EventDetails, ArchiveEntry, Clip, EmptyClip, ImageDetail, EmptyImageDetail, Message,  User, PlaylistEntry, EmptyMusicTrack, EmptyPlaylistEntry, MusicTrack, SiteInfo, EmptySiteInfo, ThemeDetails, EmptyThemeDetails } from "../types/types.d"; 
-import db from '../services/db';
 import cors from 'cors';
 import path from 'path';
 import express, {Response} from 'express';
-// const fs = require('browserify-fs');
-require('dotenv').config(__dirname + '/.env')
+import db from './db';
+
 const app = express();
 
-
+// We need to type the db object as the database connection object
 app.use(cors());
 app.use(express.json())
-// import the pool from the db.js file
-// an error is thrown because the path module is not defined
-// the path module is a core module in node.js so it should be available
-// import { arch } from 'os';
-// import { get } from 'http';
+
 app.use(express.static(path.join(__dirname, 'public/')));
+
+// create a connection to the database
+
 
 // create an upload object
 export function upload(req: any, res: any) {
@@ -118,7 +116,7 @@ export function archives(req: number, res: any) {
 // create a promise to get the archive data
     db.query("SELECT archive.archiveID, choirevents.location, choirevents.eventDate, choirevents.title, archive.report, archive.eventID FROM choirevents join archive on archive.eventID=choirevents.eventID order by choirevents.eventDate LIMIT ?;", archivesRequired, (err: any, result: any) => {
         if(err) {
-            reject("scadC "+err.message)
+            reject("scadC "+err.message);
         } else {
             // archs is an array of archive objects
             for (var i = 0; i < result.length; i++) {
@@ -128,13 +126,13 @@ export function archives(req: number, res: any) {
                 EventD.eventDate = result[i].eventDate;
                 EventD.title = result[i].title;
                 var archive = EmptyArchiveEntry();
-                archive.archiveID = result[i].archiveID,
-                archive.report= result[i].report
+                archive.archiveID = result[i].archiveID;
+                archive.report= result[i].report;
                 archive.eventDetails = EventD;
                 archs = [...archs, archive]   
             }
             }
-            resolve(archs)
+            resolve(archs);
         }
     )}
 ).then((archives) => {   
@@ -175,10 +173,10 @@ export function archives(req: number, res: any) {
                 var clips: Clip[] = []
                 for (var i = 0; i < result.length; i++) {
                     var clp:Clip = EmptyClip();
-                        clp.id= result[i].clipID,
-                        clp.clipURL= result[i].clipURL,
-                        clp.eventID= result[i].eventID,
-                        clp.caption= result[i].caption
+                        clp.id= result[i].clipID;
+                        clp.clipURL= result[i].clipURL;
+                        clp.eventID= result[i].eventID;
+                        clp.caption= result[i].caption;
                     clips = [...clips, clp]
                 }
                 resolve(clips)
@@ -194,12 +192,12 @@ export function archives(req: number, res: any) {
         var clips: Clip[] = values[1];
         for (var i = 0; i < archives.length; i++) {
             for (var j = 0; j < images.length; j++) {
-                if (archives[i].eventDetails.eventID == images[j].eventID) {
+                if (archives[i].eventDetails.eventID === images[j].eventID) {
                     archives[i].images = [...archives[i].images, images[j]]
                 }
             }
-            for (var j = 0; j < clips.length; j++) {
-                if (archives[i].eventDetails.eventID == clips[j].eventID) {
+            for ( j = 0; j < clips.length; j++) {
+                if (archives[i].eventDetails.eventID === clips[j].eventID) {
                     archives[i].clips = [...archives[i].clips, clips[j]]
                 }
             }
@@ -260,7 +258,7 @@ new Promise<string>((resolve, reject) => {
     let loginUser: User = JSON.parse(req.body);
     // retrieve the users array from the .env file
     // users is a json object and so we need to parse the json object to get the array
-    if (process.env.users == undefined) {
+    if (process.env.users === undefined) {
         process.env.users = "[]"
     }
     let users: User[] = JSON.parse(process.env.users)    
@@ -294,13 +292,13 @@ export function loginDeleteUser(req: any, res: any) {
 // app.post('/loginDeleteUser', (req, res) => {
     // delete the username and password from the .env file
     let users: User[]
-    if (process.env.users == undefined) {
-        process.env.users = "[]"
+    if (process.env.users === undefined) {
+        process.env.users = "[]";
     } else {
-    users = JSON.parse(process.env.users)
-    users = users.filter(user => user.username !== req.body.username)
-    process.env.users = JSON.stringify(users)
-    resolve("User Deleted")
+    users = JSON.parse(process.env.users);
+    users = users.filter(user => user.username !== req.body.username);
+    process.env.users = JSON.stringify(users);
+    resolve("User Deleted");
     }
 }
 )
@@ -320,41 +318,41 @@ export function upcomingPlaylists() {
         var id: number = 0
         var len = result.length;
         for (var i = 0; i < len; i++) {
-            if (result[i].eventID != id) {
+            if (result[i].eventID !== id) {
                  event = EmptyEventDetails();
                  
-                    event.eventID= result[i].eventID,
-                    event.location= result[i].location,
-                    event.eventDate= result[i].eventDate,
-                    event.startTime= result[i].startTime,
-                    event.endTime= result[i].endTime,
-                    event.title= result[i].title,
-                    event.meetingPoint= result[i].meetingPoint,
+                    event.eventID= result[i].eventID;
+                    event.location= result[i].location;
+                    event.eventDate= result[i].eventDate;
+                    event.startTime= result[i].startTime;
+                    event.endTime= result[i].endTime;
+                    event.title= result[i].title;
+                    event.meetingPoint= result[i].meetingPoint;
                     event.playlist= []
                 }
             var plEntry = EmptyPlaylistEntry();
             plEntry.playlistID= result[i].playlistID
             var mTrack:MusicTrack = EmptyMusicTrack();
-            mTrack.musicTrackID= result[i].musicID,
-            mTrack.trackName= result[i].trackName,
-            mTrack.artist= result[i].artist,
-            mTrack.lyrics= result[i].lyrics,
-            mTrack.soprano= result[i].soprano,
-            mTrack.alto= result[i].alto,
-            mTrack.tenor= result[i].tenor,
-            mTrack.allParts= result[i].allParts
-            plEntry.musicTrack= mTrack
-            plEntry.playorder= result[i].playorder
+            mTrack.musicTrackID= result[i].musicID;
+            mTrack.trackName= result[i].trackName;
+            mTrack.artist= result[i].artist;
+            mTrack.lyrics= result[i].lyrics;
+            mTrack.soprano= result[i].soprano;
+            mTrack.alto= result[i].alto;
+            mTrack.tenor= result[i].tenor;
+            mTrack.allParts= result[i].allParts;
+            plEntry.musicTrack= mTrack;
+            plEntry.playorder= result[i].playorder;
     
             pList = [...pList, plEntry]
-            if (i== result.length-1 || result[i+1].eventID != result[i].eventID) {
-                event.playlist = pList
-                pList = []
-                events = [...events, event]
+            if (i=== result.length-1 || result[i+1].eventID !== result[i].eventID) {
+                event.playlist = pList;
+                pList = [];
+                events = [...events, event];
             }
-            id = result[i].eventID
+            id = result[i].eventID;
         }
-        result.send(events)
+        result.send(events);
     }
     }
     )
@@ -415,13 +413,13 @@ const clipsFromEvent = (id: number): Promise<Clip[]> => {
                 var clips: Clip[] = []
                 for (var i = 0; i < result.length; i++) {
                     var clp:Clip = EmptyClip();
-                        clp.id= result[i].clipID,
-                        clp.clipURL= result[i].clipURL,
-                        clp.eventID= result[i].eventID,
-                        clp.caption= result[i].caption
-                    clips = [...clips, clp]
+                        clp.id= result[i].clipID;
+                        clp.clipURL= result[i].clipURL;
+                        clp.eventID= result[i].eventID;
+                        clp.caption= result[i].caption;
+                    clips = [...clips, clp];
                 }
-                resolve(clips)
+                resolve(clips);
             }
         }
         ).catch((err: any) => {
@@ -762,7 +760,7 @@ export  const  EventDets = (id: number): Promise<EventDetails[]> => {
 
 
 
-const images = (id: number): Promise<ImageDetail[]> => {
+export const images = (id: number): Promise<ImageDetail[]> => {
     return new Promise<ImageDetail[]>((resolve, reject) => {
         db.query("SELECT * FROM images WHERE eventID = ?", id, (err: any, result: any) => {
             if(err) {
@@ -795,7 +793,7 @@ export function eventComplete(id: number): Promise<EventDetails[]> {
         let playlist: PlaylistEntry[] = values[1];
         for (var i = 0; i < events.length; i++) {
             for (var j = 0; j < playlist.length; j++) {
-                if (events[i].eventID == playlist[j].eventID) {
+                if (events[i].eventID === playlist[j].eventID) {
                     events[i].playlist = [...events[i].playlist, playlist[j]]
                 }
             }
@@ -919,7 +917,7 @@ export function siteinfoPUT(data: SiteInfo) {
 const EventBasics = (id: number): Promise<EventDetails[]> => {
     return new Promise<EventDetails[]>((resolve, reject) => {
     var sQuery = "SELECT eventID, location, eventDate, startTime, endTime, price, title, meetingPoint, invitation, musictrackID, trackName, artist, lyrics, soprano, alto, tenor, allParts, piano FROM choirevents LEFT OUTER JOIN music ON choirevents.eventID = music.eventID"
-    if (id != -1) {
+    if (id !== -1) {
         sQuery += " WHERE eventID = " + id
     }
       db.query(sQuery, id, (err: any, result: any[]) => {
@@ -931,7 +929,7 @@ const EventBasics = (id: number): Promise<EventDetails[]> => {
             var events: EventDetails[] = []
             var event: EventDetails = EmptyEventDetails();
             for (var i = 0; i < result.length; i++) {
-                if (result[i].eventID != event.eventID) {
+                if (result[i].eventID !== event.eventID) {
                     event = EmptyEventDetails();
                     event.eventID = result[i].eventID;
                     event.location = result[i].location;
@@ -975,7 +973,7 @@ const EventBasics = (id: number): Promise<EventDetails[]> => {
 export const Music = (id: number): Promise<MusicTrack[]> => {
     return new Promise<MusicTrack[]>((resolve, reject) => {
         var sQuery: string
-        if (id == -1) {
+        if (id === -1) {
             sQuery = "SELECT * FROM music"
         } else {
             sQuery = "SELECT * FROM music WHERE eventID = " + id
