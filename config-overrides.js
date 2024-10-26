@@ -1,20 +1,21 @@
 const { buffer } = require('stream/consumers');
 const webpack = require('webpack');
+// to fix the error listed blow
+// TypeError: Cannot read properties of undefined (reading 'prototype')
+
 
 module.exports = function override(config) {
+    //do stuff with the webpack config
     const fallback = config.resolve.fallback || {};
     Object.assign(fallback, { 
-        zlib: require.resolve("browserify-zlib"),
-        querystring: require.resolve("querystring-es3"),
+        buffer: require.resolve('buffer/'),
+        stream: require.resolve('stream-browserify'),
+        util: require.resolve('util/'),
+        assert: require.resolve('assert/'),
+        process: require.resolve('process/browser'),
         fs: false,
-        crypto: require.resolve("crypto-browserify"),
-        stream: require.resolve("stream-browserify"),
-        http: require.resolve("stream-http") ,
-        timers: require.resolve("timers-browserify"),
-        tls: require.resolve("tls"),
-        net: false,
-        vm: require.resolve("vm-browserify"),
-        buffer: require.resolve("buffer"), 
+        os: false,
+        
     });
     config.resolve.fallback = fallback;
     config.plugins = (config.plugins || []).concat([
@@ -26,3 +27,9 @@ module.exports = function override(config) {
 //    console.log('config.resolve.fallback:::', config.resolve.fallback)
     return config;
 }
+// do I need to edit this file to fix this err... Cannot read properties of undefined (reading 'prototype')
+// TypeError: Cannot read properties of undefined (reading 'prototype')
+//     at Object.<anonymous> (C:\Users\user\Documents\GitHub\react-portfolio\node_modules\buffer\index.js:8:44)
+// to fix this error I need to add the following code to the config-overrides.js file
+// const { buffer } = require('stream/consumers');
+// const webpack = require('webpack');
