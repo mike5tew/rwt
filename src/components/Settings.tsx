@@ -2,7 +2,8 @@
 
 import React, {useState} from 'react';
 import { styled } from '@mui/material/styles';
-import { Grid, Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
+import { Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
+import Grid2 from '@mui/material/Grid2';
 import { purple } from '@mui/material/colors';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -10,6 +11,7 @@ import * as yup from 'yup';
 import { TransitionProps } from '@mui/material/transitions';
 import { User, EmptyUser } from '../types/types.d';
 import { useNavigate } from 'react-router-dom';
+import { login } from 'src/services/queries';
 
 
 const ColorButton = styled(Button)({
@@ -52,34 +54,31 @@ export default function Settings() {
 
     const handleLogin = () => {
         const user: User = { ...EmptyUser() };
-        user.username = username;
-        user.password = password;
-        user.role = 'admin';
+        user.Username = username;
+        user.Password = password;
+        user.Role = 'admin';
          // send the user info to the login endpoint
         // if the user is authenticated, redirect to the music page
-        fetch('http://localhost:3001/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(user),
-        }).then((response) => {
-          if (response.status === 200) {
-            // set a cookie to remember the user
+        login(user).then((data) => {
+          if (data) {
             document.cookie = `username=${username}`;
             history('/adminDashboard');
+    
           } else {
+            // show a snackbar with an error message
+            document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
             setOpenError(true);
+            console.log('Invalid username or password: ', data);
           }
-        });
+        }
+        );
       }
-
 
     return (
         <>
 
-      <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
-      <Grid item xs={12} sm={6} md={4} lg={3}>
+      <Grid2 container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
+      <Grid2 size={12}>
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Admin Login
@@ -109,8 +108,8 @@ export default function Settings() {
             Forgot password?
           </Link> */}
         </Paper>
-      </Grid>
-    </Grid>
+      </Grid2>
+    </Grid2>
       <Snackbar
         open={openError}
         autoHideDuration={6000}

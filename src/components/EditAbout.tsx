@@ -8,7 +8,7 @@ import { purple } from '@mui/material/colors';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { siteinfo, siteinfoPUT } from '../services/queries';
+import { SiteInfoGET, SiteinfoPUT } from '../services/queries';
 import { SiteInfo } from '../types/types.d';
 
 
@@ -29,7 +29,7 @@ const schema = yup.object().shape({
 export default function EditAbout() {
     const { register, setValue, watch, getValues, handleSubmit, control, formState: { errors } } = useForm<SiteInfo>({
         defaultValues: {
-            id: 0,  
+            ID: 0,  
             HomeTitle: "",
             HomeText: "",
             AboutTitle: "",
@@ -71,11 +71,11 @@ export default function EditAbout() {
             if (document.cookie === '') {
                 history('/Settings');
             }
-            siteinfo()
-            .then(response => response)
+            SiteInfoGET()
+            .then(respon => respon)
             .then(data => {
                 console.log(data);
-                setValue('id', data.id);
+                setValue('ID', data.ID);
                 setValue('HomeTitle', data.HomeTitle);
                 setValue('HomeText', data.HomeText);
                 setValue('AboutTitle', data.AboutTitle);
@@ -105,8 +105,8 @@ export default function EditAbout() {
     const FormSubmitHandler: SubmitHandler<SiteInfo> = (data: SiteInfo) => {
         // we need to convert the data to a json object
 
-        siteinfoPUT(data).then((response) => {
-            console.log(response);
+        SiteinfoPUT(data).then((respon) => {
+            console.log(respon);
             setSnackOpen(true);
         })
         .catch((error) => {

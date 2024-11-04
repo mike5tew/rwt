@@ -4,8 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { ArchiveEntry, EmptyArchiveEntry, ImageDetail, EmptyImageDetail, Clip, EmptyClip, StringtoDate, EventDetails } from '../types/types.d';
 import { DataGrid, GridColDef, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import db from '../services/db';
-
+//import db from '../services/db';
+import Grid2 from '@mui/material/Grid2';
 import { Button, Grid, Paper, Typography, TextField, MenuItem, Select, SelectChangeEvent, FormControl, InputLabel, Snackbar } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useForm, SubmitHandler, Controller, set } from 'react-hook-form';
@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import FileUploadService from '../services/FileUploadService';
 import FileResizeService from '../services/ResizeImage';
 // The api requess are being replaced by finctions in the queries file
-import { eventArchive, updateArchiveEntry, archivePOST } from '../services/queries';
+import { ArchivesGET, updateArchiveEntry, ArchivePOST, EventArchiveGET, ClipPOST, ClipDELETE, EventsList } from '../services/queries';
 // create a style for the input file button so it is effectively hidden by making it 0.1px high and wide
 
 const styleGridLeft = {
@@ -73,7 +73,7 @@ export default function AddArchive() {
     width: 1,
   });
   const handleRemoveImage = (id: GridRowId) => {
-    setImages(images.filter((image) => image.imageID !== id));
+    setImages(images.filter((image) => image.ImageID !== id));
   };
 // this page is currently not completing loading.  This is because the images and clips are not being cleared when the event is changed.  This is because the images and clips are being set before the eventID is set.  This is because the eventID is set in the handleEventChange function.  This function is called when the event is changed.  The images and clips are set before the eventID is set.  This means that the images and clips are being
 
@@ -90,16 +90,19 @@ export default function AddArchive() {
   const handleRemoveClip = (id: GridRowId) => {
     // convert the id to a number
     id = Number(id);
-    if (id < 10000) {
-      // remove the clip from the database
-      db.query('DELETE FROM clips WHERE clipID = ?', [id], (err: any) => {
-        if (err) {
-          console.log(err);
+    ClipDELETE(id).then((respon) => {
+          if (respon) {
+            setSnackMessage("Clip removed successfully")
+            setSnackOpen(true)
+            setClips(clips.filter((clip) => clip.ID !== id));
+          } else {
+            setSnackMessage("Error removing clip")
+            setSnackOpen(true)
+          }
+          return respon;
         }
-      });
-    }
 
-    setClips(clips.filter((clip) => clip.id !== id));
+    );
   };
 
 
@@ -108,14 +111,13 @@ export default function AddArchive() {
         console.log('No cookie');
         history('/Members');
     }
-    db.query('SELECT eventID, location, eventDate, title FROM choirevents ', (err: any, results: any) => {
-      if (err) {
-        console.log(err);
-      }
-      setEventList(results);
-    });
-  }
-  , []);  
+    // get the event list from the database
+    EventsList().then((res) => {
+      setEventList(res);
+    }
+    );
+  }  
+  , []);
 
   const clipColumns: GridColDef[] = [
     { field: 'id', headerName: 'ID', flex: 0},
@@ -131,7 +133,7 @@ export default function AddArchive() {
   function changeFileSet(FileToAdd: File) {
     return new Promise<File>((resolve) => {
     setCurrentFile(FileToAdd);
-    setValue('nextFile', FileToAdd.name);
+    setValue('NextFile', FileToAdd.name);
     resolve(FileToAdd);
     });
   }
@@ -144,18 +146,18 @@ export default function AddArchive() {
       // if there is no file selected then return an error message
       alert('Please select a single image to upload');
       setCurrentFile(undefined);
-      setValue('nextFile', '');
+      setValue('NextFile', '');
       return
     }
     // set the current file to the selected file
 
-    changeFileSet(event.target.files[0]).then((response) => {
+    changeFileSet(event.target.files[0]).then((respon) => {
 
     console.log(typeof currentFile);
-    if (response) {
-    FileResizeService.resizeImage(response, 90).then(
-      (response) => {
-        setIconImage(response.returnedFile);
+    if (respon) {
+    FileResizeService.resizeImage(respon, 90).then(
+      (respon) => {
+        setIconImage(respon.ReturnedFile);
       }
     );
     }
@@ -172,18 +174,18 @@ export default function AddArchive() {
 
             FileResizeService.resizeImage(originalImage, newWidth).then(
               FileResizeService.dataURLtoFile).then((res) => {
-                ImDetails = res.fileDetails;
-                ImDetails.eventID = eventID;
-                ImageF = res.returnedFile;
+                ImDetails = res.FileDetails;
+                ImDetails.EventID = eventID;
+                ImageF = res.ReturnedFile;
             }
             ).then(() => {
-              FileUploadService.upload(ImageF, ImDetails.filename, eventID, ImDetails.width, ImDetails.height, ImDetails.caption, addr, (event: { loaded: number; total: number; }) => {
+              FileUploadService.upload(ImageF, ImDetails.Filename, eventID, ImDetails.Width, ImDetails.Height, ImDetails.Caption, addr, (event: { loaded: number; total: number; }) => {
                 setProgress(Math.round((100 * event.loaded) / event.total));
-              }).then((response) => {
-                console.log(response);
-                if (response.data) {
+              }).then((respon) => {
+                console.log(respon);
+                if (respon.data) {
                   // add the image to the images array
-                  setImages([...images, response.data]);
+                  setImages([...images, respon.data]);
                   setSnackMessage("Logo Image uploaded successfully")
                   setSnackOpen(true)
 
@@ -220,34 +222,34 @@ function handleEventChange(event: SelectChangeEvent<Number>) {
     setEventSelected(true);
 
     
-  eventArchive(event.target.value as number)
-    .then(response => {
-      if (response) {
+  EventArchiveGET(event.target.value as number)
+    .then(respon => {
+      if (respon) {
 
           // create an empty array of images and clips
           var imagesTp: ImageDetail[] = [];
           var clipsTp: Clip[] = [];
-          for (let i = 0; i < response.images.length; i++) {
+          for (let i = 0; i < respon.Images.length; i++) {
             var imgDetail = EmptyImageDetail();
-            imgDetail.imageID = response.images[i].imageID;
-            imgDetail.filename = response.images[i].filename;
-            imgDetail.caption = response.images[i].caption;
-            imgDetail.eventDetails.eventID = response.images[i].eventID;
+            imgDetail.ImageID = respon.Images[i].ImageID;
+            imgDetail.Filename = respon.Images[i].Filename;
+            imgDetail.Caption = respon.Images[i].Caption;
+            imgDetail.EventDetails.EventID = respon.Images[i].EventID;
 
             imagesTp = [...imagesTp, imgDetail];  
           }
 
-          for (let i = 0; i < response.clips.length; i++) {
+          for (let i = 0; i < respon.Clips.length; i++) {
             var clip = EmptyClip();
-            clip.id = response.clips[i].id  ;
-            clip.clipURL = response.clips[i].clipURL;
-            clip.caption = response.clips[i].caption;
-            clip.eventID = response.clips[i].eventID;
+            clip.ID = respon.Clips[i].ID  ;
+            clip.ClipURL = respon.Clips[i].ClipURL;
+            clip.Caption = respon.Clips[i].Caption;
+            clip.EventID = respon.Clips[i].EventID;
             clipsTp = [...clipsTp, clip];
           }
           setImages(imagesTp);
           setClips(clipsTp);
-          setValue("report", response.report);
+          setValue("Report", respon.Report);
         }
       }).catch (error => {
         console.log(error)
@@ -258,43 +260,44 @@ function handleEventChange(event: SelectChangeEvent<Number>) {
 
 
 const handleAddClip = () => {
-  var clipURL = watch('nextURL');
-  var caption = watch('clipcaption');
+  var clipURL = watch('NextURL');
+  var caption = watch('Clipcaption');
   if (clipURL !== "" && caption !== "") {
     // we have two sets of clips. Those already saved and those being added
     // to separate these the new clips are given a clipID of 10000 or more
     //cycle through the clips to find the highest clipID
     var maxID = 0;
     clips.forEach(clip => {
-      if (clip.id > maxID) {
-        maxID = clip.id;
+      if (clip.ID > maxID) {
+        maxID = clip.ID;
       }
     });
     if (maxID < 10000) {
       maxID = 10000;
     }
     let newClip: Clip = {
-      id: maxID + 1,
-      clipURL: clipURL,
-      eventID: eventID,
-      caption: caption
+      ID: maxID + 1,
+      ClipURL: clipURL,
+      EventID: eventID,
+      Caption: caption
     };
     setClips([...clips, newClip]);
-    setValue('nextURL', '');
-    setValue('clipcaption', '');
+    setValue('NextURL', '');
+    setValue('Clipcaption', '');
   }
 }
 
 
 function handleClick() {
   let archive2 = EmptyArchiveEntry();
-  archive2.eventDetails.eventID = eventID;  
-  archive2.images = images;
-  archive2.clips = clips;
-  archive2.report = watch('report');
+  archive2.EventDetails.EventID = eventID;  
+  archive2.Images = images;
+  archive2.Clips = clips;
+  archive2.Report = watch('Report');
   console.log(archive);
-  archivePOST(archive2).then((response) => {
-    if (response) {
+
+  ArchivePOST(archive2).then((respon) => {
+    if (respon) {
       setSnackMessage("Archive details saved successfully")
       setSnackOpen(true)
       clearForm();   
@@ -308,12 +311,12 @@ function handleClick() {
 function clearForm() {
   setImages([]);
     setClips([]);
-    setValue('report', '');
-    setValue('nextFile', '');
+    setValue('Report', '');
+    setValue('NextFile', '');
     setCurrentFile(undefined);
-    setValue('imagecaption', '');
-    setValue('nextURL', '');
-    setValue('clipcaption', '');
+    setValue('Imagecaption', '');
+    setValue('NextURL', '');
+    setValue('Clipcaption', '');
     setEventID(0);
     setEventSelected(false);
 }
@@ -326,41 +329,41 @@ const FormSubmitHandler: SubmitHandler<ArchiveEntry> = (data: ArchiveEntry) => {
 return (
   <>
     <form onSubmit={handleSubmit(FormSubmitHandler)}>
-        <Grid container spacing={2} >
-          <Grid item xs={12} sx={{ padding: 2 }}>  {/* //Title full width */}
+        <Grid2  container spacing={2} >
+          <Grid2  size={12} sx={{ padding: 2 }}>  {/* //Title full width */}
             <Paper elevation={3}>
             <Typography variant="h2" component="h2">Add Archive Details</Typography>
             </Paper>
-          </Grid>
-          <Grid item md={2}/>
-          <Grid item xs={12} md={4} sx={styleGridPadded.Grid}> {/* //Event dropdown  */}
+          </Grid2>
+          <Grid2/>
+          <Grid2  size={12}  sx={styleGridPadded.Grid}> {/* //Event dropdown  */}
             <FormControl fullWidth><InputLabel id="ExistingTracks">Events</InputLabel>
               <Select label="Select an event" value={eventID} onChange={handleEventChange} >
                 <MenuItem value={0}>Select Event</MenuItem>
                 {eventList.map((event) => (
-                  <MenuItem key={event.eventID} value={event.eventID}>{event.title + " " + StringtoDate(event.eventDate.toString())}</MenuItem>
+                  <MenuItem key={event.EventID} value={event.EventID}>{event.Title + " " + StringtoDate(event.EventDate.toString())}</MenuItem>
                 ))}
               </Select>
             </FormControl>
-          </Grid>
-          <Grid item xs={12} md={4}>
+          </Grid2>
+          <Grid2  size={12} >
             <TextField
               label="Event Report"
               fullWidth
               multiline
-              value={watch('report') ? watch('report') : ''}
+              value={watch('Report') ? watch('Report') : ''}
               rows={4}
-              {...register('report')}
+              {...register('Report')}
             />
-          </Grid>
-          <Grid item xs={12} sx={styleGridPadded.Grid}>  {/* //Image titles */}
+          </Grid2>
+          <Grid2  size={12} sx={styleGridPadded.Grid}>  {/* //Image titles */}
             <Typography variant="h6">Image uploads</Typography>
-          </Grid>
-          <Grid item sx={styleGridLeft.Grid} xs={12} md={2} >   {/* image adding row */}
+          </Grid2>
+          <Grid2 size={12} >   {/* image adding row */}
             {/* Use the currentFile to populate the img tag if a file is present */}
             <img src={iconImage ? URL.createObjectURL(iconImage) : 'https://via.placeholder.com/80'} alt="profile"  />
-          </Grid>
-          <Grid item xs={12} md={4} >
+          </Grid2>
+          <Grid2  size={12}  >
             <Button component="label"
               disabled={!eventSelected}
               role={undefined}
@@ -375,8 +378,8 @@ return (
               fullWidth
               disabled={true}
               margin="normal"
-              value={watch('nextFile')}
-              {...register('nextFile')}
+              value={watch('NextFile')}
+              {...register('NextFile')}
             />
             {currentFile && (
               <div >
@@ -392,17 +395,17 @@ return (
                 </div>
               </div>
             )}
-          </Grid>
-          <Grid item xs={12} md={4}>
+          </Grid2>
+          <Grid2  size={12} >
             <TextField
               label="Image caption"
               fullWidth
               multiline
               rows={4}
-              {...register('imagecaption')}
+              {...register('Imagecaption')}
             />
-          </Grid>
-          <Grid item xs={12} md={1}>
+          </Grid2>
+          <Grid2  size={12}>
             <Button
               disabled={!currentFile}
               onClick={upload}
@@ -410,8 +413,8 @@ return (
             >
               Upload Image
             </Button>
-          </Grid>
-          <Grid item xs={12}>
+          </Grid2>
+          <Grid2  size={12}>
             <DataGrid
               rows={images}
               initialState = {{ columns:  
@@ -419,32 +422,32 @@ return (
               }}
               columns={Imagecolumns}
             />
-          </Grid>
+          </Grid2>
 
-          <Grid item xs={12} sx={styleGridPadded.Grid}>
+          <Grid2  size={12} sx={styleGridPadded.Grid}>
             <Typography variant="h6">YouTube links</Typography>
-          </Grid>          
-          <Grid item md={2}/>
-          <Grid item xs={12} md={4}>
+          </Grid2>          
+          <Grid2  />
+          <Grid2  size={12} >
             <TextField
               label="Clip URL"
               fullWidth
-              {...register('nextURL')}
+              {...register('NextURL')}
             />
-          </Grid>
-          <Grid item xs={12} md={4}>
+          </Grid2>
+          <Grid2  size={12} >
             <TextField
               label="Clip Caption"
               fullWidth
               multiline
               rows={4}
-              {...register('clipcaption')}
+              {...register('Clipcaption')}
             />
-          </Grid>
-          <Grid item xs={12} md={2}>
+          </Grid2>
+          <Grid2  size={12} >
             <Button variant="contained" disabled={!eventSelected} onClick={handleAddClip}>Add Clip</Button>
-          </Grid>
-          <Grid item xs={12}>
+          </Grid2>
+          <Grid2  size={12}>
             <DataGrid
               rows={clips}
               initialState = {{ columns:  
@@ -452,12 +455,12 @@ return (
                 }}
               columns={clipColumns}
             />
-          </Grid>
-          <Grid item md={8}/>
-          <Grid item xs={12} md={4}>
+          </Grid2>
+          <Grid2 />
+          <Grid2  size={12} >
             <Button variant="contained" disabled={!eventSelected} fullWidth onClick={handleClick}>Save Archive</Button>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       <Snackbar
                 open={Snackopen}
                 autoHideDuration={6000}

@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react'
 import { Container, Button, TextField, Typography, Select, FormControl, InputLabel, MenuItem, Snackbar, Alert, Fade } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import Grid2 from '@mui/material/Grid2';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Link } from 'react-router-dom';
-import { Music, MusicPOST, musicListPUT, musicListDELETE } from '../services/queries';
+import { MusicGET, MusicPOST, MusicTrackPUT, musicTrackDELETE } from '../services/queries';
 import { TransitionProps } from '@mui/material/transitions';
 import { MusicTrack } from '../types/types';
 
@@ -24,14 +24,14 @@ const schema = yup.object().shape({
 export default function AddMusic() {
     const { register, setValue, watch, getValues, handleSubmit, control, formState: { errors } } = useForm<MusicTrack>({
         defaultValues: {
-            id: 0,
-            trackName: "",
-            lyrics: "",
-            soprano: "",
-            alto: "",
-            tenor: "",
-            allParts: "",
-            piano: ""
+            ID: 0,
+            TrackName: "",
+            Lyrics: "",
+            Soprano: "",
+            Alto: "",
+            Tenor: "",
+            AllParts: "",
+            Piano: ""
         }
     });
     const [openError, setOpenError] = useState(false);
@@ -47,25 +47,36 @@ export default function AddMusic() {
     const [musicList, setMusicList] = useState<MusicTrack[]>([]);
 
     const FormSubmitHandler: SubmitHandler<MusicTrack> = (data: MusicTrack) => {
-        if (data.id === 0) {
-            var newTrack: MusicTrack = MusicPOST(data)
-            if (newTrack) {
-                setOpen(true);
-                setMusicList([...musicList, newTrack]);
-            } else {
-                setOpenError(true);
-            }
-        } else {
-            musicListPUT(data);
-            //replace the existing track with the new data in the array
-            for (var i = 0; i < musicList.length; i++) {
-                if (musicList[i].id === data.id) {
-                    musicList[i] = data;
-                    break;
+        if (data.ID === 0) {
+
+            const mPost = async () => {
+                var newTrack = await MusicPOST(data)
+                if (newTrack) {
+                    setOpen(true);
+                    setMusicList([...musicList, newTrack]);
+                } else {
+                    setOpenError(true);
                 }
             }
-            setMusicList(musicList);
-            setOpenError(true);
+            mPost();
+        } else {
+            const mPost = async () => {
+                const respon = await MusicTrackPUT(data);
+                if (respon) {
+                    for (var i = 0; i < musicList.length; i++) {
+                        if (musicList[i].ID === data.ID) {
+                            musicList[i] = data;
+                            break;
+                        }
+                    }
+                    setMusicList(musicList);
+                    mPost();
+                    //setOpen(true);
+                } else {
+                    setOpenError(true);
+                }
+                //replace the existing track with the new data in the array
+            }
         }
     }
 
@@ -84,168 +95,177 @@ export default function AddMusic() {
     };
 
     // take the id from the select and use it to populate the form
-    const viewDetails = () => {
-        const id = getValues('id');
-        // use the music function from the queries page to get the track details
-        Music(id).then((mtrack) => {
+    const viewDetails = async () => {
+        const id = getValues('ID');
 
-        if (mtrack) {
-            setValue('trackName', mtrack[0].trackName);
-            setValue('lyrics', mtrack[0].lyrics);
-            setValue('soprano', mtrack[0].soprano);
-            setValue('alto', mtrack[0].alto);
-            setValue('tenor', mtrack[0].tenor);
-            setValue('allParts', mtrack[0].allParts);
-            setValue('piano', mtrack[0].piano);
+        try {
+            const mtrack = await MusicGET(id);
+            if (mtrack) {
+                setValue('TrackName', mtrack[0].TrackName);
+                setValue('Lyrics', mtrack[0].Lyrics);
+                setValue('Soprano', mtrack[0].Soprano);
+                setValue('Alto', mtrack[0].Alto);
+                setValue('Tenor', mtrack[0].Tenor);
+                setValue('AllParts', mtrack[0].AllParts);
+                setValue('Piano', mtrack[0].Piano);
+            }
+        } catch (error) {
+            console.error("Error fetching music data:", error);
+            // Handle error, e.g., display an error message to the user
         }
-    }
-    )
-    }
+    };
 
-    const deleteTrack = () => {
-        const id = getValues('id');
-        if (id > 0) {
-            const deleteResponse:string = musicListDELETE(id);
-            if (deleteResponse === 'success') {
-                setOpen(true);
-                // remove the track from the array
-                setMusicList(musicList.filter((track) => track.id !== id));
-            } else {
-                setOpenError(true);
+    const deleteTrack = async () => {
+        try {
+            const id = await getValues('ID');
+
+            if (id > 0) {
+                const deleteResponse = await musicTrackDELETE(id);
+                if (deleteResponse === 'success') {
+                    setOpen(true);
+                    // reset the form
+                    setValue('ID', 0);
+                    setValue('TrackName', '');
+                    setValue('Lyrics', '');
+                    setValue('Soprano', '');
+                    setValue('Alto', '');
+                    setValue('Tenor', '');
+                    setValue('AllParts', '');
+                    setValue('Piano', '');
+                    // snackbar the deletion
+                    // remove the track from the array
+                    setMusicList(musicList.filter((track) => track.ID !== id));
+                } else {
+                    setOpenError(true);
+                }
             }
         }
-        // reset the form
-        setValue('id', 0);
-        setValue('trackName', '');
-        setValue('lyrics', '');
-        setValue('soprano', '');
-        setValue('alto', '');
-        setValue('tenor', '');
-        setValue('allParts', '');
-        setValue('piano', '');
-        // snackbar the deletion
-
+        catch (error) {
+            console.error("Error deleting music data:", error);
+            // Handle error, e.g., display an error message to the user
+        }
     }
+
 
     return (
 
         <Container>
-            <Grid container spacing={2}>
-                <Grid size={12}>
+            <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                     <Typography variant="h4">Add or Edit Music Entries</Typography>
-                </Grid>
+                </Grid2>
 
                 {/* add a select containing all of the existing  */}
-                <Grid size={12}>
+                <Grid2 size={12}>
                     <FormControl fullWidth><InputLabel id="ExistingTracks">Venue</InputLabel>
-                        <Controller name="id" control={control} render={({ field }) => (
-                            <Select {...field}  {...register("id")} label="Existing Tracks" required
+                        <Controller name="ID" control={control} render={({ field }) => (
+                            <Select {...field}  {...register("ID")} label="Existing Tracks" required
                                 onChange={(e) => { field.onChange(e); viewDetails(); }}>
 
 
                                 <MenuItem key={0} value={0}>New Track</MenuItem>
                                 {musicList && musicList.map((track) =>
-                                    <MenuItem key={track.id} value={track.id}>
-                                        {track.trackName}
+                                    <MenuItem key={track.ID} value={track.ID}>
+                                        {track.TrackName}
                                     </MenuItem>
                                 )}
                             </Select>
                         )} />
                     </FormControl>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                     <Typography variant="h4">Track Details</Typography>
-                </Grid>
-                <Grid size={12}>
+                </Grid2>
+                <Grid2 size={12}>
                     <form onSubmit={handleSubmit(FormSubmitHandler)}>
-                        <Grid container spacing={2}>
-                            <Grid size={12}>
+                        <Grid2 container spacing={2}>
+                            <Grid2 size={12}>
                                 <TextField
                                     variant='outlined'
                                     label="Track Name"
                                     placeholder='Track Name'
-                                    value={watch('trackName')}
+                                    value={watch('TrackName')}
                                     fullWidth
-                                    {...register('trackName')}
-                                    error={!!errors.trackName}
-                                    helperText={errors.trackName?.message}
+                                    {...register('TrackName')}
+                                    error={!!errors.TrackName}
+                                    helperText={errors.TrackName?.message}
                                 />
-                            </Grid>
-                            <Grid size={12}>
+                            </Grid2>
+                            <Grid2 size={12}>
                                 <TextField
                                     label="Lyrics"
-                                    value={watch('lyrics')}
+                                    value={watch('Lyrics')}
                                     fullWidth
-                                    {...register('lyrics')}
-                                    error={!!errors.lyrics}
-                                    helperText={errors.lyrics?.message}
+                                    {...register('Lyrics')}
+                                    error={!!errors.Lyrics}
+                                    helperText={errors.Lyrics?.message}
                                 />
-                            </Grid>
-                            <Grid size={12}>
+                            </Grid2>
+                            <Grid2 size={12}>
                                 <TextField
                                     label="Soprano"
-                                    value={watch('soprano')}
+                                    value={watch('Soprano')}
                                     fullWidth
-                                    {...register('soprano')}
-                                    error={!!errors.soprano}
-                                    helperText={errors.soprano?.message}
+                                    {...register('Soprano')}
+                                    error={!!errors.Soprano}
+                                    helperText={errors.Soprano?.message}
                                 />
-                            </Grid>
-                            <Grid size={12}>
+                            </Grid2>
+                            <Grid2 size={12}>
                                 <TextField
                                     label="Alto"
                                     fullWidth
-                                    value={watch('alto')}
-                                    {...register('alto')}
-                                    error={!!errors.alto}
-                                    helperText={errors.alto?.message}
+                                    value={watch('Alto')}
+                                    {...register('Alto')}
+                                    error={!!errors.Alto}
+                                    helperText={errors.Alto?.message}
                                 />
-                            </Grid>
-                            <Grid size={12}>
+                            </Grid2>
+                            <Grid2 size={12}>
                                 <TextField
                                     label="Tenor"
                                     fullWidth
-                                    value={watch('tenor')}
-                                    {...register('tenor')}
-                                    error={!!errors.lyrics}
-                                    helperText={errors.lyrics?.message}
+                                    value={watch('Tenor')}
+                                    {...register('Tenor')}
+                                    error={!!errors.Lyrics}
+                                    helperText={errors.Lyrics?.message}
                                 />
-                            </Grid>
-                            <Grid size={12}>
+                            </Grid2>
+                            <Grid2 size={12}>
                                 <TextField
                                     label="All Parts"
                                     fullWidth
-                                    value={watch('allParts')}
-                                    {...register('allParts')}
-                                    error={!!errors.allParts}
-                                    helperText={errors.allParts?.message}
+                                    value={watch('AllParts')}
+                                    {...register('AllParts')}
+                                    error={!!errors.AllParts}
+                                    helperText={errors.AllParts?.message}
                                 />
-                            </Grid>
-                            <Grid size={12}>
+                            </Grid2>
+                            <Grid2 size={12}>
                                 <TextField
                                     label="Piano"
                                     fullWidth
-                                    value={watch('piano')}
-                                    {...register('piano')}
-                                    error={!!errors.piano}
-                                    helperText={errors.piano?.message}
+                                    value={watch('Piano')}
+                                    {...register('Piano')}
+                                    error={!!errors.Piano}
+                                    helperText={errors.Piano?.message}
                                 />
-                            </Grid>
-                            <Grid size={3}>
+                            </Grid2>
+                            <Grid2 size={3}>
                                 <Button type="submit" variant="contained">Save Details</Button>
-                            </Grid>
-                            <Grid size={9} sx={{ align: 'right' }}>
+                            </Grid2>
+                            <Grid2 size={9} sx={{ align: 'right' }}>
                                 <Button variant="contained" onClick={deleteTrack}   >Delete Track</Button>
-                            </Grid>
-                            <Grid size={12}>
+                            </Grid2>
+                            <Grid2 size={12}>
                                 <Link to="/Music">
                                     <Button variant="contained">Back</Button>
                                 </Link>
-                            </Grid>
-                        </Grid>
+                            </Grid2>
+                        </Grid2>
                     </form>
-                </Grid>
-            </Grid>
+                </Grid2>
+            </Grid2>
             <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
                 <Alert onClose={handleClose} severity="success">
                     Booking submitted successfully!

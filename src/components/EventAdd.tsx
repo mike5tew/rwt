@@ -16,7 +16,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/en-gb';
 import { useNavigate } from 'react-router-dom';
-import {eventsPOST} from '../services/queries';
+import {EventPOST} from '../services/queries';
 
 const ColorButton = styled(Button)({
     color: 'white',
@@ -42,14 +42,14 @@ const schema = yup.object().shape({
 export default function EventAdd() {
     const { register, setValue, watch, getValues, handleSubmit, control, formState: { errors } } = useForm<EventDetails>({
         defaultValues: {
-            title: "",
-            location: "",
-            eventDate: new Date(),
-            startTime: "",
-            endTime: "",
-            meetingPoint: "",
-            price: "",
-            invitation: "",
+            Title: "",
+            Location: "",
+            EventDate: new Date(),
+            StartTime: "",
+            EndTime: "",
+            MeetingPoint: "",
+            Price: "",
+            Invitation: "",
         },
     });
 
@@ -72,14 +72,14 @@ export default function EventAdd() {
             setOpen(true);
             console.log(open);
             // reset the form
-            setValue("title", "");
-            setValue("location", "");
-            setValue("eventDate", new Date());
-            setValue("invitation", "");
-            setValue("startTime", "");
-            setValue("endTime", "");
-            setValue("meetingPoint", "");
-            setValue("price", "");  
+            setValue("Title", "");
+            setValue("Location", "");
+            setValue("EventDate", new Date());
+            setValue("Invitation", "");
+            setValue("StartTime", "");
+            setValue("EndTime", "");
+            setValue("MeetingPoint", "");
+            setValue("Price", "");  
     };
 
     const handleClose = () => {
@@ -118,21 +118,23 @@ export default function EventAdd() {
         var evDt = evDate.toDate();
         var eventDate = DatetoString(evDt);
         var newEvent: EventDetails = EmptyEventDetails();
-        newEvent.title= data.title;
-        newEvent.location= data.location;
-        newEvent.eventDate= evDt;
-        newEvent.startTime= data.startTime;
-        newEvent.endTime= data.endTime;
-        newEvent.price= data.price;
-        newEvent.meetingPoint= data.meetingPoint;
-        newEvent.invitation= data.invitation;
+        newEvent.Title= data.Title;
+        newEvent.Location= data.Location;
+        newEvent.EventDate= evDt;
+        newEvent.StartTime= data.StartTime;
+        newEvent.EndTime= data.EndTime;
+        newEvent.Price= data.Price;
+        newEvent.MeetingPoint= data.MeetingPoint;
+        newEvent.Invitation= data.Invitation;
 
-        var res = eventsPOST(newEvent);
+        EventPOST(newEvent).then((res) => {
         if (res=== "Values Inserted")   {
             handleClick();
         } else {
             setOpenError(true);
         }
+    }
+    );
 
 
     };
@@ -147,11 +149,11 @@ export default function EventAdd() {
                             id="title" required
                             label="Title"
                             
-                            value = {watch("title")}
+                            value = {watch("Title")}
                             fullWidth
-                            {...register("title")}
-                            error={errors.title ? true : false}
-                            helperText={errors.title ? errors.title.message : ""}
+                            {...register("Title")}
+                            error={errors.Title ? true : false}
+                            helperText={errors.Title ? errors.Title.message : ""}
                         />
                     </Grid>
                     <Grid size={12} >
@@ -159,19 +161,19 @@ export default function EventAdd() {
                             id="location" required
                             label="Location"
                             
-                            value = {watch("location")}
+                            value = {watch("Location")}
                             fullWidth
-                            {...register("location")}
-                            error={errors.title ? true : false}
-                            helperText={errors.title ? errors.title.message : ""}
+                            {...register("Location")}
+                            error={errors.Title ? true : false}
+                            helperText={errors.Title ? errors.Title.message : ""}
                         />
                     </Grid>
                     <Grid size={6} >
-                    <Controller name="eventDate" control={control} render={({ field: { ref, name, ...field }}) => (
+                    <Controller name="EventDate" control={control} render={({ field: { ref, name, ...field }}) => (
                   <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='en-gb' >
                      <DatePicker label="Event Date" value={evDate} 
                      onChange={(newValue) => setEvDate(newValue)}  />
-                    <div style={{ color: "red" }}>{errors.eventDate?.message}</div>
+                    <div style={{ color: "red" }}>{errors.EventDate?.message}</div>
                   </LocalizationProvider>
                 )} />
 
@@ -182,9 +184,9 @@ export default function EventAdd() {
                             label="Start Time"
                             
                             fullWidth
-                            {...register("startTime")}
-                            error={errors.startTime ? true : false}
-                            helperText={errors.startTime ? errors.startTime.message : ""}
+                            {...register("StartTime")}
+                            error={errors.StartTime ? true : false}
+                            helperText={errors.StartTime ? errors.StartTime.message : ""}
                         />
                     </Grid>
                     <Grid size={6} >
@@ -193,9 +195,9 @@ export default function EventAdd() {
                             label="End Time"
                             
                             fullWidth
-                            {...register("endTime")}
-                            error={errors.endTime ? true : false}
-                            helperText={errors.endTime ? errors.endTime.message : ""}
+                            {...register("EndTime")}
+                            error={errors.EndTime ? true : false}
+                            helperText={errors.EndTime ? errors.EndTime.message : ""}
                         />
                     </Grid>
                     <Grid size={6} >
@@ -204,9 +206,9 @@ export default function EventAdd() {
                             label="price"
                             
                             fullWidth
-                            {...register("price")}
-                            error={errors.endTime ? true : false}
-                            helperText={errors.endTime ? errors.endTime.message : ""}
+                            {...register("Price")}
+                            error={errors.EndTime ? true : false}
+                            helperText={errors.EndTime ? errors.EndTime.message : ""}
                         />
                     </Grid>
                     <Grid size={12}>
@@ -215,9 +217,9 @@ export default function EventAdd() {
                             label="Meeting Point"
                             
                             fullWidth
-                            {...register("meetingPoint")}
-                            error={errors.meetingPoint ? true : false}
-                            helperText={errors.meetingPoint ? errors.meetingPoint.message : ""}
+                            {...register("MeetingPoint")}
+                            error={errors.MeetingPoint ? true : false}
+                            helperText={errors.MeetingPoint ? errors.MeetingPoint.message : ""}
                         />
                     </Grid>
                     <Grid size={12}>
@@ -226,9 +228,9 @@ export default function EventAdd() {
                             label="Invitation message"
                             
                             fullWidth
-                            {...register("invitation")}
-                            error={errors.meetingPoint ? true : false}
-                            helperText={errors.meetingPoint ? errors.meetingPoint.message : ""}
+                            {...register("Invitation")}
+                            error={errors.MeetingPoint ? true : false}
+                            helperText={errors.MeetingPoint ? errors.MeetingPoint.message : ""}
                         />
                     </Grid>
 

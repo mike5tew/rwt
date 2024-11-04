@@ -13,8 +13,8 @@ import UploadService from '../services/FileUploadService';
 import { set } from 'react-hook-form';
 import FileResizeService from '../services/ResizeImage';
 import FileUploadService from '../services/FileUploadService';
-import { EmptyURLdetails } from '../types/types.d';
-import { deleteImageRecord, ImagesFromEvent } from '../services/queries';
+import { EmptyDatURLResponse } from '../types/types.d';
+import { ImageDELETE, ImagesFromEvent } from '../services/queries';
 
 interface ImagesSelectedProps {
     logoImage: string;
@@ -52,11 +52,11 @@ const ImageSelect = (props: ImagesSelectedProps) => {
     function DeleteImage(id: number): void {
         console.log("delete image: " + id)
         // delete the image from the database
-        deleteImageRecord(id).
+        ImageDELETE(id).
             then(() => {
                 // remove the image from the images array
                 console.log("images length before delete: " + images.length)
-                const newImages = images.filter((image) => image.imageID !== id);
+                const newImages = images.filter((image) => image.ImageID !== id);
                 setImages(newImages);
 
                 console.log("images length after delete: " + images.length)
@@ -97,7 +97,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
     ]
     const tableRowsImages = images.map((image) => {
         //console.log("image: " + image.eventID)
-        return { image: image, filename: image.filename, caption: image.caption, id: image.imageID, type: gatherType(image.eventID), width: image.width, height: image.height }
+        return { image: image, filename: image.Filename, caption: image.Caption, id: image.ImageID, type: gatherType(image.EventID), width: image.Width, height: image.Height }
     })
 
     const handleImageSelect = () => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,12 +106,12 @@ const ImageSelect = (props: ImagesSelectedProps) => {
 
     const setImageValue = (type: string, filename: string) => {
         if (type === "logo") {
-            const ThisSelection: ImageSelection = { logoImage: filename, backgroundImage: BackgroundDetails.filename }
+            const ThisSelection: ImageSelection = { logoImage: filename, backgroundImage: BackgroundDetails.Filename }
             setLogoImageName(filename)
             // The onSelect function is passed in as a prop from the parent component and is used to update the logo and background images
             onSelect(ThisSelection)
         } else {
-            const ThisSelection: ImageSelection = { logoImage: LogoDetails.filename, backgroundImage: filename }
+            const ThisSelection: ImageSelection = { logoImage: LogoDetails.Filename, backgroundImage: filename }
             setBackgroundImageName(filename)
             onSelect(ThisSelection)
         }
@@ -149,8 +149,12 @@ const ImageSelect = (props: ImagesSelectedProps) => {
     function imageURL(imagename: string): string {
         //
         // urlencode the filename
-        let stringURL = EmptyURLdetails()
-        var filename = stringURL.url + "images/"+ encodeURIComponent(imagename)
+        let stringURL = process.env.REACT_APP_API_URL
+        if (typeof stringURL === 'undefined') {
+            console.log("stringURL is undefined")
+            return ""
+        }
+        var filename = stringURL + "images/"+ encodeURIComponent(imagename)
         console.log("filename: " + filename)
         return filename
     }
@@ -165,18 +169,18 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         setLogoImageName(logoImage);
         setBackgroundImageName(backgroundImage);
         ImagesFromEvent(0)
-            .then((response) => {
-                // console.log(response.data)
+            .then((respon) => {
+                // console.log(respon.data)
                 // the data needs converting to an array of imagedetail objects
                 var newImages: ImageDetail[] = []
-                for (var i = 0; i < response.length; i++) {
+                for (var i = 0; i < respon.length; i++) {
                     var newImage: ImageDetail = EmptyImageDetail()
-                    newImage.imageID = response[i].imageID
-                    newImage.caption = imageURL(response[i].filename)
-                    newImage.eventID = response[i].eventID
-                    newImage.filename = response[i].filename
-                    newImage.height = response[i].height
-                    newImage.width = response[i].width
+                    newImage.ImageID = respon[i].ImageID
+                    newImage.Caption = imageURL(respon[i].Filename)
+                    newImage.EventID = respon[i].EventID
+                    newImage.Filename = respon[i].Filename
+                    newImage.Height = respon[i].Height
+                    newImage.Width = respon[i].Width
                     newImages.push(newImage)
                 }
                 setImages(newImages)
@@ -205,11 +209,11 @@ const ImageSelect = (props: ImagesSelectedProps) => {
             var img = new Image();
             img.src = URL.createObjectURL(BGFile);
             img.onload = () => {
-                BackgroundDetails.height = img.height;
-                BackgroundDetails.width = img.width;
-                BackgroundDetails.filename = BGFile.name;
-                BackgroundDetails.eventID = 0;
-                BackgroundDetails.caption = imageURL(BGFile.name);
+                BackgroundDetails.Height = img.height;
+                BackgroundDetails.Width = img.width;
+                BackgroundDetails.Filename = BGFile.name;
+                BackgroundDetails.EventID = 0;
+                BackgroundDetails.Caption = imageURL(BGFile.name);
             }
             resolve(BackgroundDetails);
         }
@@ -228,20 +232,20 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         // resize the image to thumbnail, create the imagedetail object and add this to the images array
         FileResizeService.resizeImage(currentFile, 100).then(
             FileResizeService.dataURLtoFile).then((res) => {
-                var ThumbnailDetails = res.fileDetails;
-                ThumbnailDetails.eventID = 0;
-                ThumbnailDetails.caption = imageURL(res.fileDetails.filename);
-                thumbnail = res.returnedFile;
+                var ThumbnailDetails = res.FileDetails;
+                ThumbnailDetails.EventID = 0;
+                ThumbnailDetails.Caption = imageURL(res.FileDetails.Filename);
+                thumbnail = res.ReturnedFile;
                 setImages([...images, ThumbnailDetails]);
                 if (ImageSelect === "Logo") {
                     FileResizeService.resizeImage(currentFile, 250).then(
                         FileResizeService.dataURLtoFile).then((res) => {
-                            var LogoDetails = res.fileDetails;
-                            LogoDetails.eventID = -1;
-                            logo = res.returnedFile;
+                            var LogoDetails = res.FileDetails;
+                            LogoDetails.EventID = -1;
+                            logo = res.ReturnedFile;
                         }
                         ).then(() => {
-                            UploadService.upload(logo, LogoDetails.filename, -1, LogoDetails.width, LogoDetails.height, '', 'http://localhost:3001/uploadLogo', (event: { loaded: number; total: number; }) => {
+                            UploadService.upload(logo, LogoDetails.Filename, -1, LogoDetails.Width, LogoDetails.Height, '', 'uploadLogo', (event: { loaded: number; total: number; }) => {
                                 setProgress(Math.round((100 * event.loaded) / event.total));
                             }).then(UploadService.sendFile).then(() => {
                                 setLogoImageName("")
@@ -258,7 +262,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                 else {
                     // if it is not a logo then the image is background which is not resized.  So we need to get the size information and add this to the images array
                     FileResizeService.getSize(currentFile).then((res) => {
-                        FileUploadService.upload(currentFile, res.filename, 0, res.width, res.height, '', 'http://localhost:3001/uploadBackground', (event: { loaded: number; total: number; }) => {
+                        FileUploadService.upload(currentFile, res.Filename, 0, res.Width, res.Height, '', 'uploadBackground', (event: { loaded: number; total: number; }) => {
                             setProgress(Math.round((100 * event.loaded) / event.total));
                         } ).then(UploadService.sendFile).then(() => {
                             setBackgroundImageName("")

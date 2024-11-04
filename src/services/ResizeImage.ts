@@ -32,16 +32,16 @@ function resizeImage(originalImage: File, newWidth: number) {
             // console.log('resized image width:' + newWidth + ' height:' + newHeight + ' filename:' + filename + ' filetype:' + filetype);
 
             let dURL = EmptyDatURLResponse();
-            dURL.returnedFile = new File([], filename, { type: filetype });
+            dURL.ReturnedFile = new File([], filename, { type: filetype });
             let ImDet = EmptyImageDetail();
-            ImDet.filename = filename;
-            ImDet.height = newHeight;
-            ImDet.width = newWidth;
-            ImDet.caption = canvas.toDataURL(filetype)
-            ImDet.imagetype = 1;
-            ImDet.rows = 1;
-            ImDet.cols = 1;
-            dURL.fileDetails = ImDet;
+            ImDet.Filename = filename;
+            ImDet.Height = newHeight;
+            ImDet.Width = newWidth;
+            ImDet.Caption = canvas.toDataURL(filetype)
+            ImDet.Imagetype = 1;
+            ImDet.Rows = 1;
+            ImDet.Cols = 1;
+            dURL.FileDetails = ImDet;
             
             resolve(dURL);
         }
@@ -57,8 +57,8 @@ function resizeImage(originalImage: File, newWidth: number) {
 function dataURLtoFile(datURL:DatURLResponse)  {
 return new Promise<DatURLResponse>((resolve, reject) => {
      
-    const data = datURL.fileDetails.caption;
-    datURL.fileDetails.caption = '';
+    const data = datURL.FileDetails.Caption;
+    datURL.FileDetails.Caption = '';
     if (data.indexOf(';base64,') === -1) {
         // if the data is not base64 encoded, then it is a file object
         // split the data into parts
@@ -69,7 +69,7 @@ return new Promise<DatURLResponse>((resolve, reject) => {
         const raw = parts[1];
         // define a new object of type DatURLResponse
         
-        datURL.returnedFile = new File([raw], datURL.fileDetails.filename, { type: contentType });
+        datURL.ReturnedFile = new File([raw], datURL.FileDetails.Filename, { type: contentType });
         resolve(datURL);
 
     }
@@ -86,7 +86,7 @@ return new Promise<DatURLResponse>((resolve, reject) => {
     for (let i = 0; i < rawLength; ++i) {
         uInt8Array[i] = raw.charCodeAt(i);
     }
-    datURL.returnedFile = new File([uInt8Array], datURL.fileDetails.filename, { type: contentType });
+    datURL.ReturnedFile = new File([uInt8Array], datURL.FileDetails.Filename, { type: contentType });
     resolve(datURL);
 }
 );
@@ -100,13 +100,13 @@ function getSize(file: File) {
             img.src = readerEvent.target?.result as string;
             img.onload = () => {
                 var ImDet = EmptyImageDetail();
-                ImDet.filename = file.name;
-                ImDet.height = img.naturalHeight;
-                ImDet.width = img.naturalWidth;
-                ImDet.caption = '';
-                ImDet.imagetype = 1;
-                ImDet.rows = 1;
-                ImDet.cols = 1;
+                ImDet.Filename = file.name;
+                ImDet.Height = img.naturalHeight;
+                ImDet.Width = img.naturalWidth;
+                ImDet.Caption = '';
+                ImDet.Imagetype = 1;
+                ImDet.Rows = 1;
+                ImDet.Cols = 1;
                 resolve(ImDet);
             }
         }

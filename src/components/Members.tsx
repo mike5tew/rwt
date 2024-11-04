@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Grid, Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
+import { Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
+import Grid2 from '@mui/material/Grid2';
 import { User, EmptyUser } from '../types/types.d';
+import { login } from 'src/services/queries';
 // import the users array from the .env file
 
 // the login is a simple form that takes in a username and password
@@ -20,36 +22,29 @@ const history= useNavigate();
 
   const handleLogin = () => {
     const user: User = { ...EmptyUser() };
-    user.username = username;
-    user.password = password;
-    user.role = 'user';
+    user.Username = username;
+    user.Password = password;
+    user.Role = 'user';
      // send the user info to the login endpoint
     // if the user is authenticated, redirect to the music page
-    fetch('http://localhost:3001/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(user),
-    }).then((response) => {
-      if (response.status === 200) {
-        // set a cookie to remember the user
+    login(user).then((data) => {
+      if (data) {
         document.cookie = `username=${username}`;
         history('/membersPage');
 
       } else {
-        // show a snackbar with an error message and delete the cookie
-        // the snackbar is not currently working because the state is not updating
+        // show a snackbar with an error message
         document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
         setOpen(true);
-        console.log('Invalid username or password: '+response.status + ' ' + open);
+        console.log('Invalid username or password: ', data);
       }
-    });
+    }
+    );
   }
   
   return (
-    <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
-      <Grid item xs={12} sm={6} md={4} lg={3}>
+    <Grid2 container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
+      <Grid2 size={12}>
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Choir Members
@@ -79,9 +74,9 @@ const history= useNavigate();
             Forgot password?
           </Link> */}
         </Paper>
-      </Grid>
+      </Grid2>
       <Box sx={{ height: 8 }} />
-      <Grid item xs={12}>
+      <Grid2 size={12}>
       <Snackbar
         open={open}
         autoHideDuration={6000}
@@ -90,7 +85,7 @@ const history= useNavigate();
         message="Invalid username or password"
       />
       <Box sx={{ height: 8 }} />
-      </Grid>
-    </Grid>
+      </Grid2>
+    </Grid2>
   );
 };

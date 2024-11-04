@@ -18,7 +18,7 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid';
 import { render } from '@testing-library/react';
 import { CloudUpload, ImageSearch } from '@mui/icons-material';
 import ImageSelect, { ImageSelection } from './ImageSelect';
-import { themeDetails, themeDetailsPUT } from '../services/queries';
+import { themeDetails, ThemeDetailsPUT } from '../services/queries';
 
 // There is an error TypeError: path.split is not a function
 // This is because the path is not a string.  It is an object.  We need to use path.toString() to convert it to a string on line 41 of editTheme.tsx, which should read as follows:
@@ -30,13 +30,13 @@ export default function EditTheme() {
     );
     // we need to create an interface to store the images
     interface ImageChoice {
-        backgroundImage: string;
-        logoImage: string;
+        BackgroundImage: string;
+        LogoImage: string;
     }
 
-    const [imgChoices, setImgChoices] = useState<ImageChoice>({ backgroundImage: "", logoImage: "" });
+    const [imgChoices, setImgChoices] = useState<ImageChoice>({ BackgroundImage: "", LogoImage: "" });
 
-    const [selectedItem, setSelectedItem] = useState<"boxColour" | "textColour" | "textFont" | "backgroundImage" | "textboxColour" | "logoImage" | "bannerColour" | "menuColour" | "buttonColour" | "buttonHover" | "buttonTextColour" | "menuTextColour">("boxColour");
+    const [selectedItem, setSelectedItem] = useState<"BoxColour" | "TextColour" | "TextFont" | "BackgroundImage" | "TextboxColour" | "LogoImage" | "BannerColour" | "MenuColour" | "ButtonColour" | "ButtonHover" | "ButtonTextColour" | "MenuTextColour">("BoxColour");
     // const history = useHistory();
     // we need to create a data grid to display the themedetails and to do this we need to override the renderCell function to display the colour as a coloured box
     // we also need to add a button to select the item to change
@@ -53,15 +53,15 @@ export default function EditTheme() {
         }
     ];
     const tableRows = [
-        { id: 1, item: "Button Colour", colour: watch("buttonColour"), button: "buttonColour" },
-        { id: 2, item: "Button Hover", colour: watch("buttonHover"), button: "buttonHover" },
-        { id: 3, item: "Button Text Colour", colour: watch("buttonTextColour"), button: "buttonTextColour" },
-        { id: 4, item: "Menu Colour", colour: watch("menuColour"), button: "menuColour" },
-        { id: 5, item: "Menu Text Colour", colour: watch("menuTextColour"), button: "menuTextColour" },
-        { id: 6, item: "Banner Colour", colour: watch("bannerColour"), button: "bannerColour" },
-        { id: 7, item: "Background Colour", colour: watch("boxColour"), button: "boxColour" },
-        { id: 8, item: "Text Colour", colour: watch("textColour"), button: "textColour" },
-        { id: 9, item: "Textbox Colour", colour: watch("textboxColour"), button: "textboxColour" },
+        { id: 1, item: "Button Colour", colour: watch("ButtonColour"), button: "buttonColour" },
+        { id: 2, item: "Button Hover", colour: watch("ButtonHover"), button: "buttonHover" },
+        { id: 3, item: "Button Text Colour", colour: watch("ButtonTextColour"), button: "buttonTextColour" },
+        { id: 4, item: "Menu Colour", colour: watch("MenuColour"), button: "menuColour" },
+        { id: 5, item: "Menu Text Colour", colour: watch("MenuTextColour"), button: "menuTextColour" },
+        { id: 6, item: "Banner Colour", colour: watch("BannerColour"), button: "bannerColour" },
+        { id: 7, item: "Background Colour", colour: watch("BoxColour"), button: "boxColour" },
+        { id: 8, item: "Text Colour", colour: watch("TextColour"), button: "textColour" },
+        { id: 9, item: "Textbox Colour", colour: watch("TextboxColour"), button: "textboxColour" },
     ];
 
 
@@ -72,11 +72,11 @@ export default function EditTheme() {
         // we need to use axios to post the data to the mysql database
         // we need to retrieve the logoimage, backgroundimage and the mobileimage from the imageselect component
         console.log(data)
-        themeDetailsPUT(data).then(() => {
-                //snackbar display the message using the response.data 
+        ThemeDetailsPUT(data).then(() => {
+                //snackbar display the message using the respon.data 
                 setSnackMessage("Theme Saved.  Please refresh the page to see the changes")
                 setSnackOpen(true)
-                //console.log(response.data)                
+                //console.log(respon.data)                
             })
             .catch((error) => {
                 setSnackMessage("Error saving theme iuew7: "+error)
@@ -91,51 +91,51 @@ export default function EditTheme() {
     useEffect(() => {
         // we need to use axios to get the data from the mysql  database 
         themeDetails()
-            .then((response) => {
-                //console.log(response.data)
-                if (typeof response.buttonColour != null) {
-                setValue("buttonColour", response.buttonColour)
+            .then((respon) => {
+                //console.log(respon.data)
+                if (typeof respon.ButtonColour != null) {
+                setValue("ButtonColour", respon.ButtonColour)
                 }
-                if (typeof response.buttonHover != null) {
-                setValue("buttonHover", response.buttonHover)
+                if (typeof respon.ButtonHover != null) {
+                setValue("ButtonHover", respon.ButtonHover)
                 }
-                if (typeof response.buttonTextColour != null) {
-                setValue("buttonTextColour", response.buttonTextColour)
+                if (typeof respon.ButtonTextColour != null) {
+                setValue("ButtonTextColour", respon.ButtonTextColour)
                 }
-                if (typeof response.menuColour != null) {
-                setValue("menuColour", response.menuColour)
+                if (typeof respon.MenuColour != null) {
+                setValue("MenuColour", respon.MenuColour)
                 }
-                if (typeof response.menuTextColour != null) {
-                setValue("menuTextColour", response.menuTextColour)
+                if (typeof respon.MenuTextColour != null) {
+                setValue("MenuTextColour", respon.MenuTextColour)
                 }
-                if (typeof response.bannerColour != null) {
-                setValue("bannerColour", response.bannerColour)
+                if (typeof respon.BannerColour != null) {
+                setValue("BannerColour", respon.BannerColour)
                 }
-                if (typeof response.boxColour != null) {
-                setValue("boxColour", response.boxColour)
+                if (typeof respon.BoxColour != null) {
+                setValue("BoxColour", respon.BoxColour)
                 }
                 // console.log(watch("buttonColour"))
-                if (typeof response.textColour != null) {
-                setValue("textColour", response.textColour)
+                if (typeof respon.TextColour != null) {
+                setValue("TextColour", respon.TextColour)
                 }
-                if (typeof response.textboxColour != null) {
-                setValue("textboxColour", response.textboxColour)
+                if (typeof respon.TextboxColour != null) {
+                setValue("TextboxColour", respon.TextboxColour)
                 }
-                //console.log(response.textFont)
-                if (typeof response.textFont != null) {
-                setValue("textFont", response.textFont)
+                //console.log(respon.textFont)
+                if (typeof respon.TextFont != null) {
+                setValue("TextFont", respon.TextFont)
                 }
                 var imgChoice: ImageChoice 
-                if (typeof response.backgroundImage != null) {
-                setValue("backgroundImage", response.backgroundImage)
-                imgChoices.backgroundImage = response.backgroundImage
+                if (typeof respon.BackgroundImage != null) {
+                setValue("BackgroundImage", respon.BackgroundImage)
+                imgChoices.BackgroundImage = respon.BackgroundImage
                 } 
-                if (typeof response.logoImage != null) {
-                setValue("logoImage", response.logoImage)
-                imgChoices.logoImage = response.logoImage
+                if (typeof respon.LogoImage != null) {
+                setValue("LogoImage", respon.LogoImage)
+                imgChoices.LogoImage = respon.LogoImage
                 }
-                if (typeof response.textSize != null) {
-                setValue("textSize", response.textSize)
+                if (typeof respon.TextSize != null) {
+                setValue("TextSize", respon.TextSize)
                 }
             })
             .catch((error) => {
@@ -150,8 +150,8 @@ export default function EditTheme() {
         , [])
 
     const handleSelected = (data:ImageSelection)=>{
-        setValue("backgroundImage", data.backgroundImage)
-        setValue("logoImage", data.logoImage)
+        setValue("BackgroundImage", data.backgroundImage)
+        setValue("LogoImage", data.logoImage)
         //console.log("logo name returned: "+data.backgroundImage + " " + data.logoImage)
     }
     const [Snackopen, setSnackOpen] = useState(false);
@@ -205,10 +205,10 @@ export default function EditTheme() {
                     <InputLabel id="font-select">Font</InputLabel>
                     <Select
                         labelId="font-select"
-                        value={watch("textFont")}
+                        value={watch("TextFont")}
                         label=""
                         placeholder='Font'
-                        {...register("textFont")}
+                        {...register("TextFont")}
                     >
                         <MenuItem value={"Arial"}>Arial</MenuItem>
                         <MenuItem value={"Times New Roman"}>Times New Roman</MenuItem>
@@ -226,16 +226,16 @@ export default function EditTheme() {
             </Grid>
             <Grid size={6} >
                 <TextField
-                    {...register("textSize")}
+                    {...register("TextSize")}
                     label="Text Size"
                     placeholder="Text Size"
                     type="number"
                     fullWidth
-                    value={watch("textSize") ?? 12}
+                    value={watch("TextSize") ?? 12}
                 />
             </Grid>
             <Grid size={12} >
-                <ImageSelect onSelect={handleSelected} logoImage={imgChoices.logoImage} backgroundImage={imgChoices.backgroundImage} />
+                <ImageSelect onSelect={handleSelected} logoImage={imgChoices.LogoImage} backgroundImage={imgChoices.BackgroundImage} />
             </Grid>
             <Grid size={12}>
                 <Button onClick={savechanges}>Save Change</Button>

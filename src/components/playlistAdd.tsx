@@ -4,7 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { EventDetails, EmptyEventDetails, PlaylistEntry, EmptyPlaylistEntry, MusicTrack, EmptyMusicTrack, StringtoDate } from '../types/types.d';
 import { DataGrid, GridColDef, GridRowId, GridCellParams } from '@mui/x-data-grid';
-import { Button, Select, MenuItem, Grid, Paper, SelectChangeEvent, Typography, IconButton,  } from '@mui/material';
+import { Button, Select, MenuItem, Paper, SelectChangeEvent, Typography, IconButton,  } from '@mui/material';
+import Grid2 from '@mui/material/Grid2';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useNavigate } from 'react-router-dom';
@@ -47,11 +48,11 @@ export default function PlayListAdd() {
 
 
     useEffect(() => {
-        musicList().then(response => setTrackList(response)).catch(error => console.log(error));
+        musicList().then(respon => setTrackList(respon)).catch(error => console.log(error));
         setTablePlaylist([]);
         if (eventID > 0) {
             playlistGET(eventID)
-                .then(response => setPlaylist(response));
+                .then(respon => setPlaylist(respon));
             // create  an empty array to hold the playlist entries
             let holdingPlaylist: TableListEntries[] = [];
             
@@ -59,10 +60,10 @@ export default function PlayListAdd() {
                 console.log(playlist[i]);
                 let playListEntry: TableListEntries = {
                     id: i,
-                    musicTrackID: playlist[i].musicTrack.musicTrackID,
-                    trackName: playlist[i].musicTrack.trackName,
-                    artist: playlist[i].musicTrack.artist,
-                    playorder: playlist[i].playorder
+                    musicTrackID: playlist[i].MusicTrack.MusicTrackID,
+                    trackName: playlist[i].MusicTrack.TrackName,
+                    artist: playlist[i].MusicTrack.Artist,
+                    playorder: playlist[i].Playorder
                 };
                 holdingPlaylist.push(playListEntry);
             }
@@ -77,16 +78,16 @@ export default function PlayListAdd() {
 
     function handleAddTrack(trackID: number) {
         // copy the track details from the trackList and add to the playlist
-        let track = trackList.find(track => track.musicTrackID === trackID);
+        let track = trackList.find(track => track.MusicTrackID === trackID);
         if (track) {
             console.log(track);
         // create a new playlist entry
             let Tableplaylistcount = tableplaylist.length;
         var playListEntry: TableListEntries = {
             id: Tableplaylistcount + 1,
-            musicTrackID: track.musicTrackID,
-            trackName: track.trackName,
-            artist: track.artist,
+            musicTrackID: track.MusicTrackID,
+            trackName: track.TrackName,
+            artist: track.Artist,
             playorder: Tableplaylistcount + 1
         };
         setTablePlaylist([...tableplaylist, playListEntry]);
@@ -107,17 +108,17 @@ export default function PlayListAdd() {
         let playlist: PlaylistEntry[] = [];
         tableplaylist.forEach(track => {
             let playlistEntry: PlaylistEntry = EmptyPlaylistEntry();
-            playlistEntry.eventID = eventID;
-            playlistEntry.musicTrack = EmptyMusicTrack();
-            playlistEntry.musicTrack.musicTrackID = track.musicTrackID;
-            playlistEntry.playorder = track.playorder;
+            playlistEntry.EventID = eventID;
+            playlistEntry.MusicTrack = EmptyMusicTrack();
+            playlistEntry.MusicTrack.MusicTrackID = track.musicTrackID;
+            playlistEntry.Playorder = track.playorder;
             playlist.push(playlistEntry);
         });
 
 
         // save the playlist to the database
         playlistPOST(playlist)
-            .then(response => console.log(response));
+            .then(respon => console.log(respon));
             // reset the playlist
             setPlaylist([]);
             setTablePlaylist([]);
@@ -125,32 +126,32 @@ export default function PlayListAdd() {
 
     return (
         <div>
-               <Grid container spacing={2} paddingTop={2}>
-            <Grid item xs={12} md={12}><Typography variant="h6">Create a Playlist</Typography></Grid>
-            <Grid item xs={12} md={12}>
+               <Grid2  container spacing={2} paddingTop={2}>
+            <Grid2  size={12} ><Typography variant="h6">Create a Playlist</Typography></Grid2>
+            <Grid2  size={12} >
             <Select value={eventID} onChange={handleEventChange}>
                <MenuItem value={0}>Select Event</MenuItem>
                 {eventList.map((event) => (
-                    <MenuItem key={event.eventID} value={event.eventID}>{event.title +" "+StringtoDate(event.eventDate.toString())}</MenuItem>
+                    <MenuItem key={event.EventID} value={event.EventID}>{event.Title +" "+StringtoDate(event.EventDate.toString())}</MenuItem>
                 ))}
             </Select>
-            </Grid>
-                <Grid item xs={12} md={5}><Typography variant="h6">Track List</Typography></Grid>
-                <Grid item xs={12} md={7}><Typography variant="h6">Play List</Typography></Grid>
-                <Grid item xs={12} md={5}>
+            </Grid2>
+                <Grid2  size={12} ><Typography variant="h6">Track List</Typography></Grid2>
+                <Grid2  size={12} ><Typography variant="h6">Play List</Typography></Grid2>
+                <Grid2  size={12} >
                     <DataGrid rows={trackList} columns={allTrackColumns} autoHeight />
-                </ Grid>
-                        <Grid item xs={12} md={7}> 
+                </Grid2>
+                        <Grid2  size={12}> 
             <DataGrid
                 rows={tableplaylist}
                 columns={columns}
                 autoHeight
             />
-            </Grid>
-            <Grid item xs={12} md={12}>
+            </Grid2>
+            <Grid2  size={12} >
             <Button variant='outlined' onClick={() => handleSavePlayList()}>Save Play List</Button>
-            </Grid>
-        </Grid>
+            </Grid2>
+        </Grid2>
         </div>
     );
 }

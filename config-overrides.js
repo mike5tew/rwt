@@ -10,9 +10,14 @@ module.exports = function override(config) {
     Object.assign(fallback, { 
         buffer: require.resolve('buffer/'),
         stream: require.resolve('stream-browserify'),
+        crypto: require.resolve('crypto-browserify'),
         util: require.resolve('util/'),
         assert: require.resolve('assert/'),
         process: require.resolve('process/browser'),
+        http: require.resolve('stream-http'),
+        querystring: require.resolve('querystring-es3'),
+        timers: require.resolve('timers-browserify'),
+        zlib: require.resolve('browserify-zlib'),
         fs: false,
         os: false,
         

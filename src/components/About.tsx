@@ -1,9 +1,10 @@
 // This page is the about page of the application. It is a simple page that displays some information about the choir.
 
 import React, { useEffect, useState } from 'react';
-import { Typography, Grid, Paper, ImageList, ImageListItem, ImageListItemBar } from '@mui/material';
+import { Typography, Paper, ImageList, ImageListItem, ImageListItemBar } from '@mui/material';
+import Grid2 from '@mui/material/Grid2';
 import { Box } from '@mui/system';
-import { randomImages } from '../services/queries';
+import { randomImagesGET } from '../services/queries';
 import { ImageDetail, IsMobile } from '../types/types.d';
 
 export default function About() {
@@ -12,7 +13,7 @@ export default function About() {
 const [mobile, setMobile] = useState<string>(IsMobile());
 const [images1to3, setImages1to3] = React.useState<ImageDetail[]>([]);
 const [images4to6, setImages4to6] = React.useState<ImageDetail[]>([]);
-
+const [images, setImages] = React.useState<ImageDetail[]>([]);
 function srcset(image: string, width: number, rows: number, cols: number) {   
     return {
       src: `${image}?w=${width * cols}&h=${width * rows}&fit=crop&auto=format`,
@@ -24,29 +25,22 @@ function srcset(image: string, width: number, rows: number, cols: number) {
 // we are using axios to get the images from the database
 // we are using the useEffect hook to get the images from the database
 useEffect(() => {
-    // we need to establish the size of the display
-    // to do this we
-   //this is adding the images to the images array twice
-   // this is because the images array is being set to the data array twice on lines 116 and 117
-   var imagesTp: ImageDetail[] = randomImages(6)
-     var images1to3tp: ImageDetail[] = []
-    for (let i = 0; i < imagesTp.length; i++) {
-      images1to3tp = [...images1to3tp, imagesTp[i]]
-      if (i === 2) {
-        break
+  const fetchImages = async () => {
+    const images = await randomImagesGET(6);
+    if (images.length === 0) {
+      return;
     }
-  }
-    setImages1to3(images1to3tp)
-    var images4to6tp: ImageDetail[] = []
-  if (imagesTp.length > 3) {
-    for (let i = 3; i < imagesTp.length; i++) {
-      images4to6tp = [...images4to6tp, imagesTp[i]]
-    }    
-    }
-  setImages4to6(images4to6tp)
-  }
-  , []); // the empty array means that this will only run once when the page is loaded
 
+    const images1to3 = images.slice(0, 3);
+    const images4to6 = images.slice(3);
+
+    setImages(images);
+    setImages1to3(images1to3);
+    setImages4to6(images4to6);
+  };
+
+  fetchImages();
+}, []);
 
 // {imageID: 6, filename: 'PHOTO-2024-05-12-21-16-31.jpg', caption: '', eventID: 0}
 // {imageID: 3, filename: 'charity.jpeg', caption: '', eventID: 0}
@@ -54,36 +48,36 @@ useEffect(() => {
 //console.log(images);
     return (
         <Box> 
-            <Grid container spacing={2}>
-                <Grid item xs={12}>
+            <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                     <Paper>
                     <Typography variant="h4" align="left" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
                         {localStorage.getItem("AboutTitle")}</Typography>
                     </Paper>
-                </Grid>
-                <Grid item xs={12}>
+                </Grid2>
+                <Grid2 size={12}>
                     <Paper >
                         <Typography variant="body1" align="center" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
                             {localStorage.getItem("AboutText")}
                         </Typography>
                     </Paper>
-                </Grid>
-                <Grid item xs={12}>
+                </Grid2>
+                <Grid2 size={12}>
         <ImageList variant="masonry" gap={8} cols={3} rowHeight={164}>
       {//map the first three images in the images array to the carousel 
-      images1to3.map((item) => (
-        <ImageListItem key={item.imageID} >
+      images1to3.map((item, index) => (
+        <ImageListItem key={index} >
           <img
-            src={srcset("/images/"+item.filename, 121, item.rows, item.cols).src}
-            alt={item.caption}
+            src={srcset("/images/"+item.Filename, 121, item.Rows, item.Cols).src}
+            alt={item.Caption}
             loading="lazy"
           />
-          <ImageListItemBar title={item.caption} />
+          <ImageListItemBar title={item.Caption} />
         </ImageListItem>
       ))}
     </ImageList>
-    </Grid>
-            </Grid>
+    </Grid2>
+            </Grid2>
         </Box>
     );
 }

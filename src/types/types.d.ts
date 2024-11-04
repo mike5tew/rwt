@@ -1,202 +1,195 @@
 export interface ImageDetail {
-    imageID: number;
-    filename: string;
-    caption: string;
-    eventDetails: EventDetails;
-    rows: number;
-    cols: number;
-    height: number;
-    width: number;
-    eventID: number;
-    imagetype: number;
+    ImageID: number;
+    Filename: string;
+    Caption: string;
+    EventDetails: EventDetails;
+    Rows: number;
+    Cols: number;
+    Height: number;
+    Width: number;
+    EventID: number;
+    Imagetype: number;
 }
 
 export function EmptyImageDetail(): ImageDetail {
     return {
-        imageID: 0,
-        filename: "",
-        caption: "",
-        eventDetails: EmptyEventDetails(),
-        rows: 1,
-        cols: 1,
-        height: 0,
-        width: 0,
-        eventID: 0,
-        imagetype: 0
+        ImageID: 0,
+        Filename: "",
+        Caption: "",
+        EventDetails: EmptyEventDetails(),
+        Rows: 1,
+        Cols: 1,
+        Height: 0,
+        Width: 0,
+        EventID: 0,
+        Imagetype: 0
     };
 }
 
 
 
 export interface DatURLResponse {
-    returnedFile: File;
-    fileDetails: ImageDetail;
+    ReturnedFile: File;
+    FileDetails: ImageDetail;
 }
 export function EmptyDatURLResponse(): DatURLResponse {
     return {
-        returnedFile: new File([], ""),
-        fileDetails: EmptyImageDetail()
+        ReturnedFile: new File([], ""),
+        FileDetails: EmptyImageDetail()
     };
 }
 
-export interface URLdetails {
-    url: string;
-}
-export function EmptyURLdetails(): URLdetails {
-    return {
-        url: "http://localhost:3001/"
-    };
-}
+
 //eventID, location, eventDate, startTime, endTime, price, title
 export interface EventDetails {
-    eventID: number;
-    location: string;
-    eventDate: Date;
-    startTime: string;
-    endTime: string;
-    invitation: string;
-    meetingPoint: string;
-    price: string;
-    title: string;
-    playlist: PlaylistEntry[];
+    EventID: number;
+    Location: string;
+    EventDate: Date;
+    StartTime: string;
+    EndTime: string;
+    Invitation: string;
+    MeetingPoint: string;
+    Price: string;
+    Title: string;
+    Playlist: PlaylistEntry[];
 }
 // themeDetails, boxColour, textColour, textFont, backgroundImage, textboxColour, logoimage, bannerColour, menuColour, buttonColour, buttonHover, buttonTextColour, menuTextColour
 export interface ThemeDetails {
-    boxColour: string;
-    textColour: string;
-    textFont: string;
-    backgroundImage: string;
-    textboxColour: string;
-    logoImage: string;
-    bannerColour: string;
-    menuColour: string;
-    buttonColour: string;
-    buttonHover: string;
-    buttonTextColour: string;
-    menuTextColour: string;
-    textSize: number;
+    BoxColour: string;
+    TextColour: string;
+    TextFont: string;
+    BackgroundImage: string;
+    TextboxColour: string;
+    LogoImage: string;
+    BannerColour: string;
+    MenuColour: string;
+    ButtonColour: string;
+    ButtonHover: string;
+    ButtonTextColour: string;
+    MenuTextColour: string;
+    TextSize: number;
 }
 export function EmptyThemeDetails(): ThemeDetails {
     return {
-        boxColour: "",
-        textColour: "",
-        textFont: "",
-        backgroundImage: "",
-        textboxColour: "",
-        logoImage: "",
-        bannerColour: "",
-        menuColour: "",
-        buttonColour: "",
-        buttonHover: "",
-        buttonTextColour: "",
-        menuTextColour: "",
-        textSize: 0
+        BoxColour: "",
+        TextColour: "",
+        TextFont: "",
+        BackgroundImage: "",
+        TextboxColour: "",
+        LogoImage: "",
+        BannerColour: "",
+        MenuColour: "",
+        ButtonColour: "",
+        ButtonHover: "",
+        ButtonTextColour: "",
+        MenuTextColour: "",
+        TextSize: 0
     };
 }
 
 export function DefaultThemeDetails(): ThemeDetails {
     return {
-        boxColour: "white",
-        textColour: "black",
-        textFont: "Arial",
-        backgroundImage: "Musical Background.png",
-        textboxColour: "white",
-        logoImage: "Choir Logo.png",
-        bannerColour: "blue",
-        menuColour: "blue",
-        buttonColour: "blue",
-        buttonHover: "darkblue",
-        buttonTextColour: "white",
-        menuTextColour: "white",
-        textSize: 24
+        BoxColour: "white",
+        TextColour: "black",
+        TextFont: "Arial",
+        BackgroundImage: "Musical Background.png",
+        TextboxColour: "white",
+        LogoImage: "Choir Logo.png",
+        BannerColour: "blue",
+        MenuColour: "blue",
+        ButtonColour: "blue",
+        ButtonHover: "darkblue",
+        ButtonTextColour: "white",
+        MenuTextColour: "white",
+        TextSize: 24
     };
 }
 
 export function EmptyEventDetails(): EventDetails {
     return {
-        eventID: 0,
-        location: "",
-        eventDate: new Date(),
-        startTime: "",
-        endTime: "",
-        invitation: "",
-        meetingPoint: "",
-        price: "",
-        title: "",
-        playlist: [],
+        EventID: 0,
+        Location: "",
+        EventDate: new Date(),
+        StartTime: "",
+        EndTime: "",
+        Invitation: "",
+        MeetingPoint: "",
+        Price: "",
+        Title: "",
+        Playlist: [],
     };
 }
 
 //playlistID, eventID, musicID, playorder
 export interface PlaylistEntry {
-    id: number;
-    playlistID: number;
-    eventID: number;
-    musicTrack: MusicTrack; 
-    playorder: number;
+    ID: number;
+    PlaylistID: number;
+    EventID: number;
+    MusicTrack: MusicTrack; 
+    Playorder: number;
 }
 
 export function EmptyPlaylistEntry(): PlaylistEntry {
     return {
-        id: 0,
-        playlistID: 0,
-        eventID: 0,
-        musicTrack: EmptyMusicTrack(),
-        playorder: 0
+        Id: 0,
+        PlaylistID: 0,
+        EventID: 0,
+        MusicTrack: EmptyMusicTrack(),
+        Playorder: 0
     };
 }
 
 //clipID, clipURL, eventID, caption
 export interface Clip {
-    id: number;
-    clipURL: string;
-    eventID: number;
-    caption: string;
+    ID: number;
+    ClipURL: string;
+    EventID: number;
+    Caption: string;
 }
 export function EmptyClip(): Clip {
     return {
-        id: 0,
-        clipURL: "",
-        eventID: 0,
-        caption: ""
+        ID: 0,
+        ClipURL: "",
+        EventID: 0,
+        Caption: ""
     };
 }
 //archiveID, eventID, report
 export interface ArchiveEntry {
-    archiveID: number;
-    nextFile: string;
-    imagecaption: string;
-    nextURL: string;
-    clipcaption: string;
-    eventDetails: EventDetails;
-    report: string;
-    images: ImageDetail[];
-    clips: Clip[];
+    ArchiveID: number;
+    NextFile: string;
+    Imagecaption: string;
+    NextURL: string;
+    Clipcaption: string;
+    EventDetails: EventDetails;
+    Report: string;
+    Images: ImageDetail[];
+    Clips: Clip[];
 }
 export function EmptyArchiveEntry(): ArchiveEntry {
     return {
-        archiveID: 0,
-        eventDetails: EmptyEventDetails(),
-        nextFile: "",
-        imagecaption: "",
-        nextURL: "",
-        clipcaption: "",
-        report: "",
-        images: [],
-        clips: []
+        ArchiveID: 0,
+        EventDetails: EmptyEventDetails(),
+        NextFile: "",
+        Imagecaption: "",
+        NextURL: "",
+        Clipcaption: "",
+        Report: "",
+        Images: [],
+        Clips: []
     };
 }
 // musicTrackID, trackName, lyrics, soprano, alto, tenor, allParts
 export interface MusicTrack {
-    musicTrackID: number;
-    trackName: string;
-    artist: string;
-    lyrics: string;
-    soprano: string;
-    alto: string;
-    tenor: string;
-    allParts: string;
-    piano: string;
+    MusicTrackID: number;
+    TrackName: string;
+    Artist: string;
+    Lyrics: string;
+    Soprano: string;
+    Alto: string;
+    Tenor: string;
+    AllParts: string;
+    Piano: string;
 }
 
 export function IsMobile() {
@@ -233,29 +226,29 @@ export  const DatetoString =(date: Date) => {
   }
 
   export interface Message {
-    messageID: number;
-    messageDate: string
-    messageFrom: string;
-    messageContent: string;
+    MessageID: number;
+    MessageDate: string
+    MessageFrom: string;
+    MessageContent: string;
     }
 export function EmptyMessage(): Message {
     return {
-        messageID: 0,
-        messageDate: "",
-        messageFrom: "",
-        messageContent: ""
+        MessageID: 0,
+        MessageDate: "",
+        MessageFrom: "",
+        MessageContent: ""
     };
 }
 export interface User {
-    username: string;
-    password: string;
-    role: string;
+    Username: string;
+    Password: string;
+    Role: string;
   }
 export function EmptyUser(): User {
     return {
-        username: "",
-        password: "",
-        role: ""
+        Username: "",
+        Password: "",
+        Role: ""
     };
 }  
 
@@ -265,15 +258,15 @@ export function EmptyUser(): User {
 };
 
 export interface ImageFiles {
-    mainImage: File;
-    mobileImage: File;
-    eventID: number;
+    MainImage: File;
+    MobileImage: File;
+    EventID: number;
 }
 
 //id, HomeTitle, HomeText, AboutTitle, AboutText, ArchiveTitle, ArchiveText, NoticesTitle, NoticesText, BookingTitle, BookingText, MembersTitle, MembersText, AppealTitle, AppealText, SettingsTitle, SettingsText
 
 export interface SiteInfo {
-    id: number;
+    ID: number;
     HomeTitle: string;
     HomeText: string;
     AboutTitle: string;
@@ -294,7 +287,7 @@ export interface SiteInfo {
 
 export function EmptySiteInfo(): siteInfo {
     return {
-        id: 0,
+        ID: 0,
         HomeTitle: "",
         HomeText: "",
         AboutTitle: "",
@@ -316,26 +309,26 @@ export function EmptySiteInfo(): siteInfo {
 
 export interface MusicTrack {
     // using the same schema as the music.json file
-    id : number,
-    trackName : string,
-    lyrics : string,
-    soprano : string,
-    alto : string,
-    tenor : string,
-    allParts : string,
-    piano : string
+    ID : number,
+    TrackName : string,
+    Lyrics : string,
+    Soprano : string,
+    Alto : string,
+    Tenor : string,
+    AllParts : string,
+    Piano : string
 }
 
 export function EmptyMusicTrack(): MusicTrack {
     return {
-        id: 0,
-        trackName: "",
-        lyrics: "",
-        soprano: "",
-        alto: "",
-        tenor: "",
-        allParts: "",
-        piano: ""
+        ID: 0,
+        TrackName: "",
+        Lyrics: "",
+        Soprano: "",
+        Alto: "",
+        Tenor: "",
+        AllParts: "",
+        Piano: ""
     };
 }
 

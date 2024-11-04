@@ -1,13 +1,13 @@
-// This page displays messages that have been sent to the choir.  It will have a title, date, and content.  It will also allow these messages to be marked as read or deleted.
+// This page displays Messages that have been sent to the choir.  It will have a title, date, and content.  It will also allow these Messages to be marked as read or deleted.
 
-import React from 'react';
-import { Container, Grid, Button, Typography, Divider, Paper, Snackbar } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Container, Button, Typography, Divider, Paper, Snackbar } from '@mui/material';
+import Grid2 from '@mui/material/Grid2';
 import Card from 'react-bootstrap/Card';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Message } from '../types/types.d';
+import { messageDELETE, messagesGET } from '../services/queries';
 // form detail from react hook form
 
 export default function ViewMessages() {
@@ -16,36 +16,35 @@ export default function ViewMessages() {
     const [SnackMessage, setSnackMessage] = useState('');
     const [action, setAction] = useState(<></>);
     const handleClose = () => {
-      setSnackOpen(false);
+        setSnackOpen(false);
     };
-    // messages is the state containg an initial empty array of messages
-    const [messages, setMessages] = useState<Message[]>([]);
+    // Messages is the state containg an initial empty array of Messages
+    const [Messages, setMessages] = useState<Message[]>([]);
 
     useEffect(() => {
         if (document.cookie === '') {
             console.log('No cookie');
             history('/Members');
         }
-    
-        fetch('http://localhost:3001/messages')
-            .then(response => response.json())
-            .then(data => setMessages(data));
+        messagesGET().then((data) => {
+            setMessages(data);
+        }
+        ).catch((error) => {
+            console.log(error);
+        });
+
     }, []);
 
-    function deleteMessage(messageID: number) {
-        fetch(`http://localhost:3001/messages/${messageID}`, {
-            method: 'DELETE',
-        })
-            .then(() => {
-                setMessages(messages.filter((message) => message.messageID !== messageID));
-                setSnackMessage('Message Deleted');
-                setSnackOpen(true);
+    function deleteMessage(MessageID: number) {
+        messageDELETE(MessageID).then(() => {
+            setMessages(Messages.filter((Message) => Message.MessageID !== MessageID));
+            setSnackMessage('Message Deleted');
+            setSnackOpen(true);
+        }
+        ).catch((error) => {
+            console.log(error);
+        });
 
-
-            })
-            .catch((error) => {
-                console.log(error);
-            });
     }
 
     const stringToDate = (dateString: string) => {
@@ -56,32 +55,32 @@ export default function ViewMessages() {
 
     return (
         <Container>
-            <Grid container spacing={2}>
-                <Grid item xs={12}>
+            <Grid2 container spacing={2}>
+                <Grid2 size={12}>
                     <Paper>
                         <Typography variant="h3">Messages</Typography>
                     </Paper>
-                </Grid>
-                <Grid item xs={12}>
+                </Grid2>
+                <Grid2 size={12}>
                     <Divider />
-                </Grid>
-                {messages.map((message) => (
+                </Grid2>
+                {Messages.map((Message) => (
                     <>
-                    <Grid item xs={10} key={message.messageID}>
-                        <Card>
-                            <Card.Body>
-                                <Card.Subtitle className="mb-2 text-muted">{stringToDate(message.messageDate)}</Card.Subtitle>
-                                <Card.Title>{message.messageFrom}</Card.Title>
-                                <Card.Text>{message.messageContent}</Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Grid>
-                        <Grid item xs={12}>
-                            <Button onClick={() => deleteMessage(message.messageID)} variant="contained">Delete</Button>
-                    </Grid>
+                        <Grid2 size={10} key={Message.MessageID}>
+                            <Card>
+                                <Card.Body>
+                                    <Card.Subtitle className="mb-2 text-muted">{stringToDate(Message.MessageDate)}</Card.Subtitle>
+                                    <Card.Title>{Message.MessageFrom}</Card.Title>
+                                    <Card.Text>{Message.MessageContent}</Card.Text>
+                                </Card.Body>
+                            </Card>
+                        </Grid2>
+                        <Grid2 size={12}>
+                            <Button onClick={() => deleteMessage(Message.MessageID)} variant="contained">Delete</Button>
+                        </Grid2>
                     </>
                 ))}
-            </Grid>
+            </Grid2>
             <Snackbar
                 open={Snackopen}
                 autoHideDuration={6000}

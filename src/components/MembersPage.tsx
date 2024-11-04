@@ -1,12 +1,14 @@
 // This page displays displays the upcoming events and the playlist for that event
 
 import React from 'react';
-import { Container, Grid, Button, Typography, Divider, Paper, Snackbar, Link, Box } from '@mui/material';
+import { Container, Button, Typography, Divider, Paper, Snackbar, Link, Box } from '@mui/material';
+import Grid2 from '@mui/material/Grid2';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { User, EmptyUser, EventDetails, EmptyEventDetails, PlaylistEntry, EmptyPlaylistEntry, MusicTrack, EmptyMusicTrack } from '../types/types.d';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view';
+import { upcomingPlaylists } from 'src/services/queries';
 
 
 export default function MembersPage() {
@@ -30,35 +32,32 @@ export default function MembersPage() {
         if (document.cookie === '') {
             history('/Members');
         }
-        fetch('http://localhost:3001/upcomingPlaylists')
-            .then(response => response.json())
-            .then( data => {
-                let events = [] as EventDetails[];
+        upcomingPlaylists().then((data) => {
+            setEvents(data);
                 for (let i = 0; i < data.length; i++) {
                     let evDetail = EmptyEventDetails();
-                    evDetail.eventDate = new Date(data[i].eventDate);
-                    evDetail.eventID = data[i].eventID;
-                    evDetail.location = data[i].location;
-                    evDetail.startTime = data[i].startTime;
-                    evDetail.endTime = data[i].endTime;
-                    evDetail.invitation = data[i].invitation;
-                    evDetail.meetingPoint = data[i].meetingPoint;
-                    evDetail.price = data[i].price;
-                    evDetail.title = data[i].title;
-                    for (let j = 0; j < data[i].playlist.length; j++) {
+                    evDetail.EventDate = new Date(data[i].EventDate);
+                    evDetail.EventID = data[i].EventID;
+                    evDetail.Location = data[i].Location;
+                    evDetail.StartTime = data[i].StartTime;
+                    evDetail.EndTime = data[i].EndTime;
+                    evDetail.Invitation = data[i].Invitation;
+                    evDetail.MeetingPoint = data[i].MeetingPoint;
+                    evDetail.Price = data[i].Price;
+                    evDetail.Title = data[i].Title;
+                    for (let j = 0; j < data[i].Playlist.length; j++) {
                         let entry = EmptyPlaylistEntry();
-                        entry.id = data[i].playlist[j].id;
-                        entry.playlistID = data[i].playlist[j].playlistID;
-                        entry.eventID = data[i].playlist[j].eventID;
+                        entry.ID = data[i].Playlist[j].ID;
+                        entry.PlaylistID = data[i].Playlist[j].PlaylistID;
+                        entry.EventID = data[i].Playlist[j].EventID;
                         // var mTrack = EmptyMusicTrack();
-                        entry.musicTrack = data[i].playlist[j].musicTrack;
-                        entry.playorder = data[i].playlist[j].playorder;
-                        evDetail.playlist = [...evDetail.playlist, entry];
+                        entry.MusicTrack = data[i].Playlist[j].MusicTrack;
+                        entry.Playorder = data[i].Playlist[j].Playorder;
+                        evDetail.Playlist = [...evDetail.Playlist, entry];
                     }
-                    events = [...events, evDetail];
-                    }
-                setEvents(events);
-            }
+                    setEvents([...events, evDetail]);
+                }
+        }
         );
     }
     , []);
@@ -71,55 +70,54 @@ function dateToString(dateObj: Date) {
 
 return (
     <Container>
-        <Grid container spacing={2}>
-            <Grid item xs={12}>
+        <Grid2 container spacing={2}>
+            <Grid2 size={12}>
                 <Box>   
                     <Typography variant="h3">Upcoming Events</Typography>
                 </Box>
-            </Grid>
-            <Grid item xs={12}>
+            </Grid2>
+            <Grid2 size={12}>
                 <Divider />
-            </Grid>
+            </Grid2>
                         {events.map((event) => (
-                            <Grid item xs={12} key={event.eventID}>
+                            <Grid2 size={12} key={event.EventID}>
                                 <Paper>
-                                    <Typography variant="h5">{event.title}</Typography>
-                                    <Typography variant="body1">{event.eventDate.toDateString()}</Typography>
-                                    <Typography variant="body1">{event.startTime +" to "+ event.endTime}</Typography>
-                                    <Typography variant="body1">Event location: {event.location}</Typography>
-                                    <Typography variant="body1">Meeting point: {event.meetingPoint}</Typography>
+                                    <Typography variant="h5">{event.Title}</Typography>
+                                    <Typography variant="body1">{event.EventDate.toDateString()}</Typography>
+                                    <Typography variant="body1">{event.StartTime +" to "+ event.EndTime}</Typography>
+                                    <Typography variant="body1">Event location: {event.Location}</Typography>
+                                    <Typography variant="body1">Meeting point: {event.MeetingPoint}</Typography>
 
                                     {/* cycle through the playlist and  */}
                                     <SimpleTreeView>
-                    {event.playlist.map((entry, index) => (
-                        entry.id === 0) ? null : (  
-                        <TreeItem itemId={index.toString()} label={entry.musicTrack.trackName}>
-                        <Link href={entry.musicTrack.lyrics} >
+                    {event.Playlist.map((entry, index) => (
+                        entry.ID === 0) ? null : (  
+                        <TreeItem itemId={index.toString()} label={entry.MusicTrack.TrackName}>
+                        <Link href={entry.MusicTrack.Lyrics} >
                             <TreeItem itemId={index.toString()+"l"} label="Lyrics" >Download</TreeItem>
                         </Link>
-                        <Link href={entry.musicTrack.piano} >
+                        <Link href={entry.MusicTrack.Piano} >
                             <TreeItem itemId={index.toString()+"p"} label="Piano" >Download</TreeItem>
                         </Link>
-                        <Link href={entry.musicTrack.allParts} >
+                        <Link href={entry.MusicTrack.AllParts} >
                             <TreeItem itemId={index.toString()+"ap"} label="All Parts" >Download</TreeItem>
                         </Link>
-                        <Link href={entry.musicTrack.soprano} >
+                        <Link href={entry.MusicTrack.Soprano} >
                             <TreeItem itemId={index.toString()+"s"} label="Soprano" >Download</TreeItem>
                         </Link>
-                        <Link href={entry.musicTrack.alto} >
+                        <Link href={entry.MusicTrack.Alto} >
                             <TreeItem itemId={index.toString()+"a"} label="Alto" >Download</TreeItem>
                         </Link>
-                        <Link href={entry.musicTrack.tenor} >
+                        <Link href={entry.MusicTrack.Tenor} >
                             <TreeItem itemId={index.toString()+"t"} label="Tenor" >Download</TreeItem>
                         </Link>
                         </TreeItem>
                     ))}
                 </SimpleTreeView>
                                 </Paper>
-                            </Grid>
+                            </Grid2>
                         ))}
-                    </Grid>
+                    </Grid2>
                 </Container>
                 );
 }
-//                     </>
