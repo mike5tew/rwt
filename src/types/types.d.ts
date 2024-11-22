@@ -1,8 +1,24 @@
+export interface ScreenSize {
+    width: number;
+    height: number;
+    devicePixelRatio: number;
+    images: number
+}
+
+export function getScreenSize(): ScreenSize {
+    return {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        devicePixelRatio: window.devicePixelRatio,
+        images: 0
+    };
+}
+
 export interface ImageDetail {
     ImageID: number;
+    ImageURL: string;
     Filename: string;
     Caption: string;
-    EventDetails: EventDetails;
     Rows: number;
     Cols: number;
     Height: number;
@@ -14,9 +30,9 @@ export interface ImageDetail {
 export function EmptyImageDetail(): ImageDetail {
     return {
         ImageID: 0,
+        ImageURL: "",
         Filename: "",
         Caption: "",
-        EventDetails: EmptyEventDetails(),
         Rows: 1,
         Cols: 1,
         Height: 0,
@@ -25,8 +41,6 @@ export function EmptyImageDetail(): ImageDetail {
         Imagetype: 0
     };
 }
-
-
 
 export interface DatURLResponse {
     ReturnedFile: File;
@@ -40,11 +54,13 @@ export function EmptyDatURLResponse(): DatURLResponse {
 }
 
 
+
 //eventID, location, eventDate, startTime, endTime, price, title
 export interface EventDetails {
     EventID: number;
     Location: string;
     EventDate: Date;
+    DateString: string;
     StartTime: string;
     EndTime: string;
     Invitation: string;
@@ -53,6 +69,7 @@ export interface EventDetails {
     Title: string;
     Playlist: PlaylistEntry[];
 }
+
 // themeDetails, boxColour, textColour, textFont, backgroundImage, textboxColour, logoimage, bannerColour, menuColour, buttonColour, buttonHover, buttonTextColour, menuTextColour
 export interface ThemeDetails {
     BoxColour: string;
@@ -110,6 +127,7 @@ export function EmptyEventDetails(): EventDetails {
         EventID: 0,
         Location: "",
         EventDate: new Date(),
+        DateString: "",
         StartTime: "",
         EndTime: "",
         Invitation: "",
@@ -125,7 +143,7 @@ export interface PlaylistEntry {
     ID: number;
     PlaylistID: number;
     EventID: number;
-    MusicTrack: MusicTrack; 
+    MusicTrack: MusicTrack;
     Playorder: number;
 }
 
@@ -141,14 +159,14 @@ export function EmptyPlaylistEntry(): PlaylistEntry {
 
 //clipID, clipURL, eventID, caption
 export interface Clip {
-    ID: number;
+    ClipID: number;
     ClipURL: string;
     EventID: number;
     Caption: string;
 }
 export function EmptyClip(): Clip {
     return {
-        ID: 0,
+        ClipID: 0,
         ClipURL: "",
         EventID: 0,
         Caption: ""
@@ -194,65 +212,89 @@ export interface MusicTrack {
 
 export function IsMobile() {
     const regex = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-    if(regex.test(navigator.userAgent)) {
+    if (regex.test(navigator.userAgent)) {
         return "/images/mobile/";
-     } else {
+    } else {
         return "/images/";
     }
-  }
-  
-export  const DatetoString =(date: Date) => {
+}
+
+export const DatetoString = (date: Date) => {
     var nMonth: number = date.getMonth() + 1; // getMonth() returns a value between 0 and 11 so add 1 to get the correct month
     var sMonth: string = nMonth.toString();
     if (nMonth < 10) {
-      sMonth = '0' + sMonth;
+        sMonth = '0' + sMonth;
     }
     var nDay: number = date.getDate();
     var sDay: string = nDay.toString();
     if (nDay < 10) {
-      sDay = '0' + sDay;
+        sDay = '0' + sDay;
     }
     var sDate = date.getFullYear() + "-" + sMonth + "-" + sDay;
     return sDate;
-  }
-  
-  export function StringtoDate(DateObj: string) {
+}
+
+export function StringtoDate(DateObj: string) {
     // format of string is 2024-06-19T23:00:00.000Z
     var sDate = DateObj.split("-");
-    var nMonth = parseInt(sDate[1]) 
+    var nMonth = parseInt(sDate[1])
     var sDay = sDate[2].split("T");
     var nDay = parseInt(sDay[0]);
     return nDay + "/" + nMonth
-  }
+}
 
-  export interface Message {
+//   messageID	int Auto Increment	
+//   messageDate	timestamp NULL	
+//   messageFrom	varchar(60) NULL	
+//   messageContent	varchar(500) NULL ['']	
+//   eventName	varchar(100) ['']	
+//   eventDate	timestamp	
+//   eventTime	varchar(25) ['']	
+//   contactEmail	varchar(100) NULL	
+//   contactPhone	varchar(20) ['']	
+//   eventLocation
+
+export interface Message {
     MessageID: number;
     MessageDate: string
     MessageFrom: string;
     MessageContent: string;
-    }
+    EventName: string;
+    EventDate: string;
+    EventTime: string;
+    ContactEmail: string;
+    ContactPhone: string;
+    EventLocation: string;
+}
+
 export function EmptyMessage(): Message {
     return {
         MessageID: 0,
         MessageDate: "",
         MessageFrom: "",
-        MessageContent: ""
+        MessageContent: "",
+        EventDate: "",
+        EventName: "",
+        EventTime: "",
+        ContactEmail: "",
+        ContactPhone: "",
+        EventLocation: ""
     };
 }
 export interface User {
     Username: string;
     Password: string;
     Role: string;
-  }
+}
 export function EmptyUser(): User {
     return {
         Username: "",
         Password: "",
         Role: ""
     };
-}  
+}
 
-  declare var jpgImage: {
+declare var jpgImage: {
     prototype: File;
     new(fileBits: [BlobPart], fileName: string, options?: FilePropertyBag): File;
 };
@@ -309,14 +351,14 @@ export function EmptySiteInfo(): siteInfo {
 
 export interface MusicTrack {
     // using the same schema as the music.json file
-    ID : number,
-    TrackName : string,
-    Lyrics : string,
-    Soprano : string,
-    Alto : string,
-    Tenor : string,
-    AllParts : string,
-    Piano : string
+    MusicTrackID: number,
+    TrackName: string,
+    Lyrics: string,
+    Soprano: string,
+    Alto: string,
+    Tenor: string,
+    AllParts: string,
+    Piano: string
 }
 
 export function EmptyMusicTrack(): MusicTrack {

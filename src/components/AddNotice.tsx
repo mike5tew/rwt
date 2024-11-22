@@ -19,30 +19,15 @@ export default function AddNotice() {
     
     React.useEffect(() => {
         const fetchEventsUpcoming = async () => {
-            const events = await EventsUpcomingGET();
-        const data = await EventsUpcomingGET();
-        const notices = data.map(event => ({
-            EventID: event.EventID,
-            Location: event.Location,
-            EventDate: event.EventDate,
-            StartTime: event.StartTime,
-            EndTime: event.EndTime,
-            Price: event.Price,
-            Title: event.Title,
-            MeetingPoint: event.MeetingPoint,
-            Invitation: event.Invitation,
-            Playlist: event.Playlist || []
-        }));
-        
-        setNotices(notices);
-        console.log(notices);
+            EventsUpcomingGET().then((data) => {
+                console.log(data);
+                setNotices(data);
+            }
+            );
         }
         fetchEventsUpcoming();
     }
     , []);
-
-
-
 
     return (
         <Container>

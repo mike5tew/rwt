@@ -4,7 +4,7 @@ import Grid2 from '@mui/material/Grid2';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import { EmptyImageDetail, ImageDetail } from '../types/types.d';
+import { EmptyImageDetail, ImageDetail, ScreenSize, getScreenSize } from '../types/types.d';
 import { randomImagesGET } from '../services/queries';
 
 function srcset(image: string, width: number, rows: number, cols: number) {
@@ -20,14 +20,20 @@ export default function Home() {
 
   useEffect(() => {
     if (images1to3.length === 0) {
+     
       randomImagesGET(6)
         .then(data => {
+          if (typeof data === 'string') {
+            console.error('Error:', data);
+            return;
+          }
           const imagesTp: ImageDetail[] = data.map((item: any) => {
             const imgDetail = EmptyImageDetail();
             imgDetail.ImageID = item.ImageID;
-            imgDetail.Filename = item.Filename;
+            imgDetail.Filename = "http://"+process.env.REACT_APP_URL+":"+process.env.REACT_APP_PORT+"/"+item.Filename;
+            console.log('Filename:', item.Filename);
             imgDetail.Caption = item.caption;
-            imgDetail.EventDetails.EventID = item.eventID;
+            imgDetail.EventID = item.eventID;
             if (item.Width > item.Height) {
               imgDetail.Rows = 1;
               imgDetail.Cols = 2;
@@ -54,7 +60,7 @@ export default function Home() {
           {images1to3.map((item) => (
             <ImageListItem key={item.ImageID}>
               <img
-                {...srcset(`/images/${item.Filename}`, 121, item.Rows, item.Cols)}
+                {...srcset(`${item.Filename}`, 121, item.Rows, item.Cols)}
                 alt={item.Caption}
                 loading="lazy"
               />

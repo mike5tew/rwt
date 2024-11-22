@@ -1,6 +1,7 @@
 // import exp from "constants";
 // import e from "cors";
-import { EmptyEventDetails, EmptyArchiveEntry, EventDetails, ArchiveEntry, Clip, EmptyClip, ImageDetail, EmptyImageDetail, Message, User, PlaylistEntry, EmptyMusicTrack, EmptyPlaylistEntry, MusicTrack, SiteInfo, EmptySiteInfo, ThemeDetails, EmptyThemeDetails } from "../types/types.d";
+import { Http2ServerResponse } from "http2";
+import { EmptyEventDetails, EmptyArchiveEntry, EventDetails, ArchiveEntry, Clip, EmptyClip, ImageDetail, EmptyImageDetail, Message, User, PlaylistEntry, EmptyMusicTrack, EmptyPlaylistEntry, MusicTrack, SiteInfo, EmptySiteInfo, ThemeDetails, EmptyThemeDetails, ScreenSize } from "../types/types.d";
 
 // we need to change the functions below to fetching the data from an api
 const url = process.env.REACT_APP_URL;
@@ -26,7 +27,7 @@ export async function MusicPOST(req: MusicTrack): Promise<MusicTrack> {
 }
 
 
-export async function ClipPOST(req: Clip): Promise<Clip> {
+export async function ClipPOST(req: Clip): Promise<Clip>  {
     const respon = await fetch(`http://${url}:${port}/ClipPOST`, {
         method: 'POST',
         body: JSON.stringify(req),
@@ -37,7 +38,10 @@ export async function ClipPOST(req: Clip): Promise<Clip> {
 }
 
 export async function ImageDELETE(params: number): Promise<string> {
-    const respon = await fetch(`http://${url}:${port}/deleteImageRecord/${params}`)
+    const respon = await fetch(`http://${url}:${port}/ImageDELETE/${params}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+    })
     const data = await respon.json();
     return data;
 }
@@ -78,8 +82,10 @@ export async function MusicTrackPUT(req: MusicTrack): Promise<string> {
     return data;
 }
 
-export async function ArchivesGET(numberReq: number): Promise<ArchiveEntry[]> {
-    return fetchData<ArchiveEntry[]>(`ArchivesGET/${numberReq}`);
+export async function ArchivesGET(req: number): Promise<ArchiveEntry[]> {
+     const requestString = `ArchivesGET?screen=${localStorage.getItem('screenSize')}&archives=${req}`;
+     console.log(requestString);
+    return fetchData<ArchiveEntry[]>(requestString);
 }
 
 export async function messagesGET(): Promise<Message[]> {
@@ -135,7 +141,7 @@ export async function EventsUpcomingGET(): Promise<EventDetails[]> {
 }
 
 export async function upcomingPlaylists(): Promise<EventDetails[]> {
-    return fetchData<EventDetails[]>('upcomingPlaylists');
+    return fetchData<EventDetails[]>('upcomingPlaylistsGET');
 }
 
 export async function EventArchive(req: any): Promise<ArchiveEntry> {
@@ -149,10 +155,12 @@ export async function ImagesFromEvent(id: number): Promise<ImageDetail[]> {
 export async function ClipsFromEvent(id: number): Promise<Clip[]> {
     return fetchData<Clip[]>(`clipsFromEventGET/${id}`);
 }
+// randomImget returns an array of imagedetails or a string
+export async function randomImagesGET(req: number): Promise<ImageDetail[] | string> {
 
-export async function randomImagesGET(req: number): Promise<ImageDetail[]> {
-    return fetchData<ImageDetail[]>(`RandomImagesGET/${req}`);
+    return fetchData<ImageDetail[] | string >(`RandomImagesGET?screen=${localStorage.getItem('screenSize')}&images=${req}`);
 }
+
 
 export async function ArchiveFromEvent(id: number): Promise<ArchiveEntry> {
     return fetchData<ArchiveEntry>(`ArchiveFromEventGET/${id}`);
@@ -175,7 +183,7 @@ export async function ThemeDetailsRandomGET(): Promise<ThemeDetails> {
 }
 
 export async function musicList(): Promise<MusicTrack[]> {
-    return fetchData<MusicTrack[]>('musicListGET');
+    return fetchData<MusicTrack[]>('MusicListGET');
 }
 
 export async function EventsList(): Promise<EventDetails[]> {
@@ -190,9 +198,16 @@ export async function ClipsPOST(req: Clip[]): Promise<string> {
     });
 }
 
-export async function ClipDELETE(req: number): Promise<string> {
-    return fetchData<string>(`ClipDELETE/${req}`);
+export async function ClipDELETE(req: number): Promise<Clip> {
+    const respon = await fetch(`http://${url}:${port}/ClipDELETE/${req}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    console.log(respon);
+    const data = await respon.json();
+    return data;
 }
+
 
 export async function updateArchiveEntry(req: ArchiveEntry): Promise<string> {
     return fetchData<string>('updateArchiveEntry', {
@@ -210,12 +225,15 @@ export async function insertArchiveEntry(req: ArchiveEntry): Promise<string> {
     });
 }
 
-export async function ArchivePOST(req: ArchiveEntry): Promise<string> {
-    return fetchData<string>('ArchivePOST', {
+export async function ArchivePOST(req: ArchiveEntry): Promise<ArchiveEntry> {
+    return fetchData<ArchiveEntry>('ArchiveEntryPOST', {
         method: 'POST',
         body: JSON.stringify(req),
         headers: { 'Content-Type': 'application/json' },
-    });
+    }).then((data) => {
+        return data;
+    }
+    );
 }
 
 export async function archiveDELETE(req: number): Promise<string> {
@@ -230,12 +248,13 @@ export async function archivePUT(req: ArchiveEntry): Promise<string> {
     });
 }
 
-export async function playlistGET(req: number): Promise<PlaylistEntry[]> {
-    return fetchData<PlaylistEntry[]>(`upcomingPlaylistsGET/${req}`);
+export function playlistGET(req: number): Promise<PlaylistEntry[]> {
+    return fetchData<PlaylistEntry[]>(`PlaylistGET/${req}`);
 }
 
-export async function playlistPOST(req: PlaylistEntry[]): Promise<string> {
-    return fetchData<string>('playlistPOST', {
+
+export async function playlistPOST(req: PlaylistEntry[]): Promise<PlaylistEntry> {
+    return fetchData<PlaylistEntry>('PlaylistPOST', {
         method: 'POST',
         body: JSON.stringify(req),
         headers: { 'Content-Type': 'application/json' },
@@ -254,8 +273,8 @@ export async function EventGET(req: number): Promise<EventDetails> {
     return fetchData<EventDetails>(`EventGET/${req}`);
 }
 
-export async function EventPOST(req: EventDetails): Promise<string> {
-    return fetchData<string>('eventPOST', {
+export async function EventPOST(req: EventDetails): Promise<EventDetails> {
+    return fetchData<EventDetails>('EventPOST', {
         method: 'POST',
         body: JSON.stringify(req),
         headers: { 'Content-Type': 'application/json' },
@@ -279,7 +298,7 @@ export async function SiteInfoGET(): Promise<SiteInfo> {
 }
 
 export async function SiteinfoPUT(req: SiteInfo): Promise<string> {
-    return fetchData<string>('siteinfoPUT', {
+    return fetchData<string>('SiteInfoPUT', {
         method: 'PUT',
         body: JSON.stringify(req),
         headers: { 'Content-Type': 'application/json' },
@@ -294,6 +313,10 @@ export async function MusicGET(req: number): Promise<MusicTrack[]> {
     }
 }
 
-export async function EventArchiveGET(req: number): Promise<ArchiveEntry> {
-    return fetchData<ArchiveEntry>(`EventArchiveGET/${req}`);
+export async function EventArchivesGET(req: number): Promise<ArchiveEntry[]> {
+    return fetchData<ArchiveEntry[]>(`EventArchiveGET/${req}`);
+}
+
+export async function EventArchiveGET(id: number): Promise<ArchiveEntry> {
+    return fetchData<ArchiveEntry>(`EventArchiveGET/${id}`);
 }

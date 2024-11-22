@@ -24,7 +24,7 @@ const schema = yup.object().shape({
 export default function AddMusic() {
     const { register, setValue, watch, getValues, handleSubmit, control, formState: { errors } } = useForm<MusicTrack>({
         defaultValues: {
-            ID: 0,
+            MusicTrackID: 0,
             TrackName: "",
             Lyrics: "",
             Soprano: "",
@@ -47,7 +47,7 @@ export default function AddMusic() {
     const [musicList, setMusicList] = useState<MusicTrack[]>([]);
 
     const FormSubmitHandler: SubmitHandler<MusicTrack> = (data: MusicTrack) => {
-        if (data.ID === 0) {
+        if (data.MusicTrackID === 0) {
 
             const mPost = async () => {
                 var newTrack = await MusicPOST(data)
@@ -64,7 +64,7 @@ export default function AddMusic() {
                 const respon = await MusicTrackPUT(data);
                 if (respon) {
                     for (var i = 0; i < musicList.length; i++) {
-                        if (musicList[i].ID === data.ID) {
+                        if (musicList[i].MusicTrackID === data.MusicTrackID) {
                             musicList[i] = data;
                             break;
                         }
@@ -96,7 +96,7 @@ export default function AddMusic() {
 
     // take the id from the select and use it to populate the form
     const viewDetails = async () => {
-        const id = getValues('ID');
+        const id = getValues('MusicTrackID');
 
         try {
             const mtrack = await MusicGET(id);
@@ -117,14 +117,14 @@ export default function AddMusic() {
 
     const deleteTrack = async () => {
         try {
-            const id = await getValues('ID');
+            const id = await getValues('MusicTrackID');
 
             if (id > 0) {
                 const deleteResponse = await musicTrackDELETE(id);
                 if (deleteResponse === 'success') {
                     setOpen(true);
                     // reset the form
-                    setValue('ID', 0);
+                    setValue('MusicTrackID', 0);
                     setValue('TrackName', '');
                     setValue('Lyrics', '');
                     setValue('Soprano', '');
@@ -134,7 +134,7 @@ export default function AddMusic() {
                     setValue('Piano', '');
                     // snackbar the deletion
                     // remove the track from the array
-                    setMusicList(musicList.filter((track) => track.ID !== id));
+                    setMusicList(musicList.filter((track) => track.MusicTrackID !== id));
                 } else {
                     setOpenError(true);
                 }
@@ -158,14 +158,14 @@ export default function AddMusic() {
                 {/* add a select containing all of the existing  */}
                 <Grid2 size={12}>
                     <FormControl fullWidth><InputLabel id="ExistingTracks">Venue</InputLabel>
-                        <Controller name="ID" control={control} render={({ field }) => (
-                            <Select {...field}  {...register("ID")} label="Existing Tracks" required
+                        <Controller name="MusicTrackID" control={control} render={({ field }) => (
+                            <Select {...field}  {...register("MusicTrackID")} label="Existing Tracks" required
                                 onChange={(e) => { field.onChange(e); viewDetails(); }}>
 
 
                                 <MenuItem key={0} value={0}>New Track</MenuItem>
                                 {musicList && musicList.map((track) =>
-                                    <MenuItem key={track.ID} value={track.ID}>
+                                    <MenuItem key={track.MusicTrackID} value={track.MusicTrackID}>
                                         {track.TrackName}
                                     </MenuItem>
                                 )}

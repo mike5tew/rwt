@@ -230,24 +230,22 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         var background: File;
         var logo: File;
         // resize the image to thumbnail, create the imagedetail object and add this to the images array
-        FileResizeService.resizeImage(currentFile, 100).then(
-            FileResizeService.dataURLtoFile).then((res) => {
+        FileResizeService.ResizeImage(currentFile, 450, 0).then((res) => {
                 var ThumbnailDetails = res.FileDetails;
                 ThumbnailDetails.EventID = 0;
                 ThumbnailDetails.Caption = imageURL(res.FileDetails.Filename);
                 thumbnail = res.ReturnedFile;
                 setImages([...images, ThumbnailDetails]);
                 if (ImageSelect === "Logo") {
-                    FileResizeService.resizeImage(currentFile, 250).then(
-                        FileResizeService.dataURLtoFile).then((res) => {
+                    FileResizeService.ResizeImage(currentFile, 250,0).then((res) => {
                             var LogoDetails = res.FileDetails;
                             LogoDetails.EventID = -1;
                             logo = res.ReturnedFile;
                         }
                         ).then(() => {
-                            UploadService.upload(logo, LogoDetails.Filename, -1, LogoDetails.Width, LogoDetails.Height, '', 'uploadLogo', (event: { loaded: number; total: number; }) => {
+                            UploadService.upload(logo, LogoDetails.Filename, -1, LogoDetails.Width, LogoDetails.Height, '', (event: { loaded: number; total: number; }) => {
                                 setProgress(Math.round((100 * event.loaded) / event.total));
-                            }).then(UploadService.sendFile).then(() => {
+                            }).then(UploadService.SendFile).then(() => {
                                 setLogoImageName("")
                                 setCurrentFile(undefined);
                                 setNextFile('');
@@ -262,9 +260,9 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                 else {
                     // if it is not a logo then the image is background which is not resized.  So we need to get the size information and add this to the images array
                     FileResizeService.getSize(currentFile).then((res) => {
-                        FileUploadService.upload(currentFile, res.Filename, 0, res.Width, res.Height, '', 'uploadBackground', (event: { loaded: number; total: number; }) => {
+                        FileUploadService.upload(currentFile, res.Filename, 0, res.Width, res.Height, '', (event: { loaded: number; total: number; }) => {
                             setProgress(Math.round((100 * event.loaded) / event.total));
-                        } ).then(UploadService.sendFile).then(() => {
+                        } ).then(UploadService.SendFile).then(() => {
                             setBackgroundImageName("")
                             setCurrentFile(undefined);
                             setNextFile('');

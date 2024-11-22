@@ -1,6 +1,5 @@
 // This page displays displays the upcoming events and the playlist for that event
 
-import React from 'react';
 import { Container, Button, Typography, Divider, Paper, Snackbar, Link, Box } from '@mui/material';
 import Grid2 from '@mui/material/Grid2';
 import { useNavigate } from 'react-router-dom';
@@ -21,52 +20,22 @@ export default function MembersPage() {
     };
     // events is the state containg an initial empty array of events
     const [events, setEvents] = useState<EventDetails[]>([]);
-    const [playlist, setPlaylist] = useState<PlaylistEntry[]>([]);
-    const [musicTrack, setMusicTrack] = useState<MusicTrack>(EmptyMusicTrack());
-    const [playorder, setPlayorder] = useState(0);
-    const [eventID, setEventID] = useState(0);
-    const [playlistID, setPlaylistID] = useState(0);
+    
 
     useEffect(() => {
         // rediret to the login page if the user is not logged in
-        if (document.cookie === '') {
-            history('/Members');
-        }
+        // if (document.cookie === '') {
+        //     history('/Members');
+        // }
         upcomingPlaylists().then((data) => {
+            for (let i = 0; i < data.length; i++) {
+                data[i].EventDate = new Date(data[i].EventDate);                    
+            }
             setEvents(data);
-                for (let i = 0; i < data.length; i++) {
-                    let evDetail = EmptyEventDetails();
-                    evDetail.EventDate = new Date(data[i].EventDate);
-                    evDetail.EventID = data[i].EventID;
-                    evDetail.Location = data[i].Location;
-                    evDetail.StartTime = data[i].StartTime;
-                    evDetail.EndTime = data[i].EndTime;
-                    evDetail.Invitation = data[i].Invitation;
-                    evDetail.MeetingPoint = data[i].MeetingPoint;
-                    evDetail.Price = data[i].Price;
-                    evDetail.Title = data[i].Title;
-                    for (let j = 0; j < data[i].Playlist.length; j++) {
-                        let entry = EmptyPlaylistEntry();
-                        entry.ID = data[i].Playlist[j].ID;
-                        entry.PlaylistID = data[i].Playlist[j].PlaylistID;
-                        entry.EventID = data[i].Playlist[j].EventID;
-                        // var mTrack = EmptyMusicTrack();
-                        entry.MusicTrack = data[i].Playlist[j].MusicTrack;
-                        entry.Playorder = data[i].Playlist[j].Playorder;
-                        evDetail.Playlist = [...evDetail.Playlist, entry];
-                    }
-                    setEvents([...events, evDetail]);
-                }
         }
         );
     }
     , []);
-
-function dateToString(dateObj: Date) {
-    // this takes a date object and converts it to a string
-    console.log(dateObj);
-    return dateObj.getDay() + "/" + dateObj.getMonth() + "/" + dateObj.getFullYear();
-}
 
 return (
     <Container>
@@ -91,25 +60,25 @@ return (
                                     {/* cycle through the playlist and  */}
                                     <SimpleTreeView>
                     {event.Playlist.map((entry, index) => (
-                        entry.ID === 0) ? null : (  
+                        entry.ID=== 0) ? null : (  
                         <TreeItem itemId={index.toString()} label={entry.MusicTrack.TrackName}>
                         <Link href={entry.MusicTrack.Lyrics} >
-                            <TreeItem itemId={index.toString()+"l"} label="Lyrics" >Download</TreeItem>
+                            <TreeItem  key={entry.MusicTrack.MusicTrackID+ "l"} itemId={index.toString()+"l"} label="Lyrics" >Download</TreeItem>
                         </Link>
                         <Link href={entry.MusicTrack.Piano} >
-                            <TreeItem itemId={index.toString()+"p"} label="Piano" >Download</TreeItem>
+                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "p"} itemId={index.toString()+"p"} label="Piano" >Download</TreeItem>
                         </Link>
                         <Link href={entry.MusicTrack.AllParts} >
-                            <TreeItem itemId={index.toString()+"ap"} label="All Parts" >Download</TreeItem>
+                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "ap"} itemId={index.toString()+"ap"} label="All Parts" >Download</TreeItem>
                         </Link>
                         <Link href={entry.MusicTrack.Soprano} >
-                            <TreeItem itemId={index.toString()+"s"} label="Soprano" >Download</TreeItem>
+                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "s"} itemId={index.toString()+"s"} label="Soprano" >Download</TreeItem>
                         </Link>
                         <Link href={entry.MusicTrack.Alto} >
-                            <TreeItem itemId={index.toString()+"a"} label="Alto" >Download</TreeItem>
+                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "a"} itemId={index.toString()+"a"} label="Alto" >Download</TreeItem>
                         </Link>
                         <Link href={entry.MusicTrack.Tenor} >
-                            <TreeItem itemId={index.toString()+"t"} label="Tenor" >Download</TreeItem>
+                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "t"} itemId={index.toString()+"t"} label="Tenor" >Download</TreeItem>
                         </Link>
                         </TreeItem>
                     ))}

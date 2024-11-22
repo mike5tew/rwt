@@ -34,7 +34,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 // import '../styles/mgtStyles.css'
 import { teal } from '@mui/material/colors';
 import { SiteInfoGET, themeDetails } from '../services/queries';
-
+import { ScreenSize, getScreenSize } from 'src/types/types';
 export default function MiniDrawer() {
   const [BoxColour, setBoxColour] = React.useState('#222222');
   const [TextColour, setTextColour] = React.useState('#222222');
@@ -131,6 +131,15 @@ export default function MiniDrawer() {
 
 
   useEffect(() => {
+    // establish if the screen is a phone or a larger screen
+    //console.log('getScreenSize');
+    if (window.innerWidth < 600) {
+      //console.log('phone');
+      localStorage.setItem('screenSize', 'mobile');
+    } else {
+      //console.log('desktop');
+      localStorage.setItem('screenSize', 'desktop');
+    }  
     // get the background image from the server
     themeDetails().then(respon => {
       // console.log(respon.data);
@@ -141,7 +150,7 @@ export default function MiniDrawer() {
       // urlecode the filename
       var filename = encodeURIComponent(themeDetails.BackgroundImage)
       setImage(imageURL(filename));
-      console.log("THIS IS THE IMAGE :" + imageURL(filename));
+      //console.log("THIS IS THE IMAGE :" + imageURL(filename));
       setTextboxColour(themeDetails.TextboxColour);
       // setLogoImage(themeDetails.logoImage);
       setBannerColour(themeDetails.BannerColour);
@@ -164,7 +173,7 @@ export default function MiniDrawer() {
   async function getSiteDetails() {
     try {
       const respon = await SiteInfoGET();
-
+      
       // Replace \n with actual carriage returns
       const replaceNewLines = (text: string) => text.replace(/\\n/g, '\n');
 
@@ -188,7 +197,7 @@ export default function MiniDrawer() {
       // Count the number of carriage returns in HomeText
       const txt: string = respon.HomeText;
       const matches = txt.match(/\n/g);
-      console.log(matches ? matches.length : 0);
+      //console.log(matches ? matches.length : 0);
     } catch (error) {
       console.error('Error fetching site details:', error);
     }
@@ -265,18 +274,18 @@ export default function MiniDrawer() {
     }),
   }));
 
-
+  
+  
 
   const [sidebar, setSidebar] = React.useState(false);
-  //const showSidebar = () => setSidebar(!sidebar);
   const [menuName, setMenuName] = React.useState([
     { EntName: 'Home', type: 'page', icon: <HomeIcon />, link: '/home' },
     { EntName: 'About', type: 'page', icon: <InfoIcon />, link: '/About' },
     { EntName: 'Archive', type: 'page', icon: <AutoStoriesIcon />, link: '/Archive' },
     { EntName: 'Notices', type: 'page', icon: <CampaignIcon />, link: '/Notices' },
     { EntName: 'Booking', type: 'page', icon: <CalendarMonthIcon />, link: '/BookingForm' },
-    { EntName: 'Members', type: 'page', icon: <GroupsIcon />, link: '/Members' },
     { EntName: 'Appeal', type: 'page', icon: <PersonAddAlt1Icon />, link: '/appeal' },
+    { EntName: 'Members', type: 'page', icon: <GroupsIcon />, link: '/Members' },
     { EntName: 'Admin', type: 'page', icon: <SettingsIcon />, link: '/Settings' },
   ]);
   // update the button background color to yellow
@@ -310,9 +319,8 @@ export default function MiniDrawer() {
           { EntName: 'Appeal', type: 'page', icon: <TrendingUpIcon />, link: '/data' },
           { EntName: 'Calendar', type: 'page', icon: <CalendarMonthIcon />, link: '/calendar' },
           { EntName: 'Tasks', type: 'page', icon: <PlaylistAddCheckIcon />, link: '/tasks' },
-          { EntName: 'SkillsOptions', type: 'menu', icon: <ThumbsUpDownOutlinedIcon />, link: 'SkillsOptions' },
           { EntName: 'Upcoming', type: 'page', icon: <EmojiPeopleIcon />, link: '/Notices' },
-          // clicking on settings should replace the list of modules with a list of settings options
+          { EntName: 'SkillsOptions', type: 'menu', icon: <ThumbsUpDownOutlinedIcon />, link: 'SkillsOptions' },
           { EntName: 'Settings', type: 'menu', icon: <SettingsIcon />, link: 'Settings' }
         ],
       }
@@ -321,24 +329,17 @@ export default function MiniDrawer() {
 
 
   const navigate = useNavigate();
-
   // This is the function that will be called when a menu item is clicked.
   // Using the name that is passed it will either set the menuName state or call the page using the router.
   const clickListener = (mItem: menuItem) => {
     if (mItem.type === 'menu') {
-      // use the router to navigate to the page that is passed in the link property
-      // retrieve the arrMenu array from the mainMenuListArr object that matches the menuName
-      // console.log('navigate to ' + mItem.link);
       for (let i = 0; i < mainMenuListArr.mainMenuListArr.length; i++) {
         if (mainMenuListArr.mainMenuListArr[i].menuName === mItem.link) {
-          // set the menuName state to the name of the menu item that was clicked
-          //console.log(mainMenuListArr.mainMenuListArr[i].arrMenu);
-          // setMenuName(mainMenuListArr.mainMenuListArr[i].arrMenu);
           break;
         }
       }
     } else {
-      console.log('navigate to ' + mItem.link);
+     // console.log('navigate to ' + mItem.link);
       navigate(mItem.link);
     }
   }
@@ -395,8 +396,6 @@ export default function MiniDrawer() {
             </IconButton>
           </DrawerHeader>
           <Divider />
-          {/* I dont know what the nav c tag does?
-                   */}
           <List>
             {/* Add the items from the array that has been selected */}
             {menuName ? menuName.map((text) => (
@@ -425,7 +424,7 @@ function imageURL(imagename: string): string {
   // var filename = encodeURIComponent(imagename)
   // console.log("filename: " + filename)
   var filename = `http://${url}:${port}/images/${imagename}`
-  console.log("filename: aDASASCC " + filename)
+  //console.log("filename: aDASASCC " + filename)
   return filename
 }
 

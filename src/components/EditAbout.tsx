@@ -2,7 +2,7 @@
 
 import React, {useEffect, useState} from 'react';
 import { styled } from '@mui/material/styles';
-import { Button, Typography, Divider, Snackbar, TextField, Fade } from '@mui/material';
+import { Button, Typography, Divider, Snackbar, TextField, Fade, Grid2 } from '@mui/material';
 import  Grid from '@mui/material/Grid2';
 import { purple } from '@mui/material/colors';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -11,14 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import { SiteInfoGET, SiteinfoPUT } from '../services/queries';
 import { SiteInfo } from '../types/types.d';
 
-
-const ColorButton = styled(Button)({
-    color: 'white',
-    backgroundColor: purple[500],
-    '&:hover': {
-        backgroundColor: purple[700],
-    },
-    });
 
 const schema = yup.object().shape({
     about: yup.string().required(),
@@ -120,17 +112,21 @@ export default function EditAbout() {
         <>
         <form onSubmit={handleSubmit(FormSubmitHandler)}>
         <Grid container spacing={2} >
-            <Grid size={12} sx={{ paddingBottom: 2 }}>
+            <Grid size={9} sx={{ paddingBottom: 2 }}>
                 <Typography variant="h2" component="h2">
                     Content Editor
                 </Typography>
             </Grid>
-            {/* run through the array and lay out the info*/}
-            <Grid size={12}>
-                <Typography variant="h2" component="h2">
+            <Grid size={3}>
+            <Button variant="contained" type="submit">
+                Save Changes
+            </Button>
+            </Grid>
+            <Grid2 size={12}>
+                <Typography variant="h4" component="h2">
                     About Page
                 </Typography>
-            </Grid>
+            </Grid2>
             <Grid size={6}>
                 <TextField
                     label="About section title"
@@ -155,7 +151,7 @@ export default function EditAbout() {
                 <Divider />
             </Grid>
             <Grid size={12}>
-                <Typography variant="h2" component="h2">
+                <Typography variant="h4" component="h2">
                     Appeal Page
                 </Typography>
             </Grid>
@@ -184,7 +180,7 @@ export default function EditAbout() {
                         <Divider />
                     </Grid>
                     <Grid size={12}>
-                        <Typography variant="h2" component="h2">
+                        <Typography variant="h4" component="h2">
                             Home Page
                         </Typography>
                     </Grid>
@@ -214,7 +210,7 @@ export default function EditAbout() {
                         <Divider />
                     </Grid>
                     <Grid size={12}>
-                        <Typography variant="h2" component="h2">
+                        <Typography variant="h4" component="h2">
                             Archive Page
                         </Typography>
                     </Grid>
@@ -244,7 +240,7 @@ export default function EditAbout() {
                         <Divider />
                     </Grid>
                     <Grid size={12}>
-                        <Typography variant="h2" component="h2">
+                        <Typography variant="h4" component="h2">
                             Notices Page
                         </Typography>
                     </Grid>
@@ -274,7 +270,7 @@ export default function EditAbout() {
                         <Divider />
                     </Grid>
                     <Grid size={12}>
-                        <Typography variant="h2" component="h2">
+                        <Typography variant="h4" component="h2">
                             Booking Page
                         </Typography>
                     </Grid>
@@ -304,7 +300,7 @@ export default function EditAbout() {
                         <Divider />
                     </Grid>
                     <Grid size={12}>
-                        <Typography variant="h2" component="h2">
+                        <Typography variant="h4" component="h2">
                             Members Page
                         </Typography>
                     </Grid>
@@ -334,7 +330,7 @@ export default function EditAbout() {
                         <Divider />
                     </Grid>
                     <Grid size={12}>
-                        <Typography variant="h2" component="h2">
+                        <Typography variant="h4" component="h2">
                             Settings Page
                         </Typography>
                     </Grid>
@@ -365,9 +361,9 @@ export default function EditAbout() {
                     </Grid>
 
         <Grid size={12}>
-            <ColorButton variant="contained" type="submit">
+            <Button variant="contained" type="submit">
                 Save Changes
-            </ColorButton>
+            </Button>
         <Grid size={12}/>
         </Grid>
         </Grid>
