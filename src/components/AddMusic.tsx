@@ -9,7 +9,7 @@ import * as yup from 'yup';
 import { Link } from 'react-router-dom';
 import { MusicGET, MusicPOST, MusicTrackPUT, musicTrackDELETE } from '../services/queries';
 import { TransitionProps } from '@mui/material/transitions';
-import { MusicTrack } from '../types/types';
+import { MusicTrack } from '../types/types.d';
 
 
 const schema = yup.object().shape({

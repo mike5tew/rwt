@@ -64,7 +64,7 @@ export default function ViewMessages() {
                 <Grid2 size={12}>
                     <Divider />
                 </Grid2>
-                {Messages.map((Message) => (
+                {Messages && Messages.map((Message) => (
                     <>
                         <Grid2 size={10} key={Message.MessageID}>
                             <Card>

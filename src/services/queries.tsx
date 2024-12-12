@@ -156,9 +156,9 @@ export async function ClipsFromEvent(id: number): Promise<Clip[]> {
     return fetchData<Clip[]>(`clipsFromEventGET/${id}`);
 }
 // randomImget returns an array of imagedetails or a string
-export async function randomImagesGET(req: number): Promise<ImageDetail[] | string> {
+export async function randomImagesGET(req: number): Promise<ArchiveEntry | string> {
 
-    return fetchData<ImageDetail[] | string >(`RandomImagesGET?screen=${localStorage.getItem('screenSize')}&images=${req}`);
+    return fetchData<ArchiveEntry | string >(`RandomImagesGET?screen=${localStorage.getItem('screenSize')}&images=${req}`);
 }
 
 

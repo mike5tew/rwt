@@ -18,7 +18,7 @@ export default function Notices() {
                 console.error('Error:', data);
                 return;
             }
-            const processedData = data.map((event: any) => ({
+            const processedData = data && data.map((event: any) => ({
                 ...event,
                 EventDate: new Date(event.DateString),
             }));
@@ -42,7 +42,7 @@ export default function Notices() {
                     </Paper>
                 </Grid2>
                 <Grid2 size={12}>
-                    {notices.map((notice: EventDetails, index: number) => (
+                    {notices && notices.map((notice: EventDetails, index: number) => (
                         <Col key={index} sm="12" md="6" lg="4">
                             <Card>
                                 <Paper>
@@ -51,6 +51,7 @@ export default function Notices() {
                                         <CardText>{notice.Invitation}</CardText>
                                         <CardText>{notice.Location}</CardText>
                                         <CardText>{`${notice.EventDate.getDate()} ${notice.EventDate.toLocaleString('default', { month: 'long' })} ${notice.EventDate.getFullYear()}`}</CardText>
+                                        <CardText>{notice.Price}</CardText>
                                         <CardText>{`${notice.StartTime} to ${notice.EndTime}`}</CardText>
                                     </CardBody>
                                 </Paper>

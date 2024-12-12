@@ -3,7 +3,6 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { set, useForm } from 'react-hook-form';
-import { Container, Row, Col, Card } from 'react-bootstrap';
 import { Paper, Snackbar, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { TextField } from '@mui/material';
@@ -207,7 +206,6 @@ export default function EditTheme() {
                         labelId="font-select"
                         value={watch("TextFont")}
                         label=""
-                        placeholder='Font'
                         {...register("TextFont")}
                     >
                         <MenuItem value={"Arial"}>Arial</MenuItem>

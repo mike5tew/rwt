@@ -16,8 +16,7 @@ import ResizeImage from '../services/ResizeImage';
 // The api requess are being replaced by finctions in the queries file
 import { ArchivesGET, updateArchiveEntry, ArchivePOST, EventArchiveGET, ClipPOST, ClipDELETE, EventsList, ImageDELETE } from '../services/queries';
 import FileUploadService from '../services/FileUploadService';
-import { json } from 'stream/consumers';
-import { textAlign } from '@mui/system';
+
 // create a style for the input file button so it is effectively hidden by making it 0.1px high and wide
 
 const styleGridLeft = {
@@ -229,15 +228,11 @@ export default function AddArchive() {
             ImDetails = res.FileDetails;
             ImDetails.Caption = watch('Imagecaption');
             console.log('Resized image for desktop:', res.FileDetails.EventID);
-//            setImages((prevImages) => [...prevImages, ImDetails]);
-
             // Upload the resized image
-            //setIconURL(res.FileDetails.ImageURL);
             return FileUploadService.upload(res.ReturnedFile, res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption, setProgress);
         })
         .then((uploadRes: FormData) => {
             //console.log('File uploaded:', uploadRes);
-            //setImages((prevImages) => [...prevImages, ImDetails]);
           return FileUploadService.SendFile(uploadRes);
         }
         ).then((respon: ImID) => {
@@ -264,16 +259,12 @@ export default function AddArchive() {
         )
         
         .then((uploadRes: FormData) => {
-            //console.log('File uploaded:', uploadRes);
             return FileUploadService.SendFile(uploadRes);
-
-
-            //console.log('File uploaded:', uploadRes);
-            //setImages((prevImages) => [...prevImages, uploadRes.FileDetails]);
         }).then((respon: ImageDetail) => {
           if (respon) {
-           // console.log('Mobile File uploaded:', respon);
-         //   setImages((prevImages) => [...prevImages, respon]);
+            //set the snack message to the image added successfully
+            setSnackMessage("Image added successfully")
+            setSnackOpen(true)
           }
         }
         )
@@ -283,27 +274,31 @@ export default function AddArchive() {
         .finally(() => {
             // Clear the current file
             setCurrentFile(undefined);
+            // Clear the file input
+            setValue('NextFile', '');
+            // Clear the image caption
+            setValue('Imagecaption', '');
+            // Clear the icon image
+            setIconImage(undefined);
         });
 };
 
 
-  function handleEventSelect(event: SelectChangeEvent<Number>) {
-    // set the eventID to the value of the event
-    setEventID(event.target.value as number);
-    // if the id =0 then reset the images and clips
-    if (event.target.value === 0) {
-      clearForm();
-    } else {
-      setEventSelected(true);
-      console.log('EventID:', event.target.value);
+function handleEventSelect(event: SelectChangeEvent<Number>) {
+  setEventID(event.target.value as number);
+  if (event.target.value === 0) {
+    clearForm(0);
+    setEventID(0);
+    setEventSelected(false);
+  } else {
+    setEventSelected(true);
+    console.log('EventID:', event.target.value, !eventSelected);
 
-      EventArchiveGET(event.target.value as number)
-        .then(respon => {
-          if (respon) {
-            if (respon.ArchiveID > 0) {
-            // set the report value
+    EventArchiveGET(event.target.value as number)
+      .then(respon => {
+        if (respon) {
+          if (respon.ArchiveID > 0) {
             setArchive(respon);
-            // create an empty array of images and clips
             var imagesTp: ImageDetail[] = [];
             var Tbtemp: tableDetails[] = [];
             var clipsTp: Clip[] = [];
@@ -316,13 +311,11 @@ export default function AddArchive() {
                 tb.id = respon.Images[i].ImageID;
                 tb.caption = respon.Images[i].Caption
                 tb.filename = respon.Images[i].Filename;
-                // console.log('Image:', tb.filename);
                 Tbtemp = [...Tbtemp, tb];
                 imgDetail.ImageID = respon.Images[i].ImageID;
                 imgDetail.Filename = respon.Images[i].Filename;
                 imgDetail.Caption = respon.Images[i].Caption;
                 imgDetail.EventID = respon.Images[i].EventID;
-
                 imagesTp = [...imagesTp, imgDetail];
               }
             }
@@ -336,7 +329,6 @@ export default function AddArchive() {
                 clip.Caption = respon.Clips[i].Caption;
                 clip.EventID = respon.Clips[i].EventID;
                 clipsTp = [...clipsTp, clip];
-
               }
             }
             setClTab(ClTab);
@@ -345,16 +337,17 @@ export default function AddArchive() {
             setClips(clipsTp);
             setValue("Report", respon.Report);
           } else {
-            console.log("Error: "+ (respon.Report))
-            clearForm();
+            console.log("Error: " + (respon.Report))
+            // empty archive details
+            clearForm(1);
+
           }
         }
-        }).catch(error => {
-          console.log(error)
-        });
-    }
+      }).catch(error => {
+        console.log(error)
+      });
   }
-
+}
 
 
   const handleAddClip = () => {
@@ -406,7 +399,7 @@ export default function AddArchive() {
         if (respon.ArchiveID > 0) {
           setSnackMessage("Archive details saved successfully")
           setSnackOpen(true)
-          clearForm();
+          clearForm(0);
         } else {
           console.log("Error saving archive")
           setSnackMessage("Error saving archive")
@@ -421,7 +414,7 @@ export default function AddArchive() {
   };
 
 
-  function clearForm() {
+  function clearForm(version: number) {
     setImages([]);
     setClips([]);
     setTable([]);
@@ -432,8 +425,14 @@ export default function AddArchive() {
     setValue('Imagecaption', '');
     setValue('NextURL', '');
     setValue('Clipcaption', '');
+    if (version === 1) {
+      setSnackMessage("No archive details found for this event")
+      setSnackOpen(true)
+    } else {
+      setEventSelected(false);
     setEventID(0);
-    setEventSelected(false);
+    }
+    console.log('Form cleared');
   }
 
   const FormSubmitHandler: SubmitHandler<ArchiveEntry> = (data: ArchiveEntry) => {
@@ -456,7 +455,7 @@ export default function AddArchive() {
             <FormControl fullWidth><InputLabel id="ExistingTracks">Events</InputLabel>
               <Select label="Select an event" value={eventID} onChange={handleEventSelect} fullWidth >
                 <MenuItem value={0} >Select Event</MenuItem>
-                {eventList.map((event) => (
+                {eventList && eventList.map((event) => (
                   <MenuItem key={event.EventID} value={event.EventID}>{event.Title + " " + StringtoDate(event.EventDate.toString())}</MenuItem>
                 ))}
               </Select>

@@ -48,7 +48,7 @@ return (
             <Grid2 size={12}>
                 <Divider />
             </Grid2>
-                        {events.map((event) => (
+                        {events && events.map((event) => (
                             <Grid2 size={12} key={event.EventID}>
                                 <Paper>
                                     <Typography variant="h5">{event.Title}</Typography>
@@ -59,7 +59,7 @@ return (
 
                                     {/* cycle through the playlist and  */}
                                     <SimpleTreeView>
-                    {event.Playlist.map((entry, index) => (
+                    {event.Playlist && event.Playlist.map((entry, index) => (
                         entry.ID=== 0) ? null : (  
                         <TreeItem itemId={index.toString()} label={entry.MusicTrack.TrackName}>
                         <Link href={entry.MusicTrack.Lyrics} >

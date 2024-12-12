@@ -24,7 +24,7 @@ export default function Music() {
             </Grid>
             <Grid item xs={12}>
                 <SimpleTreeView>
-                    {music.map((entry, index) => (
+                    {music && music.map((entry, index) => (
                         entry.id === 0) ? null : (  
                         <TreeItem itemId={index.toString()} label={entry.trackName}>
                         <Link href={entry.lyrics} >

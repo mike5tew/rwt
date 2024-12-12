@@ -132,7 +132,7 @@ export default function PlayListAdd() {
                     return;
                 }
 
-                let tempPlaylist: PlayListEntries[] = respon.map(item => ({
+                let tempPlaylist: PlayListEntries[] = respon.map && respon.map(item => ({
                     id: Math.floor(Math.random() * 1000000),
                     musicTrackID: item.MusicTrack.MusicTrackID,
                     artist: item.MusicTrack.Artist,
@@ -272,7 +272,7 @@ export default function PlayListAdd() {
                 <Grid2 size={6} >
                     <Select value={eventID} fullWidth onChange={handleEventChange}>
                         <MenuItem value={0}>Select Event</MenuItem>
-                        {eventList.map((event) => (
+                        {eventList && eventList.map((event) => (
                             <MenuItem key={event.EventID} value={event.EventID}>{event.Title + " " + StringtoDate(event.EventDate.toString())}</MenuItem>
                         ))}
                     </Select>

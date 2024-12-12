@@ -20,7 +20,6 @@ function upload(file: File, filename: string, eventID: number, width: number, he
 
 export function SendFile(tResp: FormData): Promise<any> {
   return new Promise((resolve, reject) => {
-    console.log("tResp1234: " + tResp);
     // The server is returning an error stating that the Error retrieving the file: http: no such file
     // 
     fetch(`http://${url}:${port}/ImageFilePOST`, {
@@ -42,7 +41,6 @@ export function SendFile(tResp: FormData): Promise<any> {
       throw new TypeError("Oops, we haven't got JSON!");
     }
     ).then((data) => {
-      console.log("data: " + data);
       resolve(data);
     }).catch((error) => {
       console.error('Error:', error);

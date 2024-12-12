@@ -95,7 +95,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         { field: "type", headerName: "Select", flex: 1, renderCell: (params: GridCellParams) => (<Button variant="outlined" onClick={() => setImageValue(params.row.type, params.row.filename)}>{params.row.type}</Button>) },
         { field: "select", headerName: "Delete", flex: 1, renderCell: (params: GridCellParams) => (<IconButton onClick={() => DeleteImage(params.row.id)}><DeleteForeverOutlinedIcon /></IconButton>) }
     ]
-    const tableRowsImages = images.map((image) => {
+    const tableRowsImages = images && images.map((image) => {
         //console.log("image: " + image.eventID)
         return { image: image, filename: image.Filename, caption: image.Caption, id: image.ImageID, type: gatherType(image.EventID), width: image.Width, height: image.Height }
     })

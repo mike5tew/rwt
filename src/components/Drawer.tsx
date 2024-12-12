@@ -31,11 +31,11 @@ import Grid2 from '@mui/material/Grid2'; // Grid version 1
 import SettingsIcon from '@mui/icons-material/Settings';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CampaignIcon from '@mui/icons-material/Campaign';
-// import '../styles/mgtStyles.css'
 import { teal } from '@mui/material/colors';
 import { SiteInfoGET, themeDetails } from '../services/queries';
-import { ScreenSize, getScreenSize } from 'src/types/types';
-export default function MiniDrawer() {
+
+
+const MiniDrawer = () => {
   const [BoxColour, setBoxColour] = React.useState('#222222');
   const [TextColour, setTextColour] = React.useState('#222222');
   const [TextFont, setTextFont] = React.useState('Arial');
@@ -47,7 +47,6 @@ export default function MiniDrawer() {
   const [buttonTextColour, setButtonTextColour] = React.useState('#222222');
   const [menuTextColour, setMenuTextColour] = React.useState('#222222');
   const [textSize, setTextSize] = React.useState(12);
-
 
   const drawerWidth = 240;
   var theme2 = createTheme({
@@ -79,7 +78,6 @@ export default function MiniDrawer() {
           },
         },
       },
-      // make the textfields filled
       MuiFilledInput: {
         styleOverrides: {
           root: {
@@ -90,7 +88,6 @@ export default function MiniDrawer() {
           },
         },
       },
-      // background of the boxes in the grid
       MuiPaper: {
         styleOverrides: {
           root: {
@@ -121,38 +118,23 @@ export default function MiniDrawer() {
     typography: {
       fontFamily: TextFont,
       fontSize: textSize,
-      // fontWeightLight: 400,
-      // fontWeightRegular: 500,
-      // fontWeightMedium: 600,
-      // fontWeightBold: 700,
     },
-
   });
 
-
   useEffect(() => {
-    // establish if the screen is a phone or a larger screen
-    //console.log('getScreenSize');
     if (window.innerWidth < 600) {
-      //console.log('phone');
       localStorage.setItem('screenSize', 'mobile');
     } else {
-      //console.log('desktop');
       localStorage.setItem('screenSize', 'desktop');
-    }  
-    // get the background image from the server
+    }
     themeDetails().then(respon => {
-      // console.log(respon.data);
-      const themeDetails = respon
+      const themeDetails = respon;
       setBoxColour(themeDetails.BoxColour);
       setTextColour(themeDetails.TextColour);
       setTextFont(themeDetails.TextFont);
-      // urlecode the filename
-      var filename = encodeURIComponent(themeDetails.BackgroundImage)
+      var filename = encodeURIComponent(themeDetails.BackgroundImage);
       setImage(imageURL(filename));
-      //console.log("THIS IS THE IMAGE :" + imageURL(filename));
       setTextboxColour(themeDetails.TextboxColour);
-      // setLogoImage(themeDetails.logoImage);
       setBannerColour(themeDetails.BannerColour);
       setMenuColour(themeDetails.MenuColour);
       setButtonColour(themeDetails.ButtonColour);
@@ -160,48 +142,33 @@ export default function MiniDrawer() {
       setButtonTextColour(themeDetails.ButtonTextColour);
       setMenuTextColour(themeDetails.MenuTextColour);
       setTextSize(themeDetails.TextSize);
-      getSiteDetails();
-    }
-    )
-      .catch((error) => {
+    }).then(() => {
+      SiteInfoGET().then(respon => {
+        localStorage.setItem('HomeTitle', respon.HomeTitle);
+        localStorage.setItem('HomeText', respon.HomeText);
+        localStorage.setItem('AboutTitle', respon.AboutTitle);
+        localStorage.setItem('AboutText', respon.AboutText);
+        localStorage.setItem('ArchiveTitle', respon.ArchiveTitle);
+        localStorage.setItem('ArchiveText', respon.ArchiveText);
+        localStorage.setItem('NoticesTitle', respon.NoticesTitle);
+        localStorage.setItem('NoticesText', respon.NoticesText);
+        localStorage.setItem('BookingTitle', respon.BookingTitle);
+        localStorage.setItem('BookingText', respon.BookingText);
+        localStorage.setItem('MembersTitle', respon.MembersTitle);
+        localStorage.setItem('MembersText', respon.MembersText);
+        localStorage.setItem('AppealTitle', respon.AppealTitle);
+        localStorage.setItem('AppealText', respon.AppealText);
+        localStorage.setItem('SettingsTitle', respon.SettingsTitle);
+        localStorage.setItem('SettingsText', respon.SettingsText);
+        const txt: string = respon.HomeText;
+        const matches = txt.match(/\n/g);
+      }).catch((error) => {
         console.log(error.respon + " this is the error")
-      }
-      )
-  }
-    , []);
-  // get the site details from the server
-  async function getSiteDetails() {
-    try {
-      const respon = await SiteInfoGET();
-      
-      // Replace \n with actual carriage returns
-      const replaceNewLines = (text: string) => text.replace(/\\n/g, '\n');
-
-      localStorage.setItem('HomeTitle', respon.HomeTitle);
-      localStorage.setItem('HomeText', replaceNewLines(respon.HomeText));
-      localStorage.setItem('AboutTitle', respon.AboutTitle);
-      localStorage.setItem('AboutText', replaceNewLines(respon.AboutText));
-      localStorage.setItem('ArchiveTitle', respon.ArchiveTitle);
-      localStorage.setItem('ArchiveText', replaceNewLines(respon.ArchiveText));
-      localStorage.setItem('NoticesTitle', respon.NoticesTitle);
-      localStorage.setItem('NoticesText', replaceNewLines(respon.NoticesText));
-      localStorage.setItem('BookingTitle', respon.BookingTitle);
-      localStorage.setItem('BookingText', replaceNewLines(respon.BookingText));
-      localStorage.setItem('MembersTitle', respon.MembersTitle);
-      localStorage.setItem('MembersText', replaceNewLines(respon.MembersText));
-      localStorage.setItem('AppealTitle', respon.AppealTitle);
-      localStorage.setItem('AppealText', replaceNewLines(respon.AppealText));
-      localStorage.setItem('SettingsTitle', respon.SettingsTitle);
-      localStorage.setItem('SettingsText', replaceNewLines(respon.SettingsText));
-
-      // Count the number of carriage returns in HomeText
-      const txt: string = respon.HomeText;
-      const matches = txt.match(/\n/g);
-      //console.log(matches ? matches.length : 0);
-    } catch (error) {
-      console.error('Error fetching site details:', error);
-    }
-  }
+      });
+    }).catch((error) => {
+      console.log(error.respon + " this is the error")
+    });
+  }, []);
 
   const openedMixin = (theme: Theme): CSSObject => ({
     width: drawerWidth,
@@ -229,10 +196,8 @@ export default function MiniDrawer() {
     alignItems: 'center',
     justifyContent: 'flex-end',
     padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
     ...theme.mixins.toolbar,
   }));
-
 
   const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
     ({ theme, open }) => ({
@@ -250,7 +215,6 @@ export default function MiniDrawer() {
       }),
     }),
   );
-
 
   interface AppBarProps extends MuiAppBarProps {
     open?: boolean;
@@ -273,9 +237,6 @@ export default function MiniDrawer() {
       }),
     }),
   }));
-
-  
-  
 
   const [sidebar, setSidebar] = React.useState(false);
   const [menuName, setMenuName] = React.useState([
@@ -313,25 +274,23 @@ export default function MiniDrawer() {
     mainMenuListArr: [
       {
         menuName: 'Main', arrMenu: [
-          { EntName: 'Home', type: 'page', icon: <HomeIcon />, link: '/home' },
-          { EntName: 'Archive', type: 'page', icon: <LightbulbIcon />, link: '/planning' },
-          { EntName: 'Notices', type: 'page', icon: <MailIcon />, link: '/students' },
-          { EntName: 'Appeal', type: 'page', icon: <TrendingUpIcon />, link: '/data' },
-          { EntName: 'Calendar', type: 'page', icon: <CalendarMonthIcon />, link: '/calendar' },
-          { EntName: 'Tasks', type: 'page', icon: <PlaylistAddCheckIcon />, link: '/tasks' },
+          { EntName: 'Home', type: 'page', icon: <HomeIcon />, link: '/' },
+          { EntName: 'About', type: 'page', icon: <InfoIcon />, link: '/About' },
           { EntName: 'Upcoming', type: 'page', icon: <EmojiPeopleIcon />, link: '/Notices' },
-          { EntName: 'SkillsOptions', type: 'menu', icon: <ThumbsUpDownOutlinedIcon />, link: 'SkillsOptions' },
+          { EntName: 'Archive', type: 'page', icon: <LightbulbIcon />, link: '/Archive' },
+          { EntName: 'Appeal', type: 'page', icon: <TrendingUpIcon />, link: '/Appeal' },
+          { EntName: 'MembersPage', type: 'menu', icon: <ThumbsUpDownOutlinedIcon />, link: 'MembersPage' },
           { EntName: 'Settings', type: 'menu', icon: <SettingsIcon />, link: 'Settings' }
         ],
       }
     ]
   }
 
-
   const navigate = useNavigate();
   // This is the function that will be called when a menu item is clicked.
   // Using the name that is passed it will either set the menuName state or call the page using the router.
   const clickListener = (mItem: menuItem) => {
+    console.log('Menu item clicked:', mItem);
     if (mItem.type === 'menu') {
       for (let i = 0; i < mainMenuListArr.mainMenuListArr.length; i++) {
         if (mainMenuListArr.mainMenuListArr[i].menuName === mItem.link) {
@@ -339,10 +298,10 @@ export default function MiniDrawer() {
         }
       }
     } else {
-     // console.log('navigate to ' + mItem.link);
+      console.log('Navigating to:', mItem.link);
       navigate(mItem.link);
     }
-  }
+  };
   return (
     <ThemeProvider theme={theme2} >
       {/* add the musical background.png to the Box */}
@@ -430,3 +389,4 @@ function imageURL(imagename: string): string {
 
 
 
+export default MiniDrawer;
