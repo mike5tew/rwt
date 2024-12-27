@@ -2,8 +2,7 @@
 
 import React, {useEffect, useState} from 'react';
 import { styled } from '@mui/material/styles';
-import { Button, Typography, Divider, Snackbar, TextField, Fade, Grid2 } from '@mui/material';
-import  Grid from '@mui/material/Grid2';
+import { Button, Typography, Divider, Snackbar, TextField, Fade, Grid } from '@mui/material';
 import { purple } from '@mui/material/colors';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
@@ -112,22 +111,22 @@ export default function EditAbout() {
         <>
         <form onSubmit={handleSubmit(FormSubmitHandler)}>
         <Grid container spacing={2} >
-            <Grid size={9} sx={{ paddingBottom: 2 }}>
+            <Grid item xs={9} sx={{ paddingBottom: 2 }}>
                 <Typography variant="h2" component="h2">
                     Content Editor
                 </Typography>
             </Grid>
-            <Grid size={3}>
+            <Grid item xs={3}>
             <Button variant="contained" type="submit">
                 Save Changes
             </Button>
             </Grid>
-            <Grid2 size={12}>
+            <Grid item xs={12}>
                 <Typography variant="h4" component="h2">
                     About Page
                 </Typography>
-            </Grid2>
-            <Grid size={6}>
+            </Grid>
+            <Grid item xs={6}>
                 <TextField
                     label="About section title"
                     fullWidth
@@ -136,7 +135,7 @@ export default function EditAbout() {
                     value={watch('AboutTitle')}
                 />
             </Grid>
-            <Grid size={6}>
+            <Grid item xs={6}>
                 <TextField
                     label="About section description"                    
                     fullWidth
@@ -147,15 +146,15 @@ export default function EditAbout() {
                     {...register('AboutText')}
                 />
             </Grid>
-            <Grid size={12}>
+            <Grid item xs={12}>
                 <Divider />
             </Grid>
-            <Grid size={12}>
+            <Grid item xs={12}>
                 <Typography variant="h4" component="h2">
                     Appeal Page
                 </Typography>
             </Grid>
-            <Grid size={6}>
+            <Grid item xs={6}>
                 <TextField
                     label="Appeal section title"                    
                     fullWidth
@@ -164,7 +163,7 @@ export default function EditAbout() {
                     {...register('AppealTitle')}
                 />
                 </Grid>
-                <Grid size={6}>
+                <Grid item xs={6}>
                     <TextField
                         label="Appeal section description"
                         multiline
@@ -176,15 +175,15 @@ export default function EditAbout() {
                         {...register('AppealText')}
                     />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Divider />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Typography variant="h4" component="h2">
                             Home Page
                         </Typography>
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Home section title"
                             
@@ -194,7 +193,7 @@ export default function EditAbout() {
                             {...register('HomeTitle')}
                         />
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Home section description"
                             
@@ -206,15 +205,15 @@ export default function EditAbout() {
                             {...register('HomeText')}
                         />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Divider />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Typography variant="h4" component="h2">
                             Archive Page
                         </Typography>
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Archive section title"
                             
@@ -224,7 +223,7 @@ export default function EditAbout() {
                             {...register('ArchiveTitle')}
                         />
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Archive section description"
                             
@@ -236,15 +235,15 @@ export default function EditAbout() {
                             {...register('ArchiveText')}
                         />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Divider />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Typography variant="h4" component="h2">
                             Notices Page
                         </Typography>
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Notices section title"
                             
@@ -254,7 +253,7 @@ export default function EditAbout() {
                             {...register('NoticesTitle')}
                         />
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Notices section description"
                             
@@ -266,15 +265,15 @@ export default function EditAbout() {
                             {...register('NoticesText')}
                         />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Divider />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Typography variant="h4" component="h2">
                             Booking Page
                         </Typography>
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Booking section title"
                             
@@ -284,7 +283,7 @@ export default function EditAbout() {
                             {...register('BookingTitle')}
                         />
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Booking section description"
                             
@@ -296,15 +295,15 @@ export default function EditAbout() {
                             {...register('BookingText')}
                         />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Divider />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Typography variant="h4" component="h2">
                             Members Page
                         </Typography>
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Members section title"
                             
@@ -314,7 +313,7 @@ export default function EditAbout() {
                             {...register('MembersTitle')}
                         />
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Members section description"
                             
@@ -326,15 +325,15 @@ export default function EditAbout() {
                             {...register('MembersText')}
                         />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Divider />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Typography variant="h4" component="h2">
                             Settings Page
                         </Typography>
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Settings section title"
                             
@@ -344,7 +343,7 @@ export default function EditAbout() {
                             {...register('SettingsTitle')}
                         />
                     </Grid>
-                    <Grid size={6}>
+                    <Grid item xs={6}>
                         <TextField
                             label="Settings section description"
                             
@@ -356,15 +355,15 @@ export default function EditAbout() {
                             {...register('SettingsText')}
                         />
                     </Grid>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         <Divider />
                     </Grid>
 
-        <Grid size={12}>
+        <Grid item xs={12}>
             <Button variant="contained" type="submit">
                 Save Changes
             </Button>
-        <Grid size={12}/>
+        <Grid item xs={12}/>
         </Grid>
         </Grid>
         <Snackbar

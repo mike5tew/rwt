@@ -4,21 +4,35 @@
 import React, { useEffect, useState } from 'react';
 import { ArchiveEntry, EmptyArchiveEntry, ImageDetail, EmptyImageDetail, Clip, EmptyClip, StringtoDate, EventDetails, DatURLResponse } from '../types/types.d';
 import { DataGrid, GridColDef, GridRowId, GridCellParams } from '@mui/x-data-grid';
-//import db from '../services/db';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { Button, Paper, Typography, TextField, MenuItem, Select, SelectChangeEvent, FormControl, InputLabel, Snackbar } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { useForm, SubmitHandler, Controller, set } from 'react-hook-form';
-import { BorderAll, BorderInner, CloudUpload, ImageSearch, Send } from '@mui/icons-material';
-import '../../src/App.css';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { CloudUpload, ImageSearch } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import ResizeImage from '../services/ResizeImage';
-// The api requess are being replaced by finctions in the queries file
-import { ArchivesGET, updateArchiveEntry, ArchivePOST, EventArchiveGET, ClipPOST, ClipDELETE, EventsList, ImageDELETE } from '../services/queries';
+import { ArchivePOST, EventArchiveGET, ClipPOST, ClipDELETE, EventsList, ImageDELETE } from '../services/queries';
 import FileUploadService from '../services/FileUploadService';
 
-// create a style for the input file button so it is effectively hidden by making it 0.1px high and wide
+/**
+ * Interface for the image table data structure
+ */
+interface tableDetails {
+  id: number;
+  filename: string;
+  caption: string;
+}
 
+/**
+ * Interface for the clip table data structure
+ */
+interface ClipTable {
+  id: number;
+  clipURL: string;
+  caption: string;
+}
+
+// Styling constants
 const styleGridLeft = {
   Grid: {
     justifyContent: 'center',
@@ -39,20 +53,19 @@ const styleGridPadded = {
     // border: '1px solid black',
   },
 }
-interface tableDetails {
-  id: number;
-  filename: string;
-  caption: string
-}
-interface ClipTable {
-  id: number;
-  clipURL: string;
-  caption: string;
-}
+
+/**
+ * Creates an empty table details object
+ */
 function emptyTableDetails(): tableDetails {
   return { id: 0, filename: '', caption: '' };
 }
 
+/**
+ * AddArchive Component
+ * Allows administrators to add and manage archive entries for events
+ * Handles image uploads, YouTube clips, and event reports
+ */
 export default function AddArchive() {
   const { register, handleSubmit, watch, setValue } = useForm<ArchiveEntry>(
     { defaultValues: EmptyArchiveEntry() }
@@ -64,7 +77,6 @@ export default function AddArchive() {
   const [clips, setClips] = useState<Clip[]>([]);
   const [iconImage, setIconImage] = useState<File | undefined>();
   const [currentFile, setCurrentFile] = useState<File | undefined>();
-  const [progress, setProgress] = useState<number>(0);
   const [eventList, setEventList] = useState<EventDetails[]>([]);
   const [fileType, setFileType] = useState<string | null>(null);
   const [IconURL, setIconURL] = useState<string>('');
@@ -88,6 +100,11 @@ export default function AddArchive() {
     whiteSpace: 'nowrap',
     width: 1,
   });
+
+  /**
+   * Handles removal of images from the archive
+   * @param id The ID of the image to remove
+   */
   const handleRemoveImage = (id: GridRowId) => {
     // convert the id to a number
     id = Number(id);
@@ -109,6 +126,9 @@ export default function AddArchive() {
   // this page is currently not completing loading.  This is because the images and clips are not being cleared when the event is changed.  This is because the images and clips are being set before the eventID is set.  This is because the eventID is set in the handleEventSelect function.  This function is called when the event is changed.  The images and clips are set before the eventID is set.  This means that the images and clips are being
   
 
+  /**
+   * Column definitions for the image grid
+   */
   const Imagecolumns: GridColDef[] = [
     { field: 'id', headerName: 'ID' },
     { field: 'filename', headerName: 'File', flex: 2 },
@@ -119,6 +139,7 @@ export default function AddArchive() {
       )
     }
   ];
+
   const handleRemoveClip = (id: GridRowId) => {
     // convert the id to a number
     id = Number(id);
@@ -179,39 +200,50 @@ export default function AddArchive() {
     });
   }
 
+  /**
+   * Handles file selection and image processing
+   * Validates file type and resizes image for preview
+   */
   const selectFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
     if (!file) {
-      alert('No file selected');
+      setSnackMessage('No file selected');
+      setSnackOpen(true);
       return;
     }
   
-    if (file.type === 'image/jpg' || file.type === 'image/jpeg' || file.type === 'image/png') {
-      setFileType(file.type); // Assuming setFileType is a state setter
-      setCurrentFile(file);
-    } else {
-      alert('Please select a valid image file');
+    // Check if file is an image
+    const validTypes = ['image/jpg', 'image/jpeg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      console.log('Invalid file type:', file.type);
+      setSnackMessage(`Invalid file type: ${file.type}. Please select a JPG, JPEG or PNG file.`);
+      setSnackOpen(true);
       return;
     }
+  
+    setFileType(file.type);
+    setCurrentFile(file);
   
     try {
       const res = await changeFileSet(file);
-        ResizeImage.ResizeImage(res, 100, eventID).then((res: DatURLResponse) => {
-
+      ResizeImage.ResizeImage(res, 100, eventID).then((res: DatURLResponse) => {
         setIconImage(res.ReturnedFile);
-        var sDat = URL.createObjectURL(res.ReturnedFile);
-        console.log('sDat:', sDat);
+        const sDat = URL.createObjectURL(res.ReturnedFile);
         setIconURL(sDat);
-      }
-      );
+      });
     } catch (error) {
       console.error('Error:', error);
+      setSnackMessage('Error processing image');
+      setSnackOpen(true);
     }
   }
-
   
 
 
+  /**
+   * Processes and uploads images
+   * Creates both desktop and mobile versions
+   */
   const upload = () => {
     if (typeof currentFile === 'undefined') {
         alert('Please select an image to upload');
@@ -229,7 +261,7 @@ export default function AddArchive() {
             ImDetails.Caption = watch('Imagecaption');
             console.log('Resized image for desktop:', res.FileDetails.EventID);
             // Upload the resized image
-            return FileUploadService.upload(res.ReturnedFile, res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption, setProgress);
+            return FileUploadService.upload(res.ReturnedFile, res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption);
         })
         .then((uploadRes: FormData) => {
             //console.log('File uploaded:', uploadRes);
@@ -251,14 +283,9 @@ export default function AddArchive() {
         .then((res: DatURLResponse) => {
             // console.log('Resized image for mobile:', res);
             // Upload the resized image for mobile
-            return FileUploadService.upload(res.ReturnedFile, "mb"+res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption, (event: { loaded: number; total: number; }) => {
-              setProgress(Math.round((100 * event.loaded) / event.total ));
+            return FileUploadService.upload(res.ReturnedFile, "mb"+res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption);
             }
-            );
-        }
-        )
-        
-        .then((uploadRes: FormData) => {
+            ).then((uploadRes: FormData) => {
             return FileUploadService.SendFile(uploadRes);
         }).then((respon: ImageDetail) => {
           if (respon) {
@@ -309,11 +336,13 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
                 var imgDetail = EmptyImageDetail();
                 var tb = emptyTableDetails();
                 tb.id = respon.Images[i].ImageID;
-                tb.caption = respon.Images[i].Caption
+                tb.caption = respon.Images[i].ImageURL
+                
                 tb.filename = respon.Images[i].Filename;
                 Tbtemp = [...Tbtemp, tb];
                 imgDetail.ImageID = respon.Images[i].ImageID;
                 imgDetail.Filename = respon.Images[i].Filename;
+                imgDetail.ImageURL = respon.Images[i].ImageURL;
                 imgDetail.Caption = respon.Images[i].Caption;
                 imgDetail.EventID = respon.Images[i].EventID;
                 imagesTp = [...imagesTp, imgDetail];
@@ -350,44 +379,62 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
 }
 
 
+  /**
+   * Handles addition of YouTube clips to the archive
+   * Validates YouTube URLs and extracts video IDs
+   */
   const handleAddClip = () => {
-    var clipURL = watch('NextURL');
-    var caption = watch('Clipcaption');
+    let clipURL = watch('NextURL');
+    const caption = watch('Clipcaption');
+  
     if (clipURL !== "") {
-      var newClip = EmptyClip();
-      newClip.ClipURL = clipURL;
+      let clipID = '';
+  
+      // Extract the video ID from different YouTube URL formats
+      const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const match = clipURL.match(youtubeRegex);
+  
+      if (match && match[1]) {
+        clipID = match[1];
+      } else {
+        setSnackMessage("Invalid YouTube URL");
+        setSnackOpen(true);
+        return;
+      }
+  
+      const newClip = EmptyClip();
+      newClip.ClipURL = clipID;
       newClip.Caption = caption;
       newClip.EventID = eventID;
+  
       ClipPOST(newClip).then((respon) => {
         if (respon) {
           if (respon.ClipID > 0) {
-          setSnackMessage("Clip added successfully")
-          setSnackOpen(true)
-          newClip.ClipID = respon.ClipID;
-      setClTab([...ClTab, { id: newClip.ClipID, clipURL: newClip.ClipURL, caption: newClip.Caption }]);
-      setClips([...clips, newClip]);
-      setValue('NextURL', '');
-      setValue('Clipcaption', '');
+            setSnackMessage("Clip added successfully");
+            setSnackOpen(true);
+            newClip.ClipID = respon.ClipID;
+            setClTab([...ClTab, { id: newClip.ClipID, clipURL: newClip.ClipURL, caption: newClip.Caption }]);
+            setClips([...clips, newClip]);
+            setValue('NextURL', '');
+            setValue('Clipcaption', '');
+          } else {
+            const res = JSON.stringify(respon);
+            console.log(res);
+            setSnackMessage("Error adding clip: " + res);
+            setSnackOpen(true);
+          }
         } else {
-          // convert the respon object to a string
-          const res = JSON.stringify(respon);
-          console.log(res)
-          setSnackMessage("Error adding clip 1 " + res)
-          setSnackOpen(true)
+          console.log("Error adding clip: " + respon);
+          setSnackMessage("Error adding clip");
+          setSnackOpen(true);
         }
-      } else {
-        console.log("Error adding clip" + respon)
-        setSnackMessage("Error adding clip")
-        setSnackOpen(true)
-      }
-      }
-      );
+      });
     } else {
-      setSnackMessage("Clip URL is required")
-      setSnackOpen(true)
+      setSnackMessage("Clip URL is required");
+      setSnackOpen(true);
     }
   }
-
+  
 
 
   function handleSaveArchive() {
@@ -443,15 +490,15 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
   return (
     <>
       <form onSubmit={handleSubmit(FormSubmitHandler)}>
-        <Grid2 container spacing={2} >
-          <Grid2 size={12} sx={{ paddingBottom: 2 }}>  {/* //Title full width */}
+        <Grid container spacing={2} >
+          <Grid item xs={12} sx={{ paddingBottom: 2 }}>  {/* //Title full width */}
             <Paper elevation={3}>
               {/* align the text centrally */}
               <Typography variant="h2" component="h2" sx={{ textAlign: 'center' }} >Add Archive Details</Typography>
             </Paper>
-          </Grid2>
-          <Grid2 />
-          <Grid2 size={12} > {/* //Event dropdown  */}
+          </Grid>
+          <Grid />
+          <Grid item xs={12} > {/* //Event dropdown  */}
             <FormControl fullWidth><InputLabel id="ExistingTracks">Events</InputLabel>
               <Select label="Select an event" value={eventID} onChange={handleEventSelect} fullWidth >
                 <MenuItem value={0} >Select Event</MenuItem>
@@ -460,8 +507,8 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
                 ))}
               </Select>
             </FormControl>
-          </Grid2>
-          <Grid2 size={12} >
+          </Grid>
+          <Grid item xs={12} >
             <TextField
               label="Event Report"
               fullWidth
@@ -470,18 +517,18 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
               rows={4}
               {...register('Report')}
             />
-          </Grid2>
-          <Grid2 size={12} sx={styleGridPadded.Grid}>  {/* //Image titles */}
+          </Grid>
+          <Grid item xs={12} sx={styleGridPadded.Grid}>  {/* //Image titles */}
             <Typography variant="h6">Image uploads</Typography>
-          </Grid2>
-          <Grid2 size={12} >   {/* image adding row */}
+          </Grid>
+          <Grid item xs={12} >   {/* image adding row */}
             {/* Use the currentFile to populate the img tag if a file is present */}
             {/* <div style={{ width: '100%', height: '100%', backgroundImage: `url(${iconImage ? URL.createObjectURL(iconImage) : ''})` }}></div> */}
             {/* <img src={ IconURL }  alt="Thumbnail" /> */}
             <img src={iconImage ? URL.createObjectURL(iconImage) : 'https://via.placeholder.com/80'} alt="profile"  />
 
-          </Grid2>
-          <Grid2 size={12}>
+          </Grid>
+          <Grid item xs={12}>
             <Button component="label"
               disabled={!eventSelected}
               role={undefined}
@@ -498,22 +545,9 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
               value={watch('NextFile')}
               {...register('NextFile')}
             />
-            {currentFile && (
-              <div >
-                <div
-                  className="progress-bar progress-bar-info"
-                  role="progressbar"
-                  aria-valuenow={progress}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  style={{ width: progress + "%" }}
-                >
-                  {progress}%
-                </div>
-              </div>
-            )}
-          </Grid2>
-          <Grid2 size={12} >
+            {currentFile && <Typography variant="body2">Selected file: {currentFile.name}</Typography>}
+          </Grid>
+          <Grid item xs={12} >
             <TextField
               label="Image caption"
               fullWidth
@@ -521,8 +555,8 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
               rows={4}
               {...register('Imagecaption')}
             />
-          </Grid2>
-          <Grid2 size={12}>
+          </Grid>
+          <Grid item xs={12}>
             <Button
               disabled={!currentFile}
               onClick={upload}
@@ -530,8 +564,8 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
             >
               Upload Image
             </Button>
-          </Grid2>
-          <Grid2 size={12}>
+          </Grid>
+          <Grid item xs={12}>
             <DataGrid
               rows={table}
               initialState={{
@@ -540,20 +574,20 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
               }}
               columns={Imagecolumns}
             />
-          </Grid2>
+          </Grid>
 
-          <Grid2 size={12} sx={styleGridPadded.Grid}>
+          <Grid item xs={12} sx={styleGridPadded.Grid}>
             <Typography variant="h6">YouTube and Instagram links</Typography>
-          </Grid2>
-          <Grid2 />
-          <Grid2 size={12} >
+          </Grid>
+          <Grid />
+          <Grid item xs={12} >
             <TextField
               label="Clip URL"
               fullWidth
               {...register('NextURL')}
             />
-          </Grid2>
-          <Grid2 size={12} >
+          </Grid>
+          <Grid item xs={12} >
             <TextField
               label="Clip Caption"
               fullWidth
@@ -561,11 +595,11 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
               rows={4}
               {...register('Clipcaption')}
             />
-          </Grid2>
-          <Grid2 size={12} >
+          </Grid>
+          <Grid item xs={12} >
             <Button variant="contained" disabled={!eventSelected} onClick={handleAddClip}>Add Clip</Button>
-          </Grid2>
-          <Grid2 size={12}>
+          </Grid>
+          <Grid item xs={12}>
             <DataGrid
               rows={ClTab}
               initialState={{
@@ -574,12 +608,12 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
               }}
               columns={clipColumns}
             />
-          </Grid2>
-          <Grid2 />
-          <Grid2 size={12} >
+          </Grid>
+          <Grid />
+          <Grid item xs={12} >
             <Button variant="contained" disabled={!eventSelected} fullWidth onClick={handleSaveArchive}>Save Archive</Button>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
         <Snackbar
           open={Snackopen}
           autoHideDuration={6000}
@@ -593,4 +627,4 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
   );
 }
 
-// 
+//

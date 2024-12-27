@@ -3,7 +3,7 @@
 import React, {useState} from 'react';
 import { styled } from '@mui/material/styles';
 import { Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { purple } from '@mui/material/colors';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -75,10 +75,9 @@ export default function Settings() {
       }
 
     return (
-        <>
 
-      <Grid2 container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
-      <Grid2 size={12}>
+      <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
+      <Grid item xs={12}>
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Admin Login
@@ -108,23 +107,17 @@ export default function Settings() {
             Forgot password?
           </Link> */}
         </Paper>
-      </Grid2>
-    </Grid2>
+      </Grid>
+      <Grid item xs={12}>
       <Snackbar
         open={openError}
         autoHideDuration={6000}
         onClose={() => setOpenError(false)}
         TransitionComponent={Fade}
         message="Invalid username or password"
-      />
-      <Snackbar
-        open={snackOpen}
-        autoHideDuration={6000}
-        onClose={() => setOpen(false)}
-        message="Login successful"
-      />
-        
-        </>
+        />
+    </Grid>
+    </Grid>
 
     );
 }

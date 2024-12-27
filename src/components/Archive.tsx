@@ -1,46 +1,58 @@
-import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { ImageList, ImageListItem, ImageListItemBar, Paper, Typography, Snackbar } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import { ImageList, ImageListItem, Paper, Typography, Snackbar, Card, useMediaQuery, useTheme } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { ArchivesGET } from '../services/queries';
 import { ArchiveEntry } from '../types/types.d';
+import { processImages, processClips } from '../services/ImageHandling';
 
 export default function Archive() {
-    const [archiveList, setArchiveList] = useState<ArchiveEntry[]>([]);
-    const url = process.env.REACT_APP_URL;
-    const port = process.env.REACT_APP_PORT;
-    const [Snackopen, setSnackOpen] = useState(false);
-    const [SnackMessage, setSnackMessage] = useState('');
+    const [archiveList, setArchiveList] = useState<JSX.Element[]>([]);
+    const [snackOpen, setSnackOpen] = useState(false);
+    const [snackMessage, setSnackMessage] = useState('');
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     const handleClose = () => {
         setSnackOpen(false);
     };
 
+    function processText(Arch: ArchiveEntry): JSX.Element {
+        return (
+            <ImageListItem key={"A" + Arch.ArchiveID} cols={1} rows={2} sx={{ display: 'flex', flexDirection: 'column' }}>
+                <Card sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', padding: '10px' }}>
+                    <Typography variant="h4">{Arch.EventDetails.Title + " (" + returnDateString(Arch.EventDetails.EventDate) + ")"}</Typography>
+                    <Typography variant="h5" sx={{ whiteSpace: "pre-wrap", flexGrow: 1 }}>
+                        {Arch.Report}
+                    </Typography>
+                </Card>
+            </ImageListItem>
+        );
+    }
+
+    function processArchives(archives: ArchiveEntry[]): JSX.Element[] {
+        let elements: JSX.Element[] = [];
+        // Map the archives to elements
+        for (let i = 0; i < archives.length; i++) {
+            let archElem: JSX.Element[] = [];
+            archElem = [processText(archives[i])];
+            const clipElements = Array.isArray(archives[i].Clips) ? processClips(archives[i].Clips) : [];
+            const imageElements = Array.isArray(archives[i].Images) ? processImages(archives[i].Images) : [];
+            archElem = archElem.concat(clipElements, imageElements);
+            elements = elements.concat(archElem);
+        }
+        return elements;
+    }
+
     useEffect(() => {
         ArchivesGET(5)
             .then((archives) => {
-                console.log(archives.length);
-                archives.forEach((archive) => {
-                    archive.Images = archive.Images.map((image) => {
-                        image.Filename = `http://${url}:${port}/${image.Filename}`;
-                        console.log('Filename:', image.Filename);
-                        return image;
-                    });
-                });
-            
-                setArchiveList(archives);
-            }
-            )
+                // Confirm the data is an array of archives
+                const elements = Array.isArray(archives) ? processArchives(archives) : [];
+                setArchiveList(elements);
+            })
             .catch((error) => console.log(error));
     }, []);
-
-    function updateClipName(clipURL: string) {
-        return clipURL
-            .replace("https://www.youtube.com/watch?v=", "")
-            .replace("watch?v=", "")
-            .replace("https://youtu.be/", "")
-            .replace("//", "/")
-            .replace("http://", "https://");
-    }
 
     function returnDateString(eventDate: Date) {
         const date = new Date(eventDate);
@@ -52,66 +64,31 @@ export default function Archive() {
 
     return (
         <>
-  <Grid2 container spacing={3}>
-                <Grid2 size={12}>
+            <Grid container spacing={3}>
+                <Grid item xs={12}>
                     <Paper>
-                        <Typography variant="h2">{localStorage.getItem("ArchiveTitle")}</Typography>
+                    <Typography variant="h2" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
+                    {localStorage.getItem("ArchiveTitle")}</Typography>
                     </Paper>
-                </Grid2>
-                <Grid2 size={12}>
+                </Grid>
+                <Grid item xs={12}>
                     <Paper>
-                        <Typography variant="h5" sx={{ whiteSpace: "pre-wrap" }}>
-                            {localStorage.getItem("ArchiveText")}
+                    <Typography variant="body1" align="center" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
+                    {localStorage.getItem("ArchiveText")}
                         </Typography>
                     </Paper>
-                </Grid2>
-                {archiveList && archiveList.map((item, index) => (
-                    <React.Fragment key={item.ArchiveID}>
-                        <Grid2 size={3}>
-                            <Paper>
-                                <ImageList variant="masonry" gap={8} cols={1}>
-                                    {item.Images && item.Images.map((image) => (
-                                        <ImageListItem key={image.ImageID}>
-                                            <img src={image.Filename} loading="lazy" />
-                                            <ImageListItemBar title={image.Caption} />
-                                        </ImageListItem>
-                                    ))}
-                                </ImageList>
-                            </Paper>
-                        </Grid2>
-                        <Grid2 size={12}>
-                            <Paper>
-                                <Typography variant="h4">
-                                    {`${item.EventDetails.Title} (${returnDateString(item.EventDetails.EventDate)})`}
-                                </Typography>
-                                <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
-                                    {item.Report}
-                                </Typography>
-                            </Paper>
-                        </Grid2>
-                        <Grid2 size={12}>
-                            {item.Clips && item.Clips.map((clip) => (
-                                <Paper key={clip.ClipID}>
-                                    <Typography variant="h6">{clip.Caption}</Typography>
-                                    <iframe
-                                        width="100%"
-                                        src={`https://www.youtube.com/embed/${updateClipName(clip.ClipURL)}`}
-                                        title="YouTube video player"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        referrerPolicy="strict-origin-when-cross-origin"
-                                        allowFullScreen
-                                    ></iframe>
-                                </Paper>
-                            ))}
-                        </Grid2>
-                    </React.Fragment>
-                ))}
-            </Grid2>
+                </Grid>
+                <Grid item xs={12}>
+                    <ImageList gap={8} cols={isMobile ? 1 : 3}>
+                        {archiveList && archiveList.map((arch) => arch)}
+                    </ImageList>
+                </Grid>
+            </Grid>
             <Snackbar
-                open={Snackopen}
+                open={snackOpen}
                 autoHideDuration={6000}
                 onClose={handleClose}
-                message={SnackMessage}
+                message={snackMessage}
             />
         </>
     );

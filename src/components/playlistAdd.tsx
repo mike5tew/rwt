@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { EventDetails, EmptyEventDetails, PlaylistEntry, EmptyPlaylistEntry, MusicTrack, EmptyMusicTrack, StringtoDate } from '../types/types.d';
+import { EventDetails, PlaylistEntry, EmptyPlaylistEntry, MusicTrack, EmptyMusicTrack, StringtoDate } from '../types/types.d';
 import { DataGrid, GridColDef, GridRowId, GridCellParams, GridColumnVisibilityModel } from '@mui/x-data-grid';
-import { Button, Select, MenuItem, SelectChangeEvent, Typography, IconButton, Snackbar } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import { Button, Select, MenuItem, SelectChangeEvent, Typography, IconButton, Snackbar, Paper } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useNavigate } from 'react-router-dom';
-import { playlistGET, musicList, MusicPOST, playlistPOST, EventsUpcomingGET } from '../services/queries';
+import { playlistGET, musicList, playlistDELETE, playlistPOST, EventsUpcomingGET } from '../services/queries';
 
 // This is the column definition for the playlist table with a button to remove the track from the playlist
 
@@ -16,6 +16,7 @@ export default function PlayListAdd() {
     const [playlist, setPlaylist] = useState<PlaylistEntry[]>([]);
     const [trackList, setTrackList] = useState<MusicTrack[]>([]);
     const [mTrackList, setMTrackList] = useState<MTrack[]>([]);
+    const [saved, setSaved] = useState(false);
     const [SnackMessage, setSnackMessage] = useState('');
     const [open, setOpen] = useState(false);
     const [selectedTrackId, setSelectedTrackId] = useState<GridRowId | null>(null);
@@ -41,8 +42,7 @@ export default function PlayListAdd() {
     const playlistColumns: GridColDef[] = [
         { field: 'id', headerName: 'ID', width: 0, hideable: false },
         { field: 'musicTrackID', headerName: 'MusicTrackID', width: 0, hideable: false },
-        { field: 'trackName', headerName: 'Title', width: 200 },
-        { field: 'artist', headerName: 'Artist', width: 150 },
+        { field: 'trackName', headerName: 'Track', width: 200 },
         { field: 'playorder', headerName: 'Play Order', width: 100 },
         {
             field: 'remove', headerName: 'Remove', width: 70, renderCell: (params: GridCellParams) => (
@@ -55,8 +55,7 @@ export default function PlayListAdd() {
     const allTrackColumns: GridColDef[] = [
         { field: 'id', headerName: 'ID', width: 0, hideable: false },
         { field: 'MusicTrackID', headerName: 'MusicTrackID', width: 0, hideable: false },
-        { field: 'TrackName', headerName: 'Title', width: 200 },
-        { field: 'Artist', headerName: 'Artist', width: 150 },
+        { field: 'TrackName', headerName: 'Track', width: 200 },
         {
             field: 'add', headerName: 'Add', width: 70, renderCell: (params: GridCellParams) => (
                 <IconButton onClick={() => handleAddTrack(params.row.id)}><AddCircleOutlineIcon /></IconButton>
@@ -153,6 +152,12 @@ export default function PlayListAdd() {
 
 
     function handleAddTrack(trackID: number) {
+        if (eventID === 0) {
+            setSnackMessage("Please select an event");
+            setOpen(true);
+            console.log("Please select an event", eventID);
+            return;
+        }
         // copy the track details from the trackList and add to the playlist
         let track = mTrackList.find(track => track.id === trackID);
         if (track) {
@@ -199,7 +204,24 @@ export default function PlayListAdd() {
             pEntry.EventID = eventID;
             tempPlaylist.push(pEntry);
         }
-
+        // If the playlist is empty then it is just a matter of deleting any playlist on that event
+        if (tempPlaylist.length===0){
+            playlistDELETE(eventID).then(respon => {
+                if (respon.status === 204) {
+                    console.log("Playlist deleted");
+                    setSnackMessage("Playlist deleted");
+                    setOpen(true);
+                    setEventID(0);
+                    setTablePlaylist([]);
+                } else {
+                    console.log("Error deleting playlist", respon.body);
+                } 
+        }).catch(error => {
+            console.log(error);
+            setSnackMessage("Error deleting playlist");
+            setOpen(true);
+        })
+    } else {
         playlistPOST(tempPlaylist).then(respon => {
             console.log(respon);
             if (respon.ID === 200) {
@@ -218,6 +240,8 @@ export default function PlayListAdd() {
             setOpen(true);
         });
     }
+}
+
 
     function MoveUpPlayList(): void {
         if (selectedTrackId === null) {
@@ -267,19 +291,22 @@ export default function PlayListAdd() {
     return (
 
         <div>
-            <Grid2 container spacing={2} paddingTop={2}>
-                <Grid2 size={12} ><Typography variant="h6">Create a Playlist</Typography></Grid2>
-                <Grid2 size={6} >
+            <Grid container spacing={2} paddingTop={2}>
+                <Grid item xs={12} >
+                    <Paper><Typography variant="h2">Create a Playlist</Typography>
+                    </Paper>
+                    </Grid>
+                <Grid item xs={6} >
                     <Select value={eventID} fullWidth onChange={handleEventChange}>
                         <MenuItem value={0}>Select Event</MenuItem>
                         {eventList && eventList.map((event) => (
                             <MenuItem key={event.EventID} value={event.EventID}>{event.Title + " " + StringtoDate(event.EventDate.toString())}</MenuItem>
                         ))}
                     </Select>
-                </Grid2>
-                <Grid2 size={6} />
-                <Grid2 size={12} ><Typography variant="h6">Track List</Typography></Grid2>
-                <Grid2 size={12} >
+                </Grid>
+                <Grid item xs={6} />
+                <Grid item xs={6} ><Typography variant="h6">Track List</Typography>
+                
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <DataGrid
                             rows={mTrackList}
@@ -287,9 +314,9 @@ export default function PlayListAdd() {
                             columnVisibilityModel={{ id: false, MusicTrackID: false }}
                         />
                     </div>
-                </Grid2>
-                <Grid2 size={12} ><Typography variant="h6">Play List</Typography></Grid2>
-                <Grid2 size={12}>
+                    </Grid>
+                <Grid item xs={6} ><Typography variant="h6">Play List</Typography>
+              
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <DataGrid
                             rows={tablePlayList}
@@ -305,25 +332,22 @@ export default function PlayListAdd() {
                             checkboxSelection
                             disableRowSelectionOnClick
                         />
-
-
-
                     </div>
-                </Grid2>
-                <Grid2 size={6} >
+                    </Grid>
+                <Grid item xs={6} >
                     <Button variant='outlined' onClick={() => handleSavePlayList()}>Save Play List</Button>
-                </Grid2>
-                <Grid2 size={3} >
+                </Grid>
+                <Grid item xs={3} >
                     <Button variant='outlined' onClick={() => MoveUpPlayList()}>Move Up</Button>
-                </Grid2>
-                <Grid2 size={3} >
+                </Grid>
+                <Grid item xs={3} >
                     <Button variant='outlined' onClick={() => MoveDownPlayList()}>Move Down</Button>
-                </Grid2>
-            </Grid2>
+                </Grid>
+            </Grid>
             <Snackbar
-                // anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                open={false}
+                open={open}
                 autoHideDuration={6000}
+                onClose={() => setOpen(false)}
                 message={SnackMessage}
             />
         </div>

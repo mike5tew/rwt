@@ -12,7 +12,7 @@ export function EmptyDatURLResponse(): DatURLResponse {
     };
 }
 
-export function ResizeImage(originalImage: File, newWidth: number, eventID: number) {
+export function ResizeImage(originalImage: File, newWidth: number, eventID: number): Promise<DatURLResponse> {
     return new Promise<DatURLResponse>((resolve, reject) => {
         const reader = new FileReader();
         // set the prefix for the filename based on the newWidth
@@ -20,13 +20,16 @@ export function ResizeImage(originalImage: File, newWidth: number, eventID: numb
         var prefix = ""; 
         switch (newWidth) {
             case 100:
-                prefix = "thumb_";
+                prefix = "";
                 break;
             case 250:
                 prefix = "mb";
                 break;
             case 450:
                 prefix = "dt";
+                break;
+            case 200:
+                prefix = "lg";
                 break;
             default:
                 prefix = "bg";
@@ -48,9 +51,7 @@ export function ResizeImage(originalImage: File, newWidth: number, eventID: numb
             img.onload = () => {
 //                console.log('img.naturalWidth: ' + img.naturalWidth);
                 var canvas = document.createElement('canvas');
-                if (img.width < 250) {
-                    reject(originalImage);
-                }
+          
                 canvas.width = newWidth;
                 let newHeight = newWidth * img.naturalHeight / img.naturalWidth;
                 // round the height to the nearest whole number
@@ -90,12 +91,14 @@ export function ResizeImage(originalImage: File, newWidth: number, eventID: numb
                 // validate the file
                 if (!nFile) {
                     reject(new Error('Failed to create new file'));
+                    return;
                 }
                 datURL.ReturnedFile = nFile;
                 
                 datURL.FileDetails = EmptyImageDetail();
                 datURL.FileDetails.ImageURL = dataURL;
                 datURL.FileDetails.Filename = prefix+filename;
+                datURL.FileDetails.EventID = eventID;
                 datURL.FileDetails.Height = newHeight;
                 datURL.FileDetails.Width = newWidth;
                 datURL.FileDetails.Caption = '';
@@ -109,6 +112,12 @@ export function ResizeImage(originalImage: File, newWidth: number, eventID: numb
                 }
                 resolve(datURL);                
             };
+            img.onerror = () => {
+                reject(new Error('Failed to load image'));
+            };
+        };
+        reader.onerror = () => {
+            reject(new Error('Failed to read file'));
         };
         // read the file as a data URL
 //        reader.readAsDataURL(originalImage);  
@@ -116,46 +125,6 @@ export function ResizeImage(originalImage: File, newWidth: number, eventID: numb
     });
 }
 
-
-// function dataURLtoFile(datURL:DatURLResponse)  {
-// return new Promise<DatURLResponse>((resolve, reject) => {
-//      // we need to extract the file data from the file object
-//     const data = (datURL.ReturnedFile as any).data;
-//     //datURL.FileDetails.Caption = '';
-//     if (data.indexOf(';base64,') === -1) {
-//         // if the data is not base64 encoded, then it is a file object with raw data in the form of a string
-//         // Is this string a BLOBs?
-//         // 
-//         // split the data into parts
-//         const parts = data.split(',');
-//         // get the content type
-//         const contentType = parts[0].split(':')[1];
-//         // get the raw data
-//         const raw = parts[1];
-//         // define a new object of type DatURLResponse
-        
-//         datURL.ReturnedFile = new File([raw], datURL.FileDetails.Filename, { type: contentType });
-//         resolve(datURL);
-
-//     }
-//     // if the data is base64 encoded, then it is a string
-//     const parts = data.split(';base64,');
-//     // get the content type
-//     const contentType = parts[0].split(':')[1];
-//     // window.atob decodes a base-64 encoded string
-//     const raw = window.atob(parts[1]);
-
-//     const rawLength = raw.length;
-//     const uInt8Array = new Uint8Array(rawLength);
-
-//     for (let i = 0; i < rawLength; ++i) {
-//         uInt8Array[i] = raw.charCodeAt(i);
-//     }
-//     datURL.ReturnedFile = new File([uInt8Array], datURL.FileDetails.Filename, { type: contentType });
-//     resolve(datURL);
-// }
-// );
-// }
 
 function getSize(file: File) {
     return new Promise<ImageDetail>((resolve, reject) => {
@@ -188,6 +157,6 @@ const FileResizeService = {
 };
   
   export default FileResizeService;
-  
+
 
 

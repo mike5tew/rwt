@@ -1,7 +1,7 @@
 // This page displays displays the upcoming events and the playlist for that event
 
 import { Container, Button, Typography, Divider, Paper, Snackbar, Link, Box } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { User, EmptyUser, EventDetails, EmptyEventDetails, PlaylistEntry, EmptyPlaylistEntry, MusicTrack, EmptyMusicTrack } from '../types/types.d';
@@ -39,17 +39,17 @@ export default function MembersPage() {
 
 return (
     <Container>
-        <Grid2 container spacing={2}>
-            <Grid2 size={12}>
+        <Grid container spacing={2}>
+            <Grid item xs={12}>
                 <Box>   
                     <Typography variant="h3">Upcoming Events</Typography>
                 </Box>
-            </Grid2>
-            <Grid2 size={12}>
+            </Grid>
+            <Grid item xs={12}>
                 <Divider />
-            </Grid2>
+            </Grid>
                         {events && events.map((event) => (
-                            <Grid2 size={12} key={event.EventID}>
+                            <Grid item xs={12} key={event.EventID}>
                                 <Paper>
                                     <Typography variant="h5">{event.Title}</Typography>
                                     <Typography variant="body1">{event.EventDate.toDateString()}</Typography>
@@ -84,9 +84,9 @@ return (
                     ))}
                 </SimpleTreeView>
                                 </Paper>
-                            </Grid2>
+                            </Grid>
                         ))}
-                    </Grid2>
+                    </Grid>
                 </Container>
                 );
 }

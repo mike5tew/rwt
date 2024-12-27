@@ -1,30 +1,29 @@
-// This page allows you to add the googledrive Links for the tracks.  It is a form using react-hook-form
-
-import React, { useState } from 'react'
-import { Container, Button, TextField, Typography, Select, FormControl, InputLabel, MenuItem, Snackbar, Alert, Fade } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+// React and core imports
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
-import { MusicGET, MusicPOST, MusicTrackPUT, musicTrackDELETE } from '../services/queries';
+
+// Material UI components
+import { Container, Button, TextField, Typography, Select, FormControl, InputLabel, MenuItem, Snackbar, Fade } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { TransitionProps } from '@mui/material/transitions';
+
+// Form handling
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+
+// API and types
+import { MusicGET, MusicPOST, MusicTrackPUT, musicTrackDELETE } from '../services/queries';
 import { MusicTrack } from '../types/types.d';
 
-
-const schema = yup.object().shape({
-    title: yup.string().required(),
-    link: yup.string().required(),
-
-});
-
-
-
-
+/**
+ * Component for adding and editing music tracks
+ * Provides form interface for managing music track details including
+ * track name, artist, and various part recordings (Soprano, Alto, etc.)
+ */
 export default function AddMusic() {
     const { register, setValue, watch, getValues, handleSubmit, control, formState: { errors } } = useForm<MusicTrack>({
         defaultValues: {
             MusicTrackID: 0,
+            Artist: "",
             TrackName: "",
             Lyrics: "",
             Soprano: "",
@@ -34,7 +33,9 @@ export default function AddMusic() {
             Piano: ""
         }
     });
-    const [openError, setOpenError] = useState(false);
+    const [action, setAction] = useState(<></>);
+    const [SnackMessage, setSnackMessage] = useState(''); 
+    
     const [state, setState] = useState<{
         open: boolean;
         Transition: React.ComponentType<TransitionProps & { children: React.ReactElement<any, any>; }>;
@@ -46,16 +47,23 @@ export default function AddMusic() {
     const [open, setOpen] = React.useState(false);
     const [musicList, setMusicList] = useState<MusicTrack[]>([]);
 
+    /**
+     * Handles form submission for both new tracks and updates
+     * @param data MusicTrack data from the form
+     */
     const FormSubmitHandler: SubmitHandler<MusicTrack> = (data: MusicTrack) => {
         if (data.MusicTrackID === 0) {
-
+            console.log('Adding new track', data);
             const mPost = async () => {
                 var newTrack = await MusicPOST(data)
                 if (newTrack) {
-                    setOpen(true);
+                    setSnackMessage('Track Added');
+                    setSnackOpen(true);
                     setMusicList([...musicList, newTrack]);
                 } else {
-                    setOpenError(true);
+                    setSnackMessage('Error Adding Track');
+                    setSnackOpen(true);
+
                 }
             }
             mPost();
@@ -73,12 +81,27 @@ export default function AddMusic() {
                     mPost();
                     //setOpen(true);
                 } else {
-                    setOpenError(true);
+                    setSnackMessage('Error Updating Track');
+                    setSnackOpen(true);
                 }
                 //replace the existing track with the new data in the array
             }
         }
     }
+
+    /**
+     * Fetches music list on component mount
+     */
+    useEffect(() => {
+        const fetchMusic = async () => {
+            const music = await MusicGET(-1);
+            if (music) {
+                setMusicList(music);
+            }
+        }
+        fetchMusic();
+    }
+        , []);
 
 
     const handleClose = () => {
@@ -87,14 +110,11 @@ export default function AddMusic() {
             open: false,
         });
     };
-    const handleCloseError = () => {
-        setState({
-            ...state,
-            open: false,
-        });
-    };
 
-    // take the id from the select and use it to populate the form
+
+    /**
+     * Populates form with selected track details
+     */
     const viewDetails = async () => {
         const id = getValues('MusicTrackID');
 
@@ -102,6 +122,7 @@ export default function AddMusic() {
             const mtrack = await MusicGET(id);
             if (mtrack) {
                 setValue('TrackName', mtrack[0].TrackName);
+                setValue('Artist', mtrack[0].Artist);
                 setValue('Lyrics', mtrack[0].Lyrics);
                 setValue('Soprano', mtrack[0].Soprano);
                 setValue('Alto', mtrack[0].Alto);
@@ -115,9 +136,12 @@ export default function AddMusic() {
         }
     };
 
+    /**
+     * Handles deletion of a music track
+     */
     const deleteTrack = async () => {
         try {
-            const id = await getValues('MusicTrackID');
+            const id =  getValues('MusicTrackID');
 
             if (id > 0) {
                 const deleteResponse = await musicTrackDELETE(id);
@@ -125,6 +149,7 @@ export default function AddMusic() {
                     setOpen(true);
                     // reset the form
                     setValue('MusicTrackID', 0);
+                    setValue('Artist', '');
                     setValue('TrackName', '');
                     setValue('Lyrics', '');
                     setValue('Soprano', '');
@@ -136,7 +161,8 @@ export default function AddMusic() {
                     // remove the track from the array
                     setMusicList(musicList.filter((track) => track.MusicTrackID !== id));
                 } else {
-                    setOpenError(true);
+                    setSnackMessage('Error Deleting Track');
+                    setSnackOpen(true);
                 }
             }
         }
@@ -148,15 +174,16 @@ export default function AddMusic() {
 
 
     return (
-
+        // Component layout structure
         <Container>
-            <Grid2 container spacing={2}>
-                <Grid2 size={12}>
+            {/* Track Selection Section */}
+            <Grid container spacing={2}>
+                <Grid item xs={12}>
                     <Typography variant="h4">Add or Edit Music Entries</Typography>
-                </Grid2>
+                </Grid>
 
                 {/* add a select containing all of the existing  */}
-                <Grid2 size={12}>
+                <Grid item xs={12}>
                     <FormControl fullWidth><InputLabel id="ExistingTracks">Venue</InputLabel>
                         <Controller name="MusicTrackID" control={control} render={({ field }) => (
                             <Select {...field}  {...register("MusicTrackID")} label="Existing Tracks" required
@@ -172,14 +199,14 @@ export default function AddMusic() {
                             </Select>
                         )} />
                     </FormControl>
-                </Grid2>
-                <Grid2 size={12}>
+                </Grid>
+                <Grid item xs={12}>
                     <Typography variant="h4">Track Details</Typography>
-                </Grid2>
-                <Grid2 size={12}>
+                </Grid>
+                <Grid item xs={12}>
                     <form onSubmit={handleSubmit(FormSubmitHandler)}>
-                        <Grid2 container spacing={2}>
-                            <Grid2 size={12}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
                                 <TextField
                                     variant='outlined'
                                     label="Track Name"
@@ -190,8 +217,18 @@ export default function AddMusic() {
                                     error={!!errors.TrackName}
                                     helperText={errors.TrackName?.message}
                                 />
-                            </Grid2>
-                            <Grid2 size={12}>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Artist"
+                                    value={watch('Artist')}
+                                    fullWidth
+                                    {...register('Artist')}
+                                    error={!!errors.Artist}
+                                    helperText={errors.Artist?.message}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
                                 <TextField
                                     label="Lyrics"
                                     value={watch('Lyrics')}
@@ -200,8 +237,8 @@ export default function AddMusic() {
                                     error={!!errors.Lyrics}
                                     helperText={errors.Lyrics?.message}
                                 />
-                            </Grid2>
-                            <Grid2 size={12}>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <TextField
                                     label="Soprano"
                                     value={watch('Soprano')}
@@ -210,8 +247,8 @@ export default function AddMusic() {
                                     error={!!errors.Soprano}
                                     helperText={errors.Soprano?.message}
                                 />
-                            </Grid2>
-                            <Grid2 size={12}>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <TextField
                                     label="Alto"
                                     fullWidth
@@ -220,8 +257,8 @@ export default function AddMusic() {
                                     error={!!errors.Alto}
                                     helperText={errors.Alto?.message}
                                 />
-                            </Grid2>
-                            <Grid2 size={12}>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <TextField
                                     label="Tenor"
                                     fullWidth
@@ -230,8 +267,8 @@ export default function AddMusic() {
                                     error={!!errors.Lyrics}
                                     helperText={errors.Lyrics?.message}
                                 />
-                            </Grid2>
-                            <Grid2 size={12}>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <TextField
                                     label="All Parts"
                                     fullWidth
@@ -240,8 +277,8 @@ export default function AddMusic() {
                                     error={!!errors.AllParts}
                                     helperText={errors.AllParts?.message}
                                 />
-                            </Grid2>
-                            <Grid2 size={12}>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <TextField
                                     label="Piano"
                                     fullWidth
@@ -250,33 +287,31 @@ export default function AddMusic() {
                                     error={!!errors.Piano}
                                     helperText={errors.Piano?.message}
                                 />
-                            </Grid2>
-                            <Grid2 size={3}>
+                            </Grid>
+                            <Grid item xs={3}>
                                 <Button type="submit" variant="contained">Save Details</Button>
-                            </Grid2>
-                            <Grid2 size={9} sx={{ align: 'right' }}>
+                            </Grid>
+                            <Grid item xs={9} sx={{ align: 'right' }}>
                                 <Button variant="contained" onClick={deleteTrack}   >Delete Track</Button>
-                            </Grid2>
-                            <Grid2 size={12}>
+                            </Grid>
+                            <Grid item xs={12}>
                                 <Link to="/Music">
                                     <Button variant="contained">Back</Button>
                                 </Link>
-                            </Grid2>
-                        </Grid2>
+                            </Grid>
+                        </Grid>
                     </form>
-                </Grid2>
-            </Grid2>
-            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="success">
-                    Booking submitted successfully!
-                </Alert>
-            </Snackbar>
-            <Snackbar open={openError} autoHideDuration={6000} onClose={handleCloseError}>
-                <Alert onClose={handleCloseError} severity="error">
-                    Error submitting booking!
-                </Alert>
-            </Snackbar>
-        </Container>
+                </Grid>
+            </Grid>
 
+            {/* Feedback Messages */}
+            <Snackbar
+                open={snackOpen}
+                autoHideDuration={6000}
+                onClose={handleClose}
+                message={SnackMessage}
+                action={action}
+            />
+        </Container>
     );
 }

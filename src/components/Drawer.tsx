@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { createTheme, styled, useTheme, ThemeProvider, Theme, CSSObject } from '@mui/material/styles';
+import React from 'react';
+import { styled, useTheme, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
@@ -16,159 +16,20 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import HomeIcon from '@mui/icons-material/Home';
-import MailIcon from '@mui/icons-material/Mail';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import ThumbsUpDownOutlinedIcon from '@mui/icons-material/ThumbsUpDownOutlined';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck';
 import GroupsIcon from '@mui/icons-material/Groups';
-import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import InfoIcon from '@mui/icons-material/Info';
 import { Outlet, useNavigate } from 'react-router-dom';
-import Grid2 from '@mui/material/Grid2'; // Grid version 1
+import Grid from '@mui/material/Grid';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CampaignIcon from '@mui/icons-material/Campaign';
-import { teal } from '@mui/material/colors';
-import { SiteInfoGET, themeDetails } from '../services/queries';
 
 
 const MiniDrawer = () => {
-  const [BoxColour, setBoxColour] = React.useState('#222222');
-  const [TextColour, setTextColour] = React.useState('#222222');
-  const [TextFont, setTextFont] = React.useState('Arial');
-  const [TextboxColour, setTextboxColour] = React.useState('#222222');
-  const [bannerColour, setBannerColour] = React.useState('#222222');
-  const [menuColour, setMenuColour] = React.useState('#222222');
-  const [buttonColour, setButtonColour] = React.useState('#222222');
-  const [buttonHover, setButtonHover] = React.useState('#222222');
-  const [buttonTextColour, setButtonTextColour] = React.useState('#222222');
-  const [menuTextColour, setMenuTextColour] = React.useState('#222222');
-  const [textSize, setTextSize] = React.useState(12);
-
   const drawerWidth = 240;
-  var theme2 = createTheme({
-    components: {
-      MuiDrawer: {
-        styleOverrides: {
-          paper: {
-            backgroundColor: menuColour,
-            color: menuTextColour,
-          },
-        },
-      },
-      MuiAppBar: {
-        styleOverrides: {
-          root: {
-            backgroundColor: bannerColour,
-            color: menuTextColour,
-          },
-        },
-      },
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            color: buttonTextColour,
-            backgroundColor: buttonColour,
-            '&:hover': {
-              backgroundColor: buttonHover,
-            },
-          },
-        },
-      },
-      MuiFilledInput: {
-        styleOverrides: {
-          root: {
-            backgroundColor: TextboxColour,
-            '&:hover': {
-              backgroundColor: TextboxColour,
-            },
-          },
-        },
-      },
-      MuiPaper: {
-        styleOverrides: {
-          root: {
-            backgroundColor: BoxColour,
-          },
-        },
-      },
-      MuiInputBase: {
-        styleOverrides: {
-          root: {
-            color: 'red',
-            backgroundColor: TextboxColour,
-            '&:hover': {
-              backgroundColor: teal[50],
-            },
-          },
-        },
-      },
-      MuiTextField: {
-        styleOverrides: {
-          root: {
-            color: TextColour,
-            backgroundColor: TextboxColour
-          },
-        },
-      },
-    },
-    typography: {
-      fontFamily: TextFont,
-      fontSize: textSize,
-    },
-  });
 
-  useEffect(() => {
-    if (window.innerWidth < 600) {
-      localStorage.setItem('screenSize', 'mobile');
-    } else {
-      localStorage.setItem('screenSize', 'desktop');
-    }
-    themeDetails().then(respon => {
-      const themeDetails = respon;
-      setBoxColour(themeDetails.BoxColour);
-      setTextColour(themeDetails.TextColour);
-      setTextFont(themeDetails.TextFont);
-      var filename = encodeURIComponent(themeDetails.BackgroundImage);
-      setImage(imageURL(filename));
-      setTextboxColour(themeDetails.TextboxColour);
-      setBannerColour(themeDetails.BannerColour);
-      setMenuColour(themeDetails.MenuColour);
-      setButtonColour(themeDetails.ButtonColour);
-      setButtonHover(themeDetails.ButtonHover);
-      setButtonTextColour(themeDetails.ButtonTextColour);
-      setMenuTextColour(themeDetails.MenuTextColour);
-      setTextSize(themeDetails.TextSize);
-    }).then(() => {
-      SiteInfoGET().then(respon => {
-        localStorage.setItem('HomeTitle', respon.HomeTitle);
-        localStorage.setItem('HomeText', respon.HomeText);
-        localStorage.setItem('AboutTitle', respon.AboutTitle);
-        localStorage.setItem('AboutText', respon.AboutText);
-        localStorage.setItem('ArchiveTitle', respon.ArchiveTitle);
-        localStorage.setItem('ArchiveText', respon.ArchiveText);
-        localStorage.setItem('NoticesTitle', respon.NoticesTitle);
-        localStorage.setItem('NoticesText', respon.NoticesText);
-        localStorage.setItem('BookingTitle', respon.BookingTitle);
-        localStorage.setItem('BookingText', respon.BookingText);
-        localStorage.setItem('MembersTitle', respon.MembersTitle);
-        localStorage.setItem('MembersText', respon.MembersText);
-        localStorage.setItem('AppealTitle', respon.AppealTitle);
-        localStorage.setItem('AppealText', respon.AppealText);
-        localStorage.setItem('SettingsTitle', respon.SettingsTitle);
-        localStorage.setItem('SettingsText', respon.SettingsText);
-        const txt: string = respon.HomeText;
-        const matches = txt.match(/\n/g);
-      }).catch((error) => {
-        console.log(error.respon + " this is the error")
-      });
-    }).catch((error) => {
-      console.log(error.respon + " this is the error")
-    });
-  }, []);
 
   const openedMixin = (theme: Theme): CSSObject => ({
     width: drawerWidth,
@@ -238,9 +99,8 @@ const MiniDrawer = () => {
     }),
   }));
 
-  const [sidebar, setSidebar] = React.useState(false);
   const [menuName, setMenuName] = React.useState([
-    { EntName: 'Home', type: 'page', icon: <HomeIcon />, link: '/home' },
+    { EntName: 'Home', type: 'page', icon: <HomeIcon />, link: '/Home' },
     { EntName: 'About', type: 'page', icon: <InfoIcon />, link: '/About' },
     { EntName: 'Archive', type: 'page', icon: <AutoStoriesIcon />, link: '/Archive' },
     { EntName: 'Notices', type: 'page', icon: <CampaignIcon />, link: '/Notices' },
@@ -257,7 +117,6 @@ const MiniDrawer = () => {
     setOpen(true);
   };
   //set the background image to an empty file object
-  const [Image, setImage] = React.useState("");
   const handleDrawerClose = () => {
     setOpen(false);
   };
@@ -265,60 +124,39 @@ const MiniDrawer = () => {
   interface menuItem { EntName: string, type: string, icon: any, link: string }
   // a menutype contains a name and an array of menuitems
   interface menuType { menuName: string, arrMenu: Array<menuItem> }
-  // the main menu object contains an array of menutypes
-  interface MenuObj {
-    mainMenuListArr: Array<menuType>;
-  }
-  // create the main menu object
-  const mainMenuListArr: MenuObj = {
-    mainMenuListArr: [
-      {
-        menuName: 'Main', arrMenu: [
-          { EntName: 'Home', type: 'page', icon: <HomeIcon />, link: '/' },
-          { EntName: 'About', type: 'page', icon: <InfoIcon />, link: '/About' },
-          { EntName: 'Upcoming', type: 'page', icon: <EmojiPeopleIcon />, link: '/Notices' },
-          { EntName: 'Archive', type: 'page', icon: <LightbulbIcon />, link: '/Archive' },
-          { EntName: 'Appeal', type: 'page', icon: <TrendingUpIcon />, link: '/Appeal' },
-          { EntName: 'MembersPage', type: 'menu', icon: <ThumbsUpDownOutlinedIcon />, link: 'MembersPage' },
-          { EntName: 'Settings', type: 'menu', icon: <SettingsIcon />, link: 'Settings' }
-        ],
-      }
-    ]
-  }
+  
 
   const navigate = useNavigate();
   // This is the function that will be called when a menu item is clicked.
   // Using the name that is passed it will either set the menuName state or call the page using the router.
   const clickListener = (mItem: menuItem) => {
-    console.log('Menu item clicked:', mItem);
+    //console.log('Menu item clicked:', mItem);
     if (mItem.type === 'menu') {
-      for (let i = 0; i < mainMenuListArr.mainMenuListArr.length; i++) {
-        if (mainMenuListArr.mainMenuListArr[i].menuName === mItem.link) {
+      for (let i = 0; i < menuName.length; i++) {
+        if (menuName[i].link === mItem.link) {
           break;
         }
       }
     } else {
-      console.log('Navigating to:', mItem.link);
+      //console.log('Navigating to:', mItem.link);
       navigate(mItem.link);
     }
   };
   return (
-    <ThemeProvider theme={theme2} >
-      {/* add the musical background.png to the Box */}
       <Box sx={{
         display: 'flex',
-        backgroundImage: `url(${Image})`,
+        backgroundImage: `url(${localStorage.getItem('BackgroundImage')})`,
         backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-        height: '100vh',
-        width: '100vw',
+        backgroundRepeat: 'repeat-y',
+        alignContent: 'center',
+        minWidth: '100vh',
+        minHeight: '100vh', // Ensure the Box takes the full height of the viewport
       }}>
         <CssBaseline />
         <AppBar position="fixed" open={open}>
           <Toolbar>
-            <Grid2 container spacing={0} columns={16}>
-              <Grid2 size="auto" alignItems="center">
+            <Grid container spacing={0} columns={16}>
+              <Grid item xs="auto" alignItems="center">
                 <IconButton
                   color="inherit"
                   aria-label="open drawer"
@@ -331,17 +169,17 @@ const MiniDrawer = () => {
                 >
                   <MenuIcon />
                 </IconButton>
-              </Grid2>
-              <Grid2 size={12} display="flex" justifyContent="left" alignItems="center">
+              </Grid>
+              <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
                 <Typography variant="h6" noWrap component="div">
                   The Royal Wolverhampton NHS Trust Staff Choir
                 </Typography>
-              </Grid2>
-              <Grid2 size="auto" justifyContent="right" alignItems="center">
+              </Grid>
+              <Grid item xs="auto" justifyContent="flex-end" alignItems="center">
                 {/* <body dir='rtl'> */}
                 {/* </body> */}
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent"
@@ -372,21 +210,9 @@ const MiniDrawer = () => {
           <Outlet />
         </Box>
       </Box>
-    </ThemeProvider>
   );
-}
-function imageURL(imagename: string): string {
-  const url = process.env.REACT_APP_URL;
-  const port = process.env.REACT_APP_PORT;
-
-  // urlencode the filename
-  // var filename = encodeURIComponent(imagename)
-  // console.log("filename: " + filename)
-  var filename = `http://${url}:${port}/images/${imagename}`
-  //console.log("filename: aDASASCC " + filename)
-  return filename
-}
-
+};
 
 
 export default MiniDrawer;
+

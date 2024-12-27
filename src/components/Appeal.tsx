@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button, Typography, Snackbar, TextField, Fade, Paper } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 // import { Button } from 'reactstrap';
 import { useForm, SubmitHandler, Controller, set } from 'react-hook-form';
 import { Form, Link, useNavigate } from 'react-router-dom'; 
@@ -10,6 +10,8 @@ import { Form, Link, useNavigate } from 'react-router-dom';
 import { Message } from '../types/types.d';
 import { messagePOST } from '../services/queries';
 // import db from '../services/db';
+import { ThemeProvider } from '@mui/material/styles';
+
 export default function Appeal() {
     const { register, handleSubmit, watch, setValue } = useForm<Message>(
         {
@@ -59,48 +61,50 @@ export default function Appeal() {
     }
 
     return (
-        <form onSubmit={handleSubmit(FormSubmitHandler)}>
-        <Grid2 container spacing={2}>
-            <Grid2 size={12}>
-                <Paper>
-                    <Typography variant="h3">{localStorage.getItem("AppealTitle")}</Typography>
-                </Paper>
-            </Grid2 >
-            <Grid2 size={12} sx={{gap:2}}>
-                <Paper>
-                    <Typography variant="h5">{localStorage.getItem("AppealText")}</Typography>
-                </Paper>
-            </Grid2 >
-            <Grid2 size={12} sx={{gap:2}}>
-            <TextField
-              label="Email Address"
-              fullWidth
-              value={watch('MessageFrom') ? watch('MessageFrom') : ''}
-              rows={4}
-              {...register('MessageFrom')}
+            <form onSubmit={handleSubmit(FormSubmitHandler)}>
+            <Grid container spacing={2}>
+                <Grid item xs={12}>
+                    <Paper>
+                    <Typography variant="h2" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
+                    {localStorage.getItem("AppealTitle")}</Typography>
+                    </Paper>
+                </Grid >
+                <Grid item xs={12} sx={{gap:2}}>
+                    <Paper>
+                    <Typography variant="body1" align="center" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
+                    {localStorage.getItem("AppealText")}</Typography>
+                    </Paper>
+                </Grid >
+                <Grid item xs={12} sx={{gap:2}}>
+                <TextField
+                label="Email Address"
+                fullWidth
+                value={watch('MessageFrom') ? watch('MessageFrom') : ''}
+                rows={4}
+                {...register('MessageFrom')}
+                />
+                </Grid >
+                <Grid item xs={12}  sx={{gap:2}}>
+                            <TextField
+                label="Event Report"
+                fullWidth
+                multiline
+                value={watch('MessageContent') ? watch('MessageContent') : ''}
+                rows={4}
+                {...register('MessageContent')}
+                />
+            </Grid >
+            <Grid item xs={12}  sx={{gap:2}}>
+            <Button type="submit" variant="contained">Submit</Button>
+            </Grid >
+            </Grid >
+            <Snackbar
+                open={alertOpen}
+                autoHideDuration={6000}
+                onClose={() => setAlertOpen(false)}
+                TransitionComponent={Fade}
+                message={alertMessage}
             />
-            </Grid2 >
-            <Grid2 size={12}  sx={{gap:2}}>
-                        <TextField
-              label="Event Report"
-              fullWidth
-              multiline
-              value={watch('MessageContent') ? watch('MessageContent') : ''}
-              rows={4}
-              {...register('MessageContent')}
-            />
-        </Grid2 >
-        <Grid2 size={12}  sx={{gap:2}}>
-         <Button type="submit" variant="contained">Submit</Button>
-        </Grid2 >
-        </Grid2 >
-        <Snackbar
-            open={alertOpen}
-            autoHideDuration={6000}
-            onClose={() => setAlertOpen(false)}
-            TransitionComponent={Fade}
-            message={alertMessage}
-        />
-        </form>
+            </form>
     );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Typography, Snackbar } from '@mui/material';
-import  Grid  from '@mui/material/Grid2';
+import  Grid  from '@mui/material/Grid';
 import styled from '@emotion/styled';
 import { ImageSearch, CloudUpload } from '@mui/icons-material';
 import { TextField, RadioGroup, FormControlLabel, Radio, IconButton } from '@mui/material';
@@ -14,11 +14,13 @@ import { set } from 'react-hook-form';
 import FileResizeService from '../services/ResizeImage';
 import FileUploadService from '../services/FileUploadService';
 import { EmptyDatURLResponse } from '../types/types.d';
-import { ImageDELETE, ImagesFromEvent } from '../services/queries';
+import { ImageDELETE, ImageBackGET } from '../services/queries';
+import { flexbox } from '@mui/system';
 
 interface ImagesSelectedProps {
     logoImage: string;
     backgroundImage: string;
+    // the line below is the function that is called when the user selects an image.  It is passed in as a prop from the parent component and is used to update the logo and background images
     onSelect: (selectedImages: ImageSelection) => void;
 }
 
@@ -27,19 +29,14 @@ export interface ImageSelection {
     backgroundImage: string;
 }
 
-// to migrate from Grid to Grid you need to change the import statement to 
-// npx @mui/codemod@latest v6.0.0/grid-v2-props <path/to/your/project>
-
-// in this case the path is ../src/components/ImageSelect.tsx
-
 const ImageSelect = (props: ImagesSelectedProps) => {
     const { logoImage, backgroundImage, onSelect } = props;
     //console.log("pb: "+ backgroundImage)
 
     var BackgroundDetails: ImageDetail = EmptyImageDetail()
     var LogoDetails: ImageDetail = EmptyImageDetail()
-    const [LogoImageName, setLogoImageName] = useState<string>("");
-    const [BackgroundImageName, setBackgroundImageName] = useState<string>("");
+    const [LogoImageName, setLogoImageName] = useState<string>(logoImage);
+    const [BackgroundImageName, setBackgroundImageName] = useState<string>(backgroundImage);
     const [currentFile, setCurrentFile] = useState<File | undefined>(undefined);
     const [ImageSelect, setImageSelect] = useState<string>("Logo")
     const gatherType = (imagetype: number) => {
@@ -50,16 +47,16 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         }
     }
     function DeleteImage(id: number): void {
-        console.log("delete image: " + id)
+        // console.log("delete image: " + id)
         // delete the image from the database
         ImageDELETE(id).
             then(() => {
                 // remove the image from the images array
-                console.log("images length before delete: " + images.length)
+                // console.log("images length before delete: " + images.length)
                 const newImages = images.filter((image) => image.ImageID !== id);
                 setImages(newImages);
 
-                console.log("images length after delete: " + images.length)
+                // console.log("images length after delete: " + images.length)
                 //snackbar message to say the image has been deleted
                 setSnackMessage("Image deleted successfully")
                 setSnackOpen(true)
@@ -72,7 +69,6 @@ const ImageSelect = (props: ImagesSelectedProps) => {
     }
 
     const [nextFile, setNextFile] = useState<string>("");
-    const [progress, setProgress] = useState<number>(0);
     const VisuallyHiddenInput = styled('input')({
         clip: 'rect(0 0 0 0)',
         clipPath: 'inset(50%)',
@@ -96,8 +92,8 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         { field: "select", headerName: "Delete", flex: 1, renderCell: (params: GridCellParams) => (<IconButton onClick={() => DeleteImage(params.row.id)}><DeleteForeverOutlinedIcon /></IconButton>) }
     ]
     const tableRowsImages = images && images.map((image) => {
-        //console.log("image: " + image.eventID)
-        return { image: image, filename: image.Filename, caption: image.Caption, id: image.ImageID, type: gatherType(image.EventID), width: image.Width, height: image.Height }
+        //console.log("image: ", image)
+        return { image: image, filename: image.Filename, caption: image.ImageURL, id: image.ImageID, type: gatherType(image.EventID), width: image.Width, height: image.Height }
     })
 
     const handleImageSelect = () => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,29 +142,21 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         }
     }
 
-    function imageURL(imagename: string): string {
-        //
-        // urlencode the filename
-        let stringURL = process.env.REACT_APP_API_URL
-        if (typeof stringURL === 'undefined') {
-            console.log("stringURL is undefined")
-            return ""
-        }
-        var filename = stringURL + "images/"+ encodeURIComponent(imagename)
-        console.log("filename: " + filename)
-        return filename
-    }
-
 
     function newHeight(width: number, height: number): number {
         return 100 * height / width
     }
 
     useEffect(() => {
-        // assign the logo and background images to the logo and background image objects
         setLogoImageName(logoImage);
         setBackgroundImageName(backgroundImage);
-        ImagesFromEvent(0)
+    }, [logoImage, backgroundImage]);
+
+    useEffect(() => {
+        // assign the logo and background images to the logo and background image objects
+        setLogoImageName(props.logoImage);
+        setBackgroundImageName(props.backgroundImage);
+        ImageBackGET()
             .then((respon) => {
                 // console.log(respon.data)
                 // the data needs converting to an array of imagedetail objects
@@ -176,11 +164,14 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                 for (var i = 0; i < respon.length; i++) {
                     var newImage: ImageDetail = EmptyImageDetail()
                     newImage.ImageID = respon[i].ImageID
-                    newImage.Caption = imageURL(respon[i].Filename)
+                    console.log("EventID",respon[i].EventID)
                     newImage.EventID = respon[i].EventID
-                    newImage.Filename = respon[i].Filename
+                    newImage.Filename =  respon[i].Filename
+                    newImage.Caption = respon[i].Caption
+                    newImage.ImageURL = `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}/${respon[i].ImageURL}`;
                     newImage.Height = respon[i].Height
                     newImage.Width = respon[i].Width
+                    console.log("newImage: " + newImage.ImageURL)
                     newImages.push(newImage)
                 }
                 setImages(newImages)
@@ -204,92 +195,118 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         </Button>
     );
 
-    function BackgroundImage(BGFile: File) {
-        let background = new Promise<ImageDetail>((resolve, reject) => {
-            var img = new Image();
-            img.src = URL.createObjectURL(BGFile);
-            img.onload = () => {
-                BackgroundDetails.Height = img.height;
-                BackgroundDetails.Width = img.width;
-                BackgroundDetails.Filename = BGFile.name;
-                BackgroundDetails.EventID = 0;
-                BackgroundDetails.Caption = imageURL(BGFile.name);
-            }
-            resolve(BackgroundDetails);
-        }
-        )
-    }
 
 
     const upload = () => {
-        if (typeof currentFile == 'undefined') {
+        if (!currentFile) {
             alert('Please select an image to upload');
             return;
         }
-        var thumbnail: File;
-        var background: File;
-        var logo: File;
-        // resize the image to thumbnail, create the imagedetail object and add this to the images array
-        FileResizeService.ResizeImage(currentFile, 450, 0).then((res) => {
-                var ThumbnailDetails = res.FileDetails;
-                ThumbnailDetails.EventID = 0;
-                ThumbnailDetails.Caption = imageURL(res.FileDetails.Filename);
-                thumbnail = res.ReturnedFile;
-                setImages([...images, ThumbnailDetails]);
-                if (ImageSelect === "Logo") {
-                    FileResizeService.ResizeImage(currentFile, 250,0).then((res) => {
-                            var LogoDetails = res.FileDetails;
-                            LogoDetails.EventID = -1;
-                            logo = res.ReturnedFile;
-                        }
-                        ).then(() => {
-                            UploadService.upload(logo, LogoDetails.Filename, -1, LogoDetails.Width, LogoDetails.Height, '', (event: { loaded: number; total: number; }) => {
-                                setProgress(Math.round((100 * event.loaded) / event.total));
-                            }).then(UploadService.SendFile).then(() => {
-                                setLogoImageName("")
-                                setCurrentFile(undefined);
-                                setNextFile('');
-
-                                setSnackMessage("Logo Image uploaded successfully")
-                                setSnackOpen(true)
-                            }
-                            )
-                        } 
-                    )
-                }
-                else {
-                    // if it is not a logo then the image is background which is not resized.  So we need to get the size information and add this to the images array
-                    FileResizeService.getSize(currentFile).then((res) => {
-                        FileUploadService.upload(currentFile, res.Filename, 0, res.Width, res.Height, '', (event: { loaded: number; total: number; }) => {
-                            setProgress(Math.round((100 * event.loaded) / event.total));
-                        } ).then(UploadService.SendFile).then(() => {
-                            setBackgroundImageName("")
-                            setCurrentFile(undefined);
-                            setNextFile('');
-                            setSnackMessage("Background Image uploaded successfully")
-                            setSnackOpen(true)
-                        }
-                        )
+        console.log("ImageSelect: " + ImageSelect)
+        if (ImageSelect === "Logo") {
+            FileResizeService.ResizeImage(currentFile, 200, -1)
+                .then((res) => {
+                    const LogoDetails = res.FileDetails;
+                    const logoFile = res.ReturnedFile;
+    
+                    return FileUploadService.upload(
+                        logoFile,
+                        LogoDetails.Filename,
+                        -1,
+                        LogoDetails.Width,
+                        LogoDetails.Height,
+                        ''
+                    );
+                })
+                .then((formData) => {
+                    return FileUploadService.SendFile(formData);
+                })
+                .then((retF) => {
+                    if (!retF || typeof retF !== 'object') {
+                        throw new Error('Invalid response from server');
                     }
-                    )
-                }
-            }
-        )
-    }
+                    // ...Update state and notify user...
 
+                    setLogoImageName(retF.Filename);
+                    setCurrentFile(undefined);
+                    setNextFile('');
+                    // Update images array
+                    console.log("retF: " + retF.Filename)
+                    console.log("retF: " + retF.ImageURL)
+                    const newLogoDetails = {
+                        ...LogoDetails,
+                        ImageID: retF.ImageID,
+                        EventID: -1,
+                        ImageURL: `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}${retF.ImageURL}`,
+                        Filename: retF.Filename,
+                    };
+                    setImages([...images, newLogoDetails]);
+                    // Notify parent component
+                    onSelect({ logoImage: retF.Filename, backgroundImage: BackgroundDetails.Filename });
+                    setSnackMessage("Logo Image uploaded successfully");
+                    setSnackOpen(true);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    setSnackMessage("Error uploading the logo image: " + error.message);
+                    setSnackOpen(true);
+                });
+        } else {
+            FileResizeService.getSize(currentFile)
+                .then((backgroundDetails) => {
+                    return FileUploadService.upload(
+                        currentFile,
+                        backgroundDetails.Filename,
+                        0,
+                        backgroundDetails.Width,
+                        backgroundDetails.Height,
+                        ''
+                    ).then((formData) => {
+                        return FileUploadService.SendFile(formData);
+                    }).then((retF) => {
+                        if (!retF || typeof retF !== 'object') {
+                            throw new Error('Invalid response from server');
+                        }
+                        // ...Update state and notify user...
+                        setBackgroundImageName(retF.Filename);
+                        setCurrentFile(undefined);
+                        setNextFile('');
+                        // Update images array
+                        
+                        const newBackgroundDetails = {
+                            ...backgroundDetails,
+                            ImageID: retF.ImageID,
+                            EventID: retF.EventID,
+                            ImageURL: `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}${retF.ImageURL}`,
+                            Filename: retF.Filename,
+                        };
+                        setImages([...images, newBackgroundDetails]);
+                        // Notify parent component
+                        onSelect({ logoImage: LogoDetails.Filename, backgroundImage: retF.Filename });
+                        setSnackMessage("Background Image uploaded successfully");
+                        setSnackOpen(true);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    setSnackMessage("Error uploading the background image: " + error.message);
+                    setSnackOpen(true);
+                });
+        }
+    };
     
 
 
-                            return(
+return(
         <>
             <Grid container spacing={3} >
-                <Grid size={12}>
+                <Grid item xs={12}>
                     <Typography variant="h4" align="center">Select Images</Typography>
                 </Grid>
-                <Grid size={6}>
+                <Grid item xs={6}>
                     <Grid container spacing={3} >
 
-                        <Grid size={4} alignContent="center">
+                        <Grid item xs={4} alignContent="center">
                             <Button component="label"
                                 role={undefined}
                                 variant="contained"
@@ -300,7 +317,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                     onChange={selectFile} />
                             </Button>
                         </Grid>
-                        <Grid size={8} alignContent="center">
+                        <Grid item xs={8} alignContent="center">
                             <TextField
                                 label="Selected image file"
                                 fullWidth
@@ -310,7 +327,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                 value={nextFile}
                             />
                         </Grid>
-                        <Grid size={4} alignContent="center">
+                        <Grid item xs={4} alignContent="center">
                             <Button
                                 //sx={{ marginTop: 1 }}
                                 disabled={!currentFile}
@@ -321,22 +338,13 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                                 Upload Image
                             </Button>
                         </Grid>
-                        <Grid size={8} alignContent={"center"}>
+                        <Grid item xs={8} alignContent={"center"}>
                             <RadioGroup row aria-label="position" name="position" defaultValue="top" value={ImageSelect} onChange={handleImageSelect()}>
                                 <FormControlLabel value="Logo" control={<Radio />} label="Logo" />
                                 <FormControlLabel value="Background" control={<Radio />} label="Background" />
                             </RadioGroup>
                         </Grid>
-                        <Grid size={12}>
-
-                            <TextField
-                                id="LogoUpload"
-                                label="Logo Image"
-                                // make this textfield uneditable
-                                disabled
-                                fullWidth
-                                value={LogoImageName}
-                            /><br /><br />
+                        <Grid item xs={12}>
                             <TextField
                                 id="backgroundImage"
                                 label="Background Image"
@@ -348,9 +356,14 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid size={6}>
+                <Grid item xs={6}>
                     {/* table of the images */}
-                    <DataGrid rows={tableRowsImages} columns={tableColsImages} autoHeight={true} disableColumnMenu={false} />
+                    <DataGrid 
+                        rows={tableRowsImages} 
+                        columns={tableColsImages} 
+                        disableColumnMenu={false} 
+                        sx={{ backgroundColor: 'white' }} 
+                    />
                 </Grid>
 
             </Grid>

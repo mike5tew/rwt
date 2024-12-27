@@ -1,10 +1,9 @@
 // this page allows the usert to create a new theme for the website
 // using react-hook-form
-import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { set, useForm } from 'react-hook-form';
 import { Paper, Snackbar, Typography } from '@mui/material';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { TextField } from '@mui/material';
 import { ThemeDetails, EmptyImageDetail, ImageDetail } from '../types/types.d';
 import { Box } from '@mui/system';
@@ -17,14 +16,14 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid';
 import { render } from '@testing-library/react';
 import { CloudUpload, ImageSearch } from '@mui/icons-material';
 import ImageSelect, { ImageSelection } from './ImageSelect';
-import { themeDetails, ThemeDetailsPUT } from '../services/queries';
+import { themeDetailsGET, ThemeDetailsPUT } from '../services/queries';
 
 // There is an error TypeError: path.split is not a function
 // This is because the path is not a string.  It is an object.  We need to use path.toString() to convert it to a string on line 41 of editTheme.tsx, which should read as follows:
 // const [selectedItem, setSelectedItem] = useState<string>(path.toString());
 
 export default function EditTheme() {
-
+    const [TextFont, setTextFont] = useState<string>("");
     const { register, handleSubmit, watch, setValue } = useForm<ThemeDetails>(
     );
     // we need to create an interface to store the images
@@ -52,15 +51,15 @@ export default function EditTheme() {
         }
     ];
     const tableRows = [
-        { id: 1, item: "Button Colour", colour: watch("ButtonColour"), button: "buttonColour" },
-        { id: 2, item: "Button Hover", colour: watch("ButtonHover"), button: "buttonHover" },
-        { id: 3, item: "Button Text Colour", colour: watch("ButtonTextColour"), button: "buttonTextColour" },
-        { id: 4, item: "Menu Colour", colour: watch("MenuColour"), button: "menuColour" },
-        { id: 5, item: "Menu Text Colour", colour: watch("MenuTextColour"), button: "menuTextColour" },
-        { id: 6, item: "Banner Colour", colour: watch("BannerColour"), button: "bannerColour" },
-        { id: 7, item: "Background Colour", colour: watch("BoxColour"), button: "boxColour" },
-        { id: 8, item: "Text Colour", colour: watch("TextColour"), button: "textColour" },
-        { id: 9, item: "Textbox Colour", colour: watch("TextboxColour"), button: "textboxColour" },
+        { id: 1, item: "Button Colour", colour: watch("ButtonColour"), button: "ButtonColour" },
+        { id: 2, item: "Button Hover", colour: watch("ButtonHover"), button: "ButtonHover" },
+        { id: 3, item: "Button Text Colour", colour: watch("ButtonTextColour"), button: "ButtonTextColour" },
+        { id: 4, item: "Menu Colour", colour: watch("MenuColour"), button: "MenuColour" },
+        { id: 5, item: "Menu Text Colour", colour: watch("MenuTextColour"), button: "MenuTextColour" },
+        { id: 6, item: "Banner Colour", colour: watch("BannerColour"), button: "BannerColour" },
+        { id: 7, item: "Background Colour", colour: watch("BoxColour"), button: "BoxColour" },
+        { id: 8, item: "Text Colour", colour: watch("TextColour"), button: "TextColour" },
+        { id: 9, item: "Textbox Colour", colour: watch("TextboxColour"), button: "TextboxColour" },
     ];
 
 
@@ -73,6 +72,7 @@ export default function EditTheme() {
         console.log(data)
         ThemeDetailsPUT(data).then(() => {
                 //snackbar display the message using the respon.data 
+                setTextFont(data.TextFont)
                 setSnackMessage("Theme Saved.  Please refresh the page to see the changes")
                 setSnackOpen(true)
                 //console.log(respon.data)                
@@ -84,12 +84,8 @@ export default function EditTheme() {
             })
     }
 
-
-
-    // this useeffect is being run twice.  This is because the page is being rendered twice.  The first time it is rendered, the default values are set.  The second time it is rendered, the values are set from the database
     useEffect(() => {
-        // we need to use axios to get the data from the mysql  database 
-        themeDetails()
+        themeDetailsGET()
             .then((respon) => {
                 //console.log(respon.data)
                 if (typeof respon.ButtonColour != null) {
@@ -168,26 +164,30 @@ export default function EditTheme() {
     return (
         <>
         <Grid container spacing={3} >
-            <Grid size={12}>
+            <Grid item xs={12}>
                 <Paper>
                     <Typography variant="h2">Edit Theme</Typography>
                 </Paper>
             </Grid>
-            <Grid size={12} alignContent={"center"}>
+            <Grid item xs={12} alignContent={"center"}>
                 <Typography variant="h4" align="center">Select the colours for the elements of the theme</Typography>
             </Grid>
-            <Grid size={8}>
-                <DataGrid rows={tableRows} columns={tableColumns} autoHeight={true} />
+            <Grid item xs={8}>
+                <DataGrid 
+                    rows={tableRows} 
+                    columns={tableColumns} 
+                    sx={{ backgroundColor: 'white' }} 
+                />
             </Grid>
-            <Grid size={4} alignContent={"center"}>
+            <Grid item xs={4} alignContent={"center"}>
                 <Grid container spacing={1}>
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                         {/* now we have the colour picker which should be aligned to the center of the box */}
                         <Paper sx={{ display: 'flex', justifyContent: 'center', alignContent: "center" }}>
                             <Typography variant="h4">Item Selected: {selectedItem}</Typography>
                         </Paper>
                     </Grid>
-                    <Grid size={12} justifyContent={"center"}>
+                    <Grid item xs={12} justifyContent={"center"}>
                         <Paper sx={{ display: 'flex', justifyContent: 'center', alignContent: "center" }}>
                             <HexColorPicker
                                 // uses the selected item to set the colour in the form
@@ -197,15 +197,15 @@ export default function EditTheme() {
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid size={12}><Typography variant="h4" align='center'>Select the font for the text</Typography></Grid>
-            <Grid size={6}>
+            <Grid item xs={12}><Typography variant="h4" align='center'>Select the font for the text</Typography></Grid>
+            <Grid item xs={6}>
                 {/* Now we have the font select box */}
                 <FormControl fullWidth>
                     <InputLabel id="font-select">Font</InputLabel>
                     <Select
                         labelId="font-select"
-                        value={watch("TextFont")}
-                        label=""
+                        value={watch("TextFont") || ""}
+                        label="Font"
                         {...register("TextFont")}
                     >
                         <MenuItem value={"Arial"}>Arial</MenuItem>
@@ -222,7 +222,7 @@ export default function EditTheme() {
                     </Select>
                 </FormControl>
             </Grid>
-            <Grid size={6} >
+            <Grid item xs={6} >
                 <TextField
                     {...register("TextSize")}
                     label="Text Size"
@@ -232,10 +232,10 @@ export default function EditTheme() {
                     value={watch("TextSize") ?? 12}
                 />
             </Grid>
-            <Grid size={12} >
+            <Grid item xs={12} >
                 <ImageSelect onSelect={handleSelected} logoImage={imgChoices.LogoImage} backgroundImage={imgChoices.BackgroundImage} />
             </Grid>
-            <Grid size={12}>
+            <Grid item xs={12}>
                 <Button onClick={savechanges}>Save Change</Button>
             </Grid>
         </Grid>

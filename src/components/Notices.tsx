@@ -1,9 +1,7 @@
-import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Col } from 'react-bootstrap';
 import { Card, CardBody, CardTitle, CardText } from 'reactstrap';
-import Grid2 from '@mui/material/Grid2'; // Import Grid2
+import Grid from '@mui/material/Grid'; // Import Grid
 import { Paper, Typography } from '@mui/material';
 import { EventDetails } from '../types/types.d';
 import { EventsList } from '../services/queries';
@@ -28,20 +26,21 @@ export default function Notices() {
 
     return (
         <>
-            <Grid2 container spacing={2}>
-                <Grid2 size={12}>
+            <Grid container spacing={2}>
+                <Grid item xs={12}>
                     <Paper>
-                        <Typography variant="h4">{localStorage.getItem('NoticesTitle')}</Typography>
-                    </Paper>
-                </Grid2>
-                <Grid2 size={12}>
+                    <Typography variant="h2" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
+                    {localStorage.getItem("NoticesTitle")}</Typography>
+                    </Paper>                    
+                </Grid>
+                <Grid item xs={12}>
                     <Paper>
-                        <Typography variant="h6" sx={{ whiteSpace: "pre-wrap" }}>
+                        <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
                             {localStorage.getItem('NoticesText')}
                         </Typography>
                     </Paper>
-                </Grid2>
-                <Grid2 size={12}>
+                </Grid>
+                <Grid item xs={12}>
                     {notices && notices.map((notice: EventDetails, index: number) => (
                         <Col key={index} sm="12" md="6" lg="4">
                             <Card>
@@ -58,8 +57,8 @@ export default function Notices() {
                             </Card>
                         </Col>
                     ))}
-                </Grid2>
-            </Grid2>
+                </Grid>
+            </Grid>
         </>
     );
 }

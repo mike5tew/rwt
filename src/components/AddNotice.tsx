@@ -1,22 +1,25 @@
-// This page adds a notice to the home page.  It will have a title, date, and content.  It will also have a link to the choir's facebook and instagram pages.
-
-import React from 'react'
-import { Container, Button } from '@mui/material';
-import Grid2  from '@mui/material/Grid2';
+/**
+ * Notice Management Component
+ * Displays and manages upcoming events and notices
+ * Allows users to add and view notices for the home page
+ */
+import React from 'react';
+import { Container, Button, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import { Link } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
-//import db from '../services/db';
-
-import { Typography } from '@mui/material';
-import { EmptyEventDetails, EventDetails } from '../types/types.d';
+import { EventDetails } from '../types/types.d';
 import { EventsUpcomingGET } from 'src/services/queries';
 
-
-
-
 export default function AddNotice() {
+    /**
+     * State to store upcoming events/notices
+     */
     const [notices, setNotices] = React.useState<EventDetails[]>([]);
     
+    /**
+     * Fetch upcoming events on component mount
+     */
     React.useEffect(() => {
         const fetchEventsUpcoming = async () => {
             EventsUpcomingGET().then((data) => {
@@ -26,14 +29,13 @@ export default function AddNotice() {
             );
         }
         fetchEventsUpcoming();
-    }
-    , []);
+    }, []);
 
     return (
         <Container>
-            <Grid2 container spacing={2}>
+            <Grid container spacing={2}>
                 {notices && notices.map((entry, index) => (
-                    <Grid2 size={12} key={index}>
+                    <Grid item xs={12} key={index}>
                         <Card>
                             <Card.Body>
                                 <Card.Title>
@@ -48,9 +50,9 @@ export default function AddNotice() {
                                 </Link>
                             </Card.Body>
                         </Card>
-                    </Grid2>
+                    </Grid>
                 ))}
-            </Grid2>
+            </Grid>
         </Container>
-    )
+    );
 }

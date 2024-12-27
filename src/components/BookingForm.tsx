@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Container } from 'react-bootstrap';
 import { Button, TextField, Typography, Link, Paper } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { Message, EmptyMessage } from '../types/types.d';
 // Divider, FormControl, InputLabel, Select, MenuItem, Paper, Snackbar, List, ListItem, ListItemText, ListSubheader, DialogProps, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Icon, ButtonGroup,  ListItemButton, colors
 import { Snackbar } from '@mui/material';
@@ -81,6 +81,8 @@ export default function BookingForm() {
         messagePOST(Message).then((data) => {
             if (data.MessageContent === 'message sent') {
                 console.log(data);
+                setSnackMessage('Message Sent');
+                setOpen(true);
                 handleClick();
             } else {
                 handleClickError();
@@ -92,14 +94,14 @@ export default function BookingForm() {
     return (
         <form id="bookingform" onSubmit={handleSubmit(onSubmit)}>
             <Container>
-                <Grid2 container spacing={2}>
-                    <Grid2 size={12}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
                         <Paper>
                             <Typography variant="h2">{localStorage.getItem("BookingTitle")}</Typography>
                             <Typography variant="h6">{localStorage.getItem("BookingText")}</Typography>
                         </Paper>
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
 
                         <TextField
                             label="Event Name"
@@ -108,8 +110,8 @@ export default function BookingForm() {
                             error={errors.eventname ? true : false}
                             helperText={errors.eventname ? errors.eventname.message : ''}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             label="Event Location"
                             fullWidth
@@ -117,8 +119,8 @@ export default function BookingForm() {
                             error={errors.eventlocation ? true : false}
                             helperText={errors.eventlocation ? errors.eventlocation.message : ''}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             type="date"
                             fullWidth
@@ -126,8 +128,8 @@ export default function BookingForm() {
                             error={errors.eventdate ? true : false}
                             helperText={errors.eventdate ? errors.eventdate.message : ''}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             label="Event Time"
                             fullWidth
@@ -136,8 +138,8 @@ export default function BookingForm() {
                             helperText={errors.eventtime ? errors.eventtime.message : ''}
                         />
 
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
 
                         <TextField
                             label="Event Type"
@@ -146,8 +148,8 @@ export default function BookingForm() {
                             error={errors.eventtype ? true : false}
                             helperText={errors.eventtype ? errors.eventtype.message : ''}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             label="Contact Person"
                             fullWidth
@@ -155,8 +157,8 @@ export default function BookingForm() {
                             error={errors.contactperson ? true : false}
                             helperText={errors.contactperson ? errors.contactperson.message : ''}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             label="Contact Email"
                             fullWidth
@@ -164,8 +166,8 @@ export default function BookingForm() {
                             error={errors.contactemail ? true : false}
                             helperText={errors.contactemail ? errors.contactemail.message : ''}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             label="Contact Phone"
                             fullWidth
@@ -174,8 +176,8 @@ export default function BookingForm() {
                             helperText={errors.contactphone ? errors.contactphone.message : ''}
                         />
 
-                    </Grid2>
-                    <Grid2 size={12}>
+                    </Grid>
+                    <Grid item xs={12}>
                         <TextField
                             label="Message"
                             fullWidth
@@ -185,12 +187,12 @@ export default function BookingForm() {
                             error={errors.message ? true : false}
                             helperText={errors.message ? errors.message.message : ''}
                         />
-                    </Grid2>
-                    <Grid2 size={12} paddingBottom={2}>
+                    </Grid>
+                    <Grid item xs={12} paddingBottom={2}>
 
                         <Button variant="contained" type="submit">Submit</Button>
 
-                    </Grid2 >
+                    </Grid >
 
                     <Typography variant="h5">Follow Us  </Typography>&nbsp;&nbsp;
                     {/* // add the icons for facebook and instagram */}
@@ -210,7 +212,7 @@ export default function BookingForm() {
                         TransitionComponent={Fade}
                         message={SnackMessage}
                     />
-                </Grid2>
+                </Grid>
             </Container>
         </form>
     );

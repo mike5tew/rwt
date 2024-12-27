@@ -12,18 +12,26 @@ async function fetchData<T>(endpoint: string, options?: RequestInit): Promise<T>
     if (!response.ok) {
         throw new Error(`Error! status: ${response.status}`);
     }
+    if (response.status === 204) {
+        // No content to parse
+        return null as unknown as T;
+    }
     return response.json();
 }
 
 // insert a music track and return the object with the musicTrackID
 export async function MusicPOST(req: MusicTrack): Promise<MusicTrack> {
-    const respon = await fetch(`http://${url}:${port}/MusicTrackPOST`, {
+    const respon = await fetch(`http://${url}:${port}/musicTrackPOST`, {
         method: 'POST',
         body: JSON.stringify(req),
         headers: { 'Content-Type': 'application/json' },
     })
     const data = await respon.json();
+    if (respon.status === 201) {
     return data;
+    } else {
+        return EmptyMusicTrack();
+    }
 }
 
 
@@ -42,8 +50,11 @@ export async function ImageDELETE(params: number): Promise<string> {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
     })
-    const data = await respon.json();
-    return data;
+    if (respon.status === 204) {
+        return 'Image Deleted';
+    } else {
+        return 'Image Not Deleted';
+    }
 }
 
 export async function ImagePUT(req: any, res: any) {
@@ -73,7 +84,7 @@ export async function musicTrackDELETE(req: number): Promise<string> {
 }
 
 export async function MusicTrackPUT(req: MusicTrack): Promise<string> {
-    const respon = await fetch(`http://${url}:${port}/MusicTrackPUT`, {
+    const respon = await fetch(`http://${url}:${port}/uusicTrackPUT`, {
         method: 'PUT',
         body: JSON.stringify(req),
         headers: { 'Content-Type': 'application/json' },
@@ -93,11 +104,14 @@ export async function messagesGET(): Promise<Message[]> {
 }
 
 export async function messageDELETE(messageID: number): Promise<void> {
-    await fetchData<void>('messageDELETE', {
+    const response = await fetch(`http://${url}:${port}/messageDELETE/${messageID}`, {
         method: 'DELETE',
-        body: JSON.stringify(messageID),
         headers: { 'Content-Type': 'application/json' },
     });
+    if (!response.ok) {
+        throw new Error(`Error! status: ${response.status}`);
+    }
+    // No content to parse as the response is 204 No Content
 }
 
 export async function messagePOST(req: Message): Promise<Message> {
@@ -135,6 +149,13 @@ export function loginDeleteUser(req: any, res: any): Promise<void> {
         resolve();
     });
 }
+export async function playlistDELETE(id: number): Promise<Response> {
+    const respon = await fetch(`http://${url}:${port}/playlistDELETE/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    return respon;
+}
 
 export async function EventsUpcomingGET(): Promise<EventDetails[]> {
     return fetchData<EventDetails[]>('EventsUpcomingGET');
@@ -148,8 +169,8 @@ export async function EventArchive(req: any): Promise<ArchiveEntry> {
     return fetchData<ArchiveEntry>(`eventArchiveGET/${req}`);
 }
 
-export async function ImagesFromEvent(id: number): Promise<ImageDetail[]> {
-    return fetchData<ImageDetail[]>(`ImagesFromEventGET/${id}`);
+export async function ImageBackGET(): Promise<ImageDetail[]> {
+    return fetchData<ImageDetail[]>(`ImageBackGET`);
 }
 
 export async function ClipsFromEvent(id: number): Promise<Clip[]> {
@@ -166,7 +187,7 @@ export async function ArchiveFromEvent(id: number): Promise<ArchiveEntry> {
     return fetchData<ArchiveEntry>(`ArchiveFromEventGET/${id}`);
 }
 
-export async function themeDetails(): Promise<ThemeDetails> {
+export async function themeDetailsGET(): Promise<ThemeDetails> {
     return fetchData<ThemeDetails>('ThemeDetailsGET');
 }
 
@@ -183,7 +204,7 @@ export async function ThemeDetailsRandomGET(): Promise<ThemeDetails> {
 }
 
 export async function musicList(): Promise<MusicTrack[]> {
-    return fetchData<MusicTrack[]>('MusicListGET');
+    return fetchData<MusicTrack[]>('musicListGET');
 }
 
 export async function EventsList(): Promise<EventDetails[]> {
@@ -307,7 +328,7 @@ export async function SiteinfoPUT(req: SiteInfo): Promise<string> {
 
 export async function MusicGET(req: number): Promise<MusicTrack[]> {
     if (req === -1) {
-        return fetchData<MusicTrack[]>('MusicListGET');
+        return fetchData<MusicTrack[]>('musicListGET');
     } else {
         return fetchData<MusicTrack[]>(`MusicTrackGET/${req}`);
     }

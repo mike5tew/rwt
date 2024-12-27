@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import { User, EmptyUser } from '../types/types.d';
 import { login } from 'src/services/queries';
 // import the users array from the .env file
@@ -43,15 +43,14 @@ const history= useNavigate();
   }
   
   return (
-    <Grid2 container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
-      <Grid2 size={12}>
+    <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
+      <Grid item xs={12}>
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Choir Members
           </Typography>
           <TextField
             label="Username"
-            
             fullWidth
             margin="normal"
             value={username}
@@ -74,9 +73,9 @@ const history= useNavigate();
             Forgot password?
           </Link> */}
         </Paper>
-      </Grid2>
+      </Grid>
       <Box sx={{ height: 8 }} />
-      <Grid2 size={12}>
+      <Grid item xs={12}>
       <Snackbar
         open={open}
         autoHideDuration={6000}
@@ -85,7 +84,7 @@ const history= useNavigate();
         message="Invalid username or password"
       />
       <Box sx={{ height: 8 }} />
-      </Grid2>
-    </Grid2>
+      </Grid>
+    </Grid>
   );
 };

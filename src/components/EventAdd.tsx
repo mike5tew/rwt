@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { styled } from '@mui/material/styles';
 import { Button, Typography, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
-import Grid2 from '@mui/material/Grid2'; // Import Grid2
+import Grid from '@mui/material/Grid'; // Import Grid
 import { purple } from '@mui/material/colors';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -95,8 +95,8 @@ export default function EventAdd() {
         <Box>
             <form id="NewEvent" onSubmit={handleSubmit(onSubmit)}>
             <Typography variant="h2" align="center" gutterBottom>Add Event</Typography>
-                <Grid2 container spacing={2}>
-                    <Grid2 size={12}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12}>
                         <TextField
                             id="Title" required
                             label="Title"
@@ -105,8 +105,8 @@ export default function EventAdd() {
                             error={!!errors.Title}
                             helperText={errors.Title?.message}
                         />
-                    </Grid2>
-                    <Grid2 size={12}>
+                    </Grid>
+                    <Grid item xs={12}>
                         <TextField
                             id="Location" required
                             label="Location"
@@ -115,8 +115,8 @@ export default function EventAdd() {
                             error={!!errors.Location}
                             helperText={errors.Location?.message}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             type="date"
                             fullWidth
@@ -124,8 +124,8 @@ export default function EventAdd() {
                             error={!!errors.EventDate}
                             helperText={errors.EventDate?.message}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             id="StartTime"
                             label="Start Time"
@@ -134,8 +134,8 @@ export default function EventAdd() {
                             error={!!errors.StartTime}
                             helperText={errors.StartTime?.message}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             id="EndTime"
                             label="End Time"
@@ -144,8 +144,8 @@ export default function EventAdd() {
                             error={!!errors.EndTime}
                             helperText={errors.EndTime?.message}
                         />
-                    </Grid2>
-                    <Grid2 size={6}>
+                    </Grid>
+                    <Grid item xs={6}>
                         <TextField
                             id="Price"
                             label="Price"
@@ -154,8 +154,8 @@ export default function EventAdd() {
                             error={!!errors.Price}
                             helperText={errors.Price?.message}
                         />
-                    </Grid2>
-                    <Grid2 size={12}>
+                    </Grid>
+                    <Grid item xs={12}>
                         <TextField
                             id="MeetingPoint"
                             label="Meeting Point"
@@ -164,8 +164,8 @@ export default function EventAdd() {
                             error={!!errors.MeetingPoint}
                             helperText={errors.MeetingPoint?.message}
                         />
-                    </Grid2>
-                    <Grid2 size={12}>
+                    </Grid>
+                    <Grid item xs={12}>
                         <TextField
                             id="Invitation"
                             label="Invitation message"
@@ -174,16 +174,16 @@ export default function EventAdd() {
                             error={!!errors.Invitation}
                             helperText={errors.Invitation?.message}
                         />
-                    </Grid2>
-                    <Grid2 size={12}>
+                    </Grid>
+                    <Grid item xs={12}>
                         <Divider />
-                    </Grid2>
-                    <Grid2 size={12}>
+                    </Grid>
+                    <Grid item xs={12}>
                         <ColorButton variant="contained" type="submit">
                             Save Changes
                         </ColorButton>
-                    </Grid2>
-                </Grid2>
+                    </Grid>
+                </Grid>
             </form>
             <Snackbar
                 open={snackOpen}
