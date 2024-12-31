@@ -50,13 +50,15 @@
     "web-vitals": "^2.1.4",
     "webpack-merge": "^6.0.1",
     "webpack-node-externals": "^3.0.0",
-    "yup": "^1.4.0"
+    "yup": "^1.4.0",
+    "serve": "^14.2.0"
   },
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
-    "eject": "react-app-rewired eject"
+    "eject": "react-app-rewired eject",
+    "start:prod": "serve -s build"
   },
   "eslintConfig": {
     "extends": [
