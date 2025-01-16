@@ -4,13 +4,13 @@ import { Card, CardBody, CardTitle, CardText } from 'reactstrap';
 import Grid from '@mui/material/Grid'; // Import Grid
 import { Paper, Typography } from '@mui/material';
 import { EventDetails } from '../types/types.d';
-import { EventsList } from '../services/queries';
+import { UpcomingEventsList } from '../services/queries';
 
 export default function Notices() {
     const [notices, setNotices] = useState<EventDetails[]>([]);
 
     useEffect(() => {
-        EventsList().then((data) => {
+        UpcomingEventsList().then((data) => {
             console.log(data);
             if (typeof data === 'string') {
                 console.error('Error:', data);

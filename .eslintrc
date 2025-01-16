@@ -1,0 +1,11 @@
+
+{
+  // ...existing code...
+  "extends": [
+  ],
+  "parserOptions": {
+    "parser": "@babel/eslint-parser"
+}
+
+  // ...existing code...
+}

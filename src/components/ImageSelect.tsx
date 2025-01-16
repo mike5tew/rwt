@@ -168,7 +168,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                     newImage.EventID = respon[i].EventID
                     newImage.Filename =  respon[i].Filename
                     newImage.Caption = respon[i].Caption
-                    newImage.ImageURL = `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}/${respon[i].ImageURL}`;
+                    newImage.ImageURL = `${process.env.REACT_APP_API_URL}/${respon[i].ImageURL}`;
                     newImage.Height = respon[i].Height
                     newImage.Width = respon[i].Width
                     console.log("newImage: " + newImage.ImageURL)
@@ -237,7 +237,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                         ...LogoDetails,
                         ImageID: retF.ImageID,
                         EventID: -1,
-                        ImageURL: `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}${retF.ImageURL}`,
+                        ImageURL: `${process.env.REACT_APP_API_URL}/${retF.ImageURL}`,
                         Filename: retF.Filename,
                     };
                     setImages([...images, newLogoDetails]);
@@ -277,7 +277,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                             ...backgroundDetails,
                             ImageID: retF.ImageID,
                             EventID: retF.EventID,
-                            ImageURL: `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}${retF.ImageURL}`,
+                            ImageURL: `${process.env.REACT_APP_API_URL}/${retF.ImageURL}`,
                             Filename: retF.Filename,
                         };
                         setImages([...images, newBackgroundDetails]);

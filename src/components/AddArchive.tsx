@@ -11,7 +11,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { CloudUpload, ImageSearch } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import ResizeImage from '../services/ResizeImage';
-import { ArchivePOST, EventArchiveGET, ClipPOST, ClipDELETE, EventsList, ImageDELETE } from '../services/queries';
+import { ArchivePOST, EventArchiveGET, ClipPOST, ClipDELETE, PastEventsList, ImageDELETE } from '../services/queries';
 import FileUploadService from '../services/FileUploadService';
 
 /**
@@ -173,7 +173,10 @@ export default function AddArchive() {
       history('/Members');
     }
     // get the event list from the database
-    EventsList().then((res) => {
+    PastEventsList().then((res) => {
+      // remove events that are in the future
+      res = res.filter((event) => new Date(event.EventDate) <= new Date());
+
       setEventList(res);
     }
     );
@@ -438,10 +441,10 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
 
 
   function handleSaveArchive() {
-    
-    archive.Report = watch('Report');
-    //console.log(archive);
-    ArchivePOST(archive).then((respon) => {
+    var arc = archive;
+    arc.Report = watch('Report');
+    arc.EventDetails.EventID = eventID;  // <-- Add this line
+    ArchivePOST(arc).then((respon) => {
       if (respon) {
         if (respon.ArchiveID > 0) {
           setSnackMessage("Archive details saved successfully")

@@ -1,3 +1,5 @@
+@import './styles/fonts.css';
+
 /* .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -36,41 +38,20 @@
 
 } */
 
-@font-face {
-  font-family: Roboto;
-  font-style: normal;
-  font-weight: 400;
-  src: url(../public/fonts/Roboto.ttf) format('truetype');
-}
 .Roboto {
   font-family: Roboto, sans-serif;
 }
-@font-face {
-  font-family: Playwrite;
-  font-style: normal;
-  font-weight: 500;
-  src: url(../public/fonts/Playwrite.ttf) format('truetype');
-}
+
 .Playwrite {
   font-family: Playwrite, sans-serif;
 }
-@font-face {
-  font-family: Montserrat;
-  font-style: normal;
-  font-weight: 500;
-  src: url(../public/fonts/Montserrat.ttf) format('truetype');
-}
-.Playwrite {
+
+.Montserrat {
   font-family: Montserrat, sans-serif;
 }
-@font-face {
-  font-family: GreyQo;
-  /* the body text is too small to read and so we need to enlarge this  */
+
+.GreyQo {
+  font-family: GreyQo, sans-serif;
   font-size: 8.0em;
   font-size-adjust: 0.58;
-  font-size-adjust: ch-width from-font;
-  src: url(../public/fonts/GreyQo.ttf) format('truetype');
-}
-.Playwrite {
-  font-family: GreyQo, sans-serif;
 }

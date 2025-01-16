@@ -23,7 +23,7 @@ import ViewMessages from './components/ViewMessages';
 import MembersPage from './components/MembersPage';
 import MiniDrawer from './components/Drawer';
 import EditTheme from './components/EditTheme';
-import { ThemeDetails } from 'src/types/types';
+import { getScreenSize, ThemeDetails } from 'src/types/types';
 import { SiteInfoGET, themeDetailsGET } from './services/queries';
 
 /**
@@ -34,6 +34,15 @@ import { SiteInfoGET, themeDetailsGET } from './services/queries';
 export default function App() {
   const [themeDetails, setThemeDetails] = useState<ThemeDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  // establish if the screen is a mobile device
+  function getScreenSize() {
+    var screen = "mobile"; 
+    if (window.innerWidth > 600) {
+      screen = "desktop";
+    }
+    return screen;
+  }
+
 
   /**
    * Fetches site information and theme details from the server
@@ -45,6 +54,7 @@ export default function App() {
       try {
         const siteInfoRes = await SiteInfoGET();
         if (siteInfoRes) {
+          localStorage.setItem('screenSize', getScreenSize());
           console.log("Site info fetched:", siteInfoRes);
           localStorage.setItem('HomeTitle', siteInfoRes.HomeTitle);
           localStorage.setItem('HomeText', siteInfoRes.HomeText);
@@ -69,7 +79,7 @@ export default function App() {
         const themeRes = await themeDetailsGET();
         if (themeRes) {
           //urlencode the image path to avoid issues with spaces in the path
-          const bgImg = `http://${process.env.REACT_APP_URL}:${process.env.REACT_APP_PORT}/${themeRes.BackgroundImage}`;
+          const bgImg = `${process.env.REACT_APP_API_URL}/${themeRes.BackgroundImage}`;
           console.log("Setting background image to:", bgImg);
           localStorage.setItem('BackgroundImage', bgImg);
 
@@ -99,7 +109,7 @@ export default function App() {
       return createTheme();
     }
 
-    console.log("Creating custom theme with details:", themeDetails);
+    console.log("Creating custom theme with details:", themeDetails.TextFont);
     return createTheme({
       components: {
         MuiDrawer: {

@@ -1,12 +1,18 @@
 # Stage 1: Build (Node.js environment)
-FROM node:18-bullseye AS builder
+FROM node:18-bullseye-slim AS builder  
+
+ARG ENV=production
+ENV NODE_ENV=$ENV
 
 WORKDIR /app
 
-# Set environment variables for Node.js
-ENV NODE_ENV=production
+# Set environment variables for Node
 ENV NODE_OPTIONS="--max_old_space_size=4096"
 
+# Create necessary directories
+RUN mkdir -p /app/src/assets/fonts
+
+COPY package*.json ./
 # Set npm configuration
 RUN npm config set registry https://registry.npmjs.org/ \
     && npm config set fetch-retry-maxtimeout 600000 \
@@ -14,26 +20,40 @@ RUN npm config set registry https://registry.npmjs.org/ \
     && npm config set fetch-retries 5 \
     && npm config set legacy-peer-deps true
 
-# Copy package files
-COPY package*.json ./
+# Install dependencies with specific npm config
+RUN npm config set legacy-peer-deps true \
+    && npm ci \
+    && npm install @babel/plugin-proposal-private-property-in-object \
+    && npm cache clean --force
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
+COPY .env .
 
-# Copy the rest of the application code
+# Copy source files first
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build with production settings
+RUN npm run build || (echo "Build failed" && exit 1)
 
 # Stage 2: Production (Nginx server)
-FROM nginx:alpine
+FROM nginx:alpine AS production
 
-# Copy built files from the builder stage
+VOLUME ["/app/build"]
+
+# Configure nginx and create fonts directory
+RUN mkdir -p /var/cache/nginx \
+    && mkdir -p /usr/share/nginx/html/fonts \
+    && chown -R nginx:nginx /var/cache/nginx \
+    && chmod -R 755 /var/cache/nginx
+
+# Copy built files and config
 COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/src/assets/fonts /usr/share/nginx/html/fonts
+COPY ./combined.conf /etc/nginx/nginx.conf
+RUN cat /etc/nginx/nginx.conf # Add this line to print the file contents
 
-# Copy Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Cleanup
+RUN rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/*
 
 EXPOSE 80
 

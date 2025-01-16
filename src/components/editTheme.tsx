@@ -5,7 +5,7 @@ import { set, useForm } from 'react-hook-form';
 import { Paper, Snackbar, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { TextField } from '@mui/material';
-import { ThemeDetails, EmptyImageDetail, ImageDetail } from '../types/types.d';
+import { ThemeDetails } from '../types/types.d';
 import { Box } from '@mui/system';
 import { MenuItem, Button } from '@mui/material';
 import { Select, } from '@mui/material';
@@ -13,8 +13,8 @@ import { InputLabel } from '@mui/material';
 import { FormControl } from '@mui/material';
 import { HexColorPicker } from "react-colorful";
 import { DataGrid, GridCellParams } from '@mui/x-data-grid';
-import { render } from '@testing-library/react';
-import { CloudUpload, ImageSearch } from '@mui/icons-material';
+import '../styles/fonts.css';
+
 import ImageSelect, { ImageSelection } from './ImageSelect';
 import { themeDetailsGET, ThemeDetailsPUT } from '../services/queries';
 
@@ -26,6 +26,7 @@ export default function EditTheme() {
     const [TextFont, setTextFont] = useState<string>("");
     const { register, handleSubmit, watch, setValue } = useForm<ThemeDetails>(
     );
+    const [fontsLoaded, setFontsLoaded] = useState(false);
     // we need to create an interface to store the images
     interface ImageChoice {
         BackgroundImage: string;
@@ -144,6 +145,23 @@ export default function EditTheme() {
     // to do this we need a value that changes when the save button is clicked.  We can use the save button as the value by adding it to the dependency array
         , [])
 
+    useEffect(() => {
+        // Load custom fonts
+        Promise.all([
+            new FontFace('GreyQo', `url(/assets/fonts/GreyQo.ttf)`).load(),
+            new FontFace('Playwrite', `url(/assets/fonts/Playwrite.ttf)`).load(),
+            new FontFace('Montserrat', `url(/assets/fonts/Montserrat.ttf)`).load(),
+        ]).then(fonts => {
+            fonts.forEach(font => {
+                document.fonts.add(font);
+            });
+            setFontsLoaded(true);
+        }).catch(err => {
+            console.error('Error loading fonts:', err);
+            setFontsLoaded(true); // Continue anyway with system fonts
+        });
+    }, []);
+
     const handleSelected = (data:ImageSelection)=>{
         setValue("BackgroundImage", data.backgroundImage)
         setValue("LogoImage", data.logoImage)
@@ -160,6 +178,23 @@ export default function EditTheme() {
         </Button>
     );
 
+    const fontOptions = [
+        { value: "Arial", label: "Arial (System)" },
+        { value: "Times New Roman", label: "Times New Roman (System)" },
+        { value: "Courier", label: "Courier (System)" },
+        { value: "Verdana", label: "Verdana (System)" },
+        { value: "Comic Sans MS", label: "Comic Sans (System)" },
+        { value: "Impact", label: "Impact (System)" },
+        { value: "Montserrat", label: "Montserrat (Custom)" },
+        { value: "Baskerville", label: "Baskerville (System)" },
+        { value: "GreyQo", label: "GreyQo (Custom)" },
+        { value: "Playwrite", label: "Playwrite (Custom)" },
+        { value: "Roboto", label: "Roboto (System)" },
+    ];
+
+    if (!fontsLoaded) {
+        return <div>Loading fonts...</div>;
+    }
 
     return (
         <>
@@ -208,28 +243,30 @@ export default function EditTheme() {
                         label="Font"
                         {...register("TextFont")}
                     >
-                        <MenuItem value={"Arial"}>Arial</MenuItem>
-                        <MenuItem value={"Times New Roman"}>Times New Roman</MenuItem>
-                        <MenuItem value={"Courier"}>Courier</MenuItem>
-                        <MenuItem value={"Verdana"}>Verdana</MenuItem>
-                        <MenuItem value={"Comic Sans MS"}>Comic Sans</MenuItem>
-                        <MenuItem value={"Impact"}>Impact</MenuItem>
-                        <MenuItem value={"Montserrat"}>Montserrat</MenuItem>
-                        <MenuItem value={"Baskerville"}>Baskerville</MenuItem>
-                        <MenuItem value={"GreyQo"}>GreyQo</MenuItem>
-                        <MenuItem value={"Playwrite"}>Playwrite</MenuItem>
-                        <MenuItem value={"Roboto"}>Roboto</MenuItem>
+                        {fontOptions.map((font) => (
+                            <MenuItem 
+                                key={font.value} 
+                                value={font.value}
+                                style={{ fontFamily: font.value }}
+                            >
+                                {font.label}
+                            </MenuItem>
+                        ))}
                     </Select>
                 </FormControl>
             </Grid>
             <Grid item xs={6} >
                 <TextField
-                    {...register("TextSize")}
+                    {...register("TextSize", {
+                        valueAsNumber: true,  // Add this to ensure number conversion
+                        validate: (value) => !isNaN(value)
+                    })}
                     label="Text Size"
                     placeholder="Text Size"
                     type="number"
                     fullWidth
-                    value={watch("TextSize") ?? 12}
+                    defaultValue={12}
+                    onChange={(e) => setValue("TextSize", parseInt(e.target.value) || 12)}
                 />
             </Grid>
             <Grid item xs={12} >

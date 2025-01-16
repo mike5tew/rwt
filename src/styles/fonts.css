@@ -1,0 +1,33 @@
+@font-face {
+  font-family: 'GreyQo';
+  font-style: normal;
+  font-weight: normal;
+  src: url('../assets/fonts/GreyQo.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Playwrite';
+  font-style: normal;
+  font-weight: 500;
+  src: url('../assets/fonts/Playwrite.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  src: url('../assets/fonts/Montserrat.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../assets/fonts/Roboto.ttf') format('truetype');
+  font-display: swap;
+}
+
+/* These are hard coded following bug isues and use the proxy address shown in combined.conf*/

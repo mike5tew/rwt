@@ -1,6 +1,6 @@
 import { ImageDetail } from '../types/types.d';
 
-const url = process.env.REACT_APP_URL;
+const url = process.env.REACT_APP_API_URL;
 const port = process.env.REACT_APP_PORT;
 
 function upload(
@@ -24,7 +24,7 @@ function upload(
 }
 
 export function SendFile(formData: FormData): Promise<ImageDetail> {
-    return fetch(`http://${url}:${port}/ImageFilePOST`, {
+    return fetch(`${url}/ImageFilePOST`, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',

@@ -5,7 +5,6 @@ import { randomImagesGET } from '../services/queries';
 import { processImages, processClips } from '../services/ImageHandling';
 
 export default function Home() {
-  const server = "http://" + process.env.REACT_APP_URL + ':' + process.env.REACT_APP_PORT;
   const [leftImages, setLeftImages] = useState<JSX.Element[]>([]);
   const [rightImages, setRightImages] = useState<JSX.Element[]>([]);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -34,6 +33,8 @@ export default function Home() {
   useEffect(() => {
     randomImagesGET(6)
       .then(data => {
+        console.log("Random images data:", data); // new debug log
+        console.log("data: ", data);
         if (!data || typeof data === 'string') {
           console.error('Error:', data);
           return;
@@ -59,7 +60,15 @@ export default function Home() {
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', flexGrow: 1, marginTop: '64px' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: isMobile ? 'column' : 'row', 
+      flexGrow: 1, 
+      marginTop: '64px',
+      width: '100%',
+      maxWidth: '100vw',
+      overflow: 'hidden'
+    }}>
       {!isMobile && (
         <Box sx={{ width: '15%' }}>
           <ImageList variant="masonry" gap={8} cols={1}>
@@ -67,14 +76,25 @@ export default function Home() {
           </ImageList>
         </Box>
       )}
-      <Box sx={{ width: isMobile ? '100%' : '70%', mx: 'auto', px: 2 }}>
-        <Paper>
-          <Typography variant="h2" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
+      <Box sx={{ 
+        width: isMobile ? '100%' : '70%', 
+        mx: 'auto', 
+        px: isMobile ? 1 : 2,
+        overflow: 'auto'
+      }}>
+        <Paper sx={{ mx: isMobile ? 1 : 2 }}>
+          <Typography variant="h2" gutterBottom sx={{ 
+            whiteSpace: "pre-wrap",
+            fontSize: isMobile ? '1.5rem' : undefined 
+          }}>
             {localStorage.getItem("HomeTitle")}
           </Typography>
         </Paper>
         <br />
-        <Typography variant="body1" sx={{ whiteSpace: "pre-wrap" }}>
+        <Typography variant="body1" sx={{ 
+          whiteSpace: "pre-wrap",
+          fontSize: isMobile ? '0.9rem' : undefined
+        }}>
           {localStorage.getItem('HomeText')}
         </Typography>
       </Box>

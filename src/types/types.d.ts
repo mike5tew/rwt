@@ -72,6 +72,7 @@ export interface EventDetails {
 
 // themeDetails, boxColour, textColour, textFont, backgroundImage, textboxColour, logoimage, bannerColour, menuColour, buttonColour, buttonHover, buttonTextColour, menuTextColour
 export interface ThemeDetails {
+    ID: number;
     BoxColour: string;
     TextColour: string;
     TextFont: string;
@@ -88,6 +89,7 @@ export interface ThemeDetails {
 }
 export function EmptyThemeDetails(): ThemeDetails {
     return {
+        ID: 0,
         BoxColour: "",
         TextColour: "",
         TextFont: "",
@@ -106,6 +108,7 @@ export function EmptyThemeDetails(): ThemeDetails {
 
 export function DefaultThemeDetails(): ThemeDetails {
     return {
+        ID: 0,
         BoxColour: "white",
         TextColour: "black",
         TextFont: "Arial",

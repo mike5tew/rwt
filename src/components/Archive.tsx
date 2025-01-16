@@ -32,15 +32,30 @@ export default function Archive() {
 
     function processArchives(archives: ArchiveEntry[]): JSX.Element[] {
         let elements: JSX.Element[] = [];
-        // Map the archives to elements
-        for (let i = 0; i < archives.length; i++) {
-            let archElem: JSX.Element[] = [];
-            archElem = [processText(archives[i])];
-            const clipElements = Array.isArray(archives[i].Clips) ? processClips(archives[i].Clips) : [];
-            const imageElements = Array.isArray(archives[i].Images) ? processImages(archives[i].Images) : [];
-            archElem = archElem.concat(clipElements, imageElements);
-            elements = elements.concat(archElem);
-        }
+        
+        archives.forEach(archive => {
+            // Create a container for each archive's content
+            const archiveContent = (
+                <ImageListItem key={`archive-${archive.ArchiveID}`} cols={3} rows={1}>
+                    <Grid container spacing={2}>
+                        {/* Text Section */}
+                        <Grid item xs={12}>
+                            {processText(archive)}
+                        </Grid>
+                        
+                        {/* Media Section */}
+                        <Grid item xs={12}>
+                            <ImageList cols={2} gap={8}>
+                                {Array.isArray(archive.Clips) && processClips(archive.Clips)}
+                                {Array.isArray(archive.Images) && processImages(archive.Images)}
+                            </ImageList>
+                        </Grid>
+                    </Grid>
+                </ImageListItem>
+            );
+            elements.push(archiveContent);
+        });
+        
         return elements;
     }
 
@@ -64,23 +79,33 @@ export default function Archive() {
 
     return (
         <>
-            <Grid container spacing={3}>
+            <Grid container spacing={2} sx={{ p: isMobile ? 1 : 3 }}>
                 <Grid item xs={12}>
                     <Paper>
-                    <Typography variant="h2" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
-                    {localStorage.getItem("ArchiveTitle")}</Typography>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12}>
-                    <Paper>
-                    <Typography variant="body1" align="center" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
-                    {localStorage.getItem("ArchiveText")}
+                        <Typography variant="h2" gutterBottom sx={{ 
+                            whiteSpace: "pre-wrap",
+                            fontSize: isMobile ? '1.5rem' : undefined 
+                        }}>
+                            {localStorage.getItem("ArchiveTitle")}
                         </Typography>
                     </Paper>
                 </Grid>
                 <Grid item xs={12}>
-                    <ImageList gap={8} cols={isMobile ? 1 : 3}>
-                        {archiveList && archiveList.map((arch) => arch)}
+                    <Paper>
+                        <Typography variant="body1" align="center" gutterBottom sx={{ 
+                            whiteSpace: "pre-wrap",
+                            fontSize: isMobile ? '0.9rem' : undefined
+                        }}>
+                            {localStorage.getItem("ArchiveText")}
+                        </Typography>
+                    </Paper>
+                </Grid>
+                <Grid item xs={12}>
+                    <ImageList gap={isMobile ? 4 : 8} cols={1} sx={{
+                        width: '100%',
+                        margin: 0
+                    }}>
+                        {archiveList}
                     </ImageList>
                 </Grid>
             </Grid>
