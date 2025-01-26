@@ -47,8 +47,8 @@ const MiniDrawer = () => {
     }),
     overflowX: 'hidden',
     width: `calc(${theme.spacing(7)} + 1px)`,
-    [theme.breakpoints.up('sm')]: {
-      width: `calc(${theme.spacing(8)} + 1px)`,
+    [theme.breakpoints.down('sm')]: {
+      width: `calc(${theme.spacing(6)} + 1px)`,
     },
   });
 
@@ -143,73 +143,174 @@ const MiniDrawer = () => {
     }
   };
   return (
-      <Box sx={{
-        display: 'flex',
-        backgroundImage: `url(${localStorage.getItem('BackgroundImage')})`,
-        backgroundSize: 'cover',
-        backgroundRepeat: 'repeat-y',
-        alignContent: 'center',
-        minWidth: '100vh',
-        minHeight: '100vh', // Ensure the Box takes the full height of the viewport
-      }}>
-        <CssBaseline />
-        <AppBar position="fixed" open={open}>
-          <Toolbar>
-            <Grid container spacing={0} columns={16}>
-              <Grid item xs="auto" alignItems="center">
-                <IconButton
-                  color="inherit"
-                  aria-label="open drawer"
-                  onClick={handleDrawerOpen}
-                  edge="start"
-                  sx={{
-                    marginRight: 5,
-                    ...(open && { display: 'none' }),
-                  }}
-                >
-                  <MenuIcon />
-                </IconButton>
-              </Grid>
-              <Grid item xs={12} display="flex" justifyContent="flex-start" alignItems="center">
-                <Typography variant="h6" noWrap component="div">
-                  The Royal Wolverhampton NHS Trust Staff Choir
-                </Typography>
-              </Grid>
-              <Grid item xs="auto" justifyContent="flex-end" alignItems="center">
-                {/* <body dir='rtl'> */}
-                {/* </body> */}
-              </Grid>
+    <Box sx={{
+      display: 'flex',
+      backgroundImage: `url(${localStorage.getItem('BackgroundImage')})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+      backgroundRepeat: 'no-repeat',
+      minHeight: '100vh',
+      width: '100%',
+      maxWidth: '100vw',
+      overflow: 'hidden',
+      backgroundColor: localStorage.getItem('BackgroundColor') || 'inherit',
+      // Add z-index to ensure proper stacking
+      zIndex: 1,
+      position: 'relative',
+      // Prevent inheritance issues
+      '& *': {
+        boxSizing: 'border-box'
+      }
+    }}>
+      <CssBaseline />
+      <AppBar 
+        position="fixed" 
+        open={open}
+        sx={{
+          backgroundColor: localStorage.getItem('AppBarColor') || 'primary',
+          width: '100%',
+          [theme.breakpoints.down('sm')]: {
+            width: '100%',
+            marginLeft: 0,
+          }
+        }}
+      >
+        <Toolbar sx={{ minHeight: { xs: '48px', sm: '64px' } }}>
+          <Grid container spacing={0} alignItems="center">
+            <Grid item>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                sx={{
+                  marginRight: { xs: 0.5, sm: 2 },
+                  ...(open && { display: 'none' }),
+                }}
+              >
+                <MenuIcon />
+              </IconButton>
             </Grid>
-          </Toolbar>
-        </AppBar>
-        <Drawer variant="permanent"
-          open={open}
-          onKeyDown={handleDrawerClose}
-          onClick={handleDrawerClose}
-        >
-          <DrawerHeader>
-            <IconButton onClick={handleDrawerClose}>
-              {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-            </IconButton>
-          </DrawerHeader>
-          <Divider />
-          <List>
-            {/* Add the items from the array that has been selected */}
-            {menuName ? menuName.map((text) => (
-              // pass the menuitem object to the click listener
-              <ListItem key={text.EntName} onClick={() => clickListener(text)}>
-                <ListItemIcon>
-                  {text.icon}
-                </ListItemIcon>
-                <ListItemText primary={text.EntName} sx={{ opacity: open ? 1 : 0 }} />
-              </ListItem>
-            )) : null}
-          </List>
-        </Drawer>
-        <Box component="span" sx={{ p: 10, pt: 15, flexBasis: '100%' }}>
-          <Outlet />
-        </Box>
+            <Grid item xs>
+              <Typography 
+                variant="h6" 
+                noWrap 
+                component="div"
+                sx={{
+                  fontSize: { 
+                    xs: '0.8rem', 
+                    sm: '1rem', 
+                    md: '1.25rem' 
+                  },
+                  textAlign: { xs: 'left', sm: 'left' },
+                  paddingLeft: { xs: 1, sm: 2 },
+                  whiteSpace: { xs: 'normal', sm: 'nowrap' },
+                  lineHeight: { xs: 1.2, sm: 'normal' }
+                }}
+              >
+                The Royal Wolverhampton NHS Trust Staff Choir
+              </Typography>
+            </Grid>
+          </Grid>
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        variant="permanent"
+        open={open}
+        onKeyDown={handleDrawerClose}
+        onClick={handleDrawerClose}
+        sx={{
+          '& .MuiDrawer-paper': {
+            backgroundColor: localStorage.getItem('MenuColour') || 'inherit',
+            color: localStorage.getItem('MenuTextColour') || 'inherit',
+            [theme.breakpoints.down('sm')]: {
+              top: '48px',
+              position: 'fixed',
+              height: 'calc(100% - 48px)',
+              width: open ? '200px' : '50px'
+            },
+            '& .MuiListItemText-root': {
+              whiteSpace: 'normal',
+              '& span': {
+                fontSize: { xs: '0.8rem', sm: '0.9rem' }
+              }
+            },
+            '& .MuiListItemIcon-root': {
+              color: 'inherit',
+              minWidth: { xs: '35px', sm: '40px' }
+            },
+            '& .MuiDivider-root': {
+              borderColor: 'inherit'
+            }
+          },
+        }}
+      >
+        <DrawerHeader>
+          <IconButton 
+            onClick={handleDrawerClose}
+            aria-label="Close menu"
+            tabIndex={0}
+          >
+            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </IconButton>
+        </DrawerHeader>
+        <Divider />
+        <List>
+          {/* Add the items from the array that has been selected */}
+          {menuName ? menuName.map((text) => (
+            // pass the menuitem object to the click listener
+            <ListItem 
+              key={text.EntName} 
+              onClick={() => clickListener(text)}
+              button // Remove component="button" and use button prop instead
+              tabIndex={0}
+              aria-label={text.EntName}
+              sx={{
+                '&:focus': {
+                  outline: '2px solid',
+                  outlineOffset: '-2px'
+                },
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)'
+                }
+              }}
+            >
+              <ListItemIcon aria-hidden="true">
+                {text.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={text.EntName} 
+                sx={{ 
+                  opacity: open ? 1 : 0,
+                  visibility: open ? 'visible' : 'hidden' 
+                }} 
+              />
+            </ListItem>
+          )) : null}
+        </List>
+      </Drawer>
+      <Box 
+        component="main" // Changed from span to main for semantic HTML
+        sx={{ 
+          p: { xs: 1, sm: 2, md: 3 }, 
+          pt: { xs: 7, sm: 8, md: 9 },
+          flexGrow: 1,
+          width: '100%',
+          maxWidth: '100%',
+          overflowX: 'hidden',
+          backgroundColor: localStorage.getItem('ContentBackgroundColor') || 'transparent',
+          // Prevent content from being hidden under drawer
+          position: 'relative',
+          zIndex: 0,
+          [theme.breakpoints.down('sm')]: {
+            marginLeft: open ? '50px' : '0',
+          }
+        }}
+      >
+        <Outlet />
       </Box>
+    </Box>
   );
 };
 

@@ -1,43 +1,6 @@
 @import './styles/fonts.css';
 
-/* .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-} */
-
-/* .inputfile {
-	width: 0.1px;
-	height: 0.1px;
-	opacity: 0;
-	overflow: hidden;
-	position: absolute;
-	z-index: -1;
-  color: yellowgreen;
-} */
-/* looking to make this like the mui button */
-/* .inputfile + label {
-  font-size: 0.90em;
-  font-weight: 500;
-  color: white;
-  background-color: #4CAF50;
-  display: inline-block;
-  cursor: pointer;
-  padding: 10px 20px;
-  border-radius: 5px;
-  margin-right: 10px;
-  margin-top: 10px;
-  text-align: center;
-  text-transform: uppercase;
-  transition: background-color 0.3s;
-
-} */
-
+/* Only keep the essential font classes */
 .Roboto {
   font-family: Roboto, sans-serif;
 }
@@ -52,6 +15,6 @@
 
 .GreyQo {
   font-family: GreyQo, sans-serif;
-  font-size: 8.0em;
+  font-size: clamp(2em, 8vw, 8em);
   font-size-adjust: 0.58;
 }

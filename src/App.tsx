@@ -109,14 +109,19 @@ export default function App() {
       return createTheme();
     }
 
-    console.log("Creating custom theme with details:", themeDetails.TextFont);
     return createTheme({
       components: {
         MuiDrawer: {
           styleOverrides: {
             paper: {
-              backgroundColor: themeDetails.MenuColour,
-              color: themeDetails.MenuTextColour,
+              backgroundColor: themeDetails.MenuColour || '#fff',
+              color: themeDetails.MenuTextColour || '#000',
+              '& .MuiListItemIcon-root': {
+                color: themeDetails.MenuTextColour || '#000',
+              },
+              '& .MuiDivider-root': {
+                borderColor: themeDetails.MenuTextColour || 'rgba(0, 0, 0, 0.12)',
+              },
             },
           },
         },

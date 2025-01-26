@@ -28,7 +28,7 @@ RUN npm config set legacy-peer-deps true \
 
 COPY .env .
 
-# Copy source files first
+# Copy source files (includes public directory)
 COPY . .
 
 # Build with production settings
@@ -39,7 +39,7 @@ FROM nginx:alpine AS production
 
 VOLUME ["/app/build"]
 
-# Configure nginx and create fonts directory
+# Configure nginx and create directories
 RUN mkdir -p /var/cache/nginx \
     && mkdir -p /usr/share/nginx/html/fonts \
     && chown -R nginx:nginx /var/cache/nginx \

@@ -30,14 +30,15 @@ export default function About() {
 
         const clipElements = Array.isArray(data.Clips) ? processClips(data.Clips) : [];
         const imageElements = Array.isArray(data.Images) ? processImages(data.Images) : [];
-        const combinedArray = [...clipElements, ...imageElements].sort(() => Math.random() - 0.5);
-        // Set the combined array to a maximum of three elements
-        combinedArray.length = 3;
-        setElements(combinedArray);
+        
+        // Don't wrap the elements - let ImageList handle the layout
+        const combinedElements = [...clipElements, ...imageElements]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+
+        setElements(combinedElements);
       })
-      .catch(error => {
-        console.error('Error:', error);
-      });
+      .catch(error => console.error('Error:', error));
   }, []);
 
   /**
@@ -46,28 +47,47 @@ export default function About() {
    * Uses responsive ImageList for media display
    */
   return (
-      <Box>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Paper>
-              <Typography variant="h2" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
-                {localStorage.getItem("AboutTitle")}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <Paper>
-              <Typography variant="body1" align="center" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
-                {localStorage.getItem("AboutText")}
-              </Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <ImageList gap={8} cols={isMobile ? 1 : 3}>
-              {Elements}
-            </ImageList>
-          </Grid>
+    <Box>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Paper>
+            <Typography variant="h2" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
+              {localStorage.getItem("AboutTitle")}
+            </Typography>
+          </Paper>
         </Grid>
-      </Box>
+        <Grid item xs={12}>
+          <Paper>
+            <Typography variant="body1" align="center" gutterBottom sx={{ whiteSpace: "pre-wrap" }}>
+              {localStorage.getItem("AboutText")}
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12}>
+          <ImageList 
+            gap={8} 
+            cols={isMobile ? 1 : 3}
+            sx={{
+              overflow: 'hidden',
+              '& .MuiImageListItem-root': {
+                display: 'flex',
+                flexDirection: 'column'
+              },
+              '& img': {
+                width: '100%',
+                height: 'auto',
+                objectFit: 'cover'
+              },
+              '& iframe': {
+                aspectRatio: '16/9',
+                width: '100%'
+              }
+            }}
+          >
+            {Elements}
+          </ImageList>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
