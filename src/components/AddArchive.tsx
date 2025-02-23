@@ -5,14 +5,15 @@ import React, { useEffect, useState } from 'react';
 import { ArchiveEntry, EmptyArchiveEntry, ImageDetail, EmptyImageDetail, Clip, EmptyClip, StringtoDate, EventDetails, DatURLResponse } from '../types/types.d';
 import { DataGrid, GridColDef, GridRowId, GridCellParams } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid';
-import { Button, Paper, Typography, TextField, MenuItem, Select, SelectChangeEvent, FormControl, InputLabel, Snackbar } from '@mui/material';
+import { Button, Paper, Typography, TextField, MenuItem, Select, SelectChangeEvent, FormControl, InputLabel, ButtonGroup, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { CloudUpload, ImageSearch } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import ResizeImage from '../services/ResizeImage';
-import { ArchivePOST, EventArchiveGET, ClipPOST, ClipDELETE, PastEventsList, ImageDELETE } from '../services/queries';
+import { ArchivePOST, EventArchiveGET, ClipPOST, ClipDELETE, PastEventsList, ImageDELETE, ArchiveDELETE } from '../services/queries';
 import FileUploadService from '../services/FileUploadService';
+import { useNavigate } from 'react-router-dom';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
 
 /**
  * Interface for the image table data structure
@@ -67,7 +68,7 @@ function emptyTableDetails(): tableDetails {
  * Handles image uploads, YouTube clips, and event reports
  */
 export default function AddArchive() {
-  const { register, handleSubmit, watch, setValue } = useForm<ArchiveEntry>(
+  const { register, handleSubmit, watch, setValue, getValues } = useForm<ArchiveEntry>(
     { defaultValues: EmptyArchiveEntry() }
   );
   const [table, setTable] = useState<tableDetails[]>([]);
@@ -80,8 +81,8 @@ export default function AddArchive() {
   const [eventList, setEventList] = useState<EventDetails[]>([]);
   const [fileType, setFileType] = useState<string | null>(null);
   const [IconURL, setIconURL] = useState<string>('');
-  const [Snackopen, setSnackOpen] = useState(false);
-  const [SnackMessage, setSnackMessage] = useState('');
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = useState('');
   const [action, setAction] = useState(<></>);
   const [ClTab, setClTab] = useState<ClipTable[]>([]);
   const history = useNavigate();
@@ -109,22 +110,22 @@ export default function AddArchive() {
     // convert the id to a number
     id = Number(id);
     ImageDELETE(id).then((respon) => {
-    if (respon) {
-      setSnackMessage("Image removed successfully")
-      setImages(images.filter((image) => image.ImageID !== id))
-      setTable(table.filter((image) => image.id !== id))
-      setSnackOpen(true)
+      if (respon) {
+        setSnackMessage("Image removed successfully")
+        setImages(images.filter((image) => image.ImageID !== id))
+        setTable(table.filter((image) => image.id !== id))
+        setSnackOpen(true)
+      }
+      else {
+        setSnackMessage("Error removing image")
+        setSnackOpen(true)
+      }
+      return respon;
     }
-    else {
-      setSnackMessage("Error removing image")
-      setSnackOpen(true)
-    }
-    return respon;
-  }
-  );
+    );
   }
   // this page is currently not completing loading.  This is because the images and clips are not being cleared when the event is changed.  This is because the images and clips are being set before the eventID is set.  This is because the eventID is set in the handleEventSelect function.  This function is called when the event is changed.  The images and clips are set before the eventID is set.  This means that the images and clips are being
-  
+
 
   /**
    * Column definitions for the image grid
@@ -146,32 +147,32 @@ export default function AddArchive() {
     ClipDELETE(id).then((respon) => {
       if (respon) {
         if (respon.ClipID > 0) {
-        setSnackMessage("Clip removed successfully")
-        setSnackOpen(true)
-        setClips(clips.filter((clip) => clip.ClipID !== id));
-        setClTab(ClTab.filter((clip) => clip.id !== id));
-      } else {
+          setSnackMessage("Clip removed successfully")
+          setSnackOpen(true)
+          setClips(clips.filter((clip) => clip.ClipID !== id));
+          setClTab(ClTab.filter((clip) => clip.id !== id));
+        } else {
 
+          console.log("Error removing clip " + JSON.stringify(respon))
+          setSnackMessage("Error removing clip")
+          setSnackOpen(true)
+        }
+      } else {
+        // convert the respon object to a string
         console.log("Error removing clip " + JSON.stringify(respon))
-        setSnackMessage("Error removing clip")
-        setSnackOpen(true)
+        setSnackMessage("Error removing clip " + JSON.stringify(respon))
+        return respon;
       }
-    } else {
-      // convert the respon object to a string
-      console.log("Error removing clip " + JSON.stringify(respon))
-      setSnackMessage("Error removing clip " + JSON.stringify(respon))
-      return respon;
-    }
     }
     );
   };
 
 
   useEffect(() => {
-    if (document.cookie === '') {
+    if (document.cookie === '' || document.cookie !== 'role=admin') {
       console.log('No cookie');
-      history('/Members');
-    }
+      history('/Dashboard');
+  }
     // get the event list from the database
     PastEventsList().then((res) => {
       // remove events that are in the future
@@ -180,7 +181,7 @@ export default function AddArchive() {
       setEventList(res);
     }
     );
-  
+
   }
     , []);
 
@@ -214,7 +215,7 @@ export default function AddArchive() {
       setSnackOpen(true);
       return;
     }
-  
+
     // Check if file is an image
     const validTypes = ['image/jpg', 'image/jpeg', 'image/png'];
     if (!validTypes.includes(file.type)) {
@@ -223,10 +224,10 @@ export default function AddArchive() {
       setSnackOpen(true);
       return;
     }
-  
+
     setFileType(file.type);
     setCurrentFile(file);
-  
+
     try {
       const res = await changeFileSet(file);
       ResizeImage.ResizeImage(res, 100, eventID).then((res: DatURLResponse) => {
@@ -240,7 +241,7 @@ export default function AddArchive() {
       setSnackOpen(true);
     }
   }
-  
+
 
 
   /**
@@ -249,8 +250,8 @@ export default function AddArchive() {
    */
   const upload = () => {
     if (typeof currentFile === 'undefined') {
-        alert('Please select an image to upload');
-        return;
+      alert('Please select an image to upload');
+      return;
     }
     interface ImID {
       ImageID: number;
@@ -259,127 +260,127 @@ export default function AddArchive() {
 
     // Resize the image for desktop
     ResizeImage.ResizeImage(currentFile, 450, eventID)
-        .then((res: DatURLResponse) => {
-            ImDetails = res.FileDetails;
-            ImDetails.Caption = watch('Imagecaption');
-            console.log('Resized image for desktop:', res.FileDetails.EventID);
-            // Upload the resized image
-            return FileUploadService.upload(res.ReturnedFile, res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption);
-        })
-        .then((uploadRes: FormData) => {
-            //console.log('File uploaded:', uploadRes);
-          return FileUploadService.SendFile(uploadRes);
-        }
-        ).then((respon: ImID) => {
-          if (respon) {
-            console.log('File uploaded:', respon);
-            let tb = emptyTableDetails();
-            tb.id = respon.ImageID;
-            tb.caption = ImDetails.Caption
-            tb.filename = ImDetails.Filename;
-            setTable([...table, tb]);
-//            setImages((prevImages) => [...prevImages, ImDetails]);
-          }
-            // Resize the image for mobile
-            return ResizeImage.ResizeImage(currentFile, 250, eventID);
-        })
-        .then((res: DatURLResponse) => {
-            // console.log('Resized image for mobile:', res);
-            // Upload the resized image for mobile
-            return FileUploadService.upload(res.ReturnedFile, "mb"+res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption);
-            }
-            ).then((uploadRes: FormData) => {
-            return FileUploadService.SendFile(uploadRes);
-        }).then((respon: ImageDetail) => {
-          if (respon) {
-            //set the snack message to the image added successfully
-            setSnackMessage("Image added successfully")
-            setSnackOpen(true)
-          }
-        }
-        )
-        .catch((error) => {
-            console.error('Error:', error);
-        })
-        .finally(() => {
-            // Clear the current file
-            setCurrentFile(undefined);
-            // Clear the file input
-            setValue('NextFile', '');
-            // Clear the image caption
-            setValue('Imagecaption', '');
-            // Clear the icon image
-            setIconImage(undefined);
-        });
-};
-
-
-function handleEventSelect(event: SelectChangeEvent<Number>) {
-  setEventID(event.target.value as number);
-  if (event.target.value === 0) {
-    clearForm(0);
-    setEventID(0);
-    setEventSelected(false);
-  } else {
-    setEventSelected(true);
-    console.log('EventID:', event.target.value, !eventSelected);
-
-    EventArchiveGET(event.target.value as number)
-      .then(respon => {
+      .then((res: DatURLResponse) => {
+        ImDetails = res.FileDetails;
+        ImDetails.Caption = watch('Imagecaption');
+        console.log('Resized image for desktop:', res.FileDetails.EventID);
+        // Upload the resized image
+        return FileUploadService.upload(res.ReturnedFile, res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption);
+      })
+      .then((uploadRes: FormData) => {
+        //console.log('File uploaded:', uploadRes);
+        return FileUploadService.SendFile(uploadRes);
+      }
+      ).then((respon: ImID) => {
         if (respon) {
-          if (respon.ArchiveID > 0) {
-            setArchive(respon);
-            var imagesTp: ImageDetail[] = [];
-            var Tbtemp: tableDetails[] = [];
-            var clipsTp: Clip[] = [];
-            var ClTab: ClipTable[] = [];
-            console.log('Images:', respon.Images.length);
-            if (respon.Images && respon.Images.length) {
-              for (let i = 0; i < respon.Images.length; i++) {
-                var imgDetail = EmptyImageDetail();
-                var tb = emptyTableDetails();
-                tb.id = respon.Images[i].ImageID;
-                tb.caption = respon.Images[i].ImageURL
-                
-                tb.filename = respon.Images[i].Filename;
-                Tbtemp = [...Tbtemp, tb];
-                imgDetail.ImageID = respon.Images[i].ImageID;
-                imgDetail.Filename = respon.Images[i].Filename;
-                imgDetail.ImageURL = respon.Images[i].ImageURL;
-                imgDetail.Caption = respon.Images[i].Caption;
-                imgDetail.EventID = respon.Images[i].EventID;
-                imagesTp = [...imagesTp, imgDetail];
-              }
-            }
-            if (respon.Clips && respon.Clips.length) {
-              for (let i = 0; i < respon.Clips.length; i++) {
-                var clip = EmptyClip();
-                var ctb: ClipTable = { id: respon.Clips[i].ClipID, clipURL: respon.Clips[i].ClipURL, caption: respon.Clips[i].Caption };
-                ClTab = [...ClTab, ctb];
-                clip.ClipID = respon.Clips[i].ClipID;
-                clip.ClipURL = respon.Clips[i].ClipURL;
-                clip.Caption = respon.Clips[i].Caption;
-                clip.EventID = respon.Clips[i].EventID;
-                clipsTp = [...clipsTp, clip];
-              }
-            }
-            setClTab(ClTab);
-            setTable(Tbtemp);
-            setImages(imagesTp);
-            setClips(clipsTp);
-            setValue("Report", respon.Report);
-          } else {
-            console.log("Error: " + (respon.Report))
-            // empty archive details
-            clearForm(1);
-
-          }
+          console.log('File uploaded:', respon);
+          let tb = emptyTableDetails();
+          tb.id = respon.ImageID;
+          tb.caption = ImDetails.Caption
+          tb.filename = ImDetails.Filename;
+          setTable([...table, tb]);
+          //            setImages((prevImages) => [...prevImages, ImDetails]);
         }
-      }).catch(error => {
-        console.log(error)
+        // Resize the image for mobile
+        return ResizeImage.ResizeImage(currentFile, 250, eventID);
+      })
+      .then((res: DatURLResponse) => {
+        // console.log('Resized image for mobile:', res);
+        // Upload the resized image for mobile
+        return FileUploadService.upload(res.ReturnedFile, "mb" + res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption);
+      }
+      ).then((uploadRes: FormData) => {
+        return FileUploadService.SendFile(uploadRes);
+      }).then((respon: ImageDetail) => {
+        if (respon) {
+          //set the snack message to the image added successfully
+          setSnackMessage("Image added successfully")
+          setSnackOpen(true)
+        }
+      }
+      )
+      .catch((error) => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        // Clear the current file
+        setCurrentFile(undefined);
+        // Clear the file input
+        setValue('NextFile', '');
+        // Clear the image caption
+        setValue('Imagecaption', '');
+        // Clear the icon image
+        setIconImage(undefined);
       });
+  };
+
+
+  function handleEventSelect(event: SelectChangeEvent<Number>) {
+    setEventID(event.target.value as number);
+    if (event.target.value === 0) {
+      clearForm(0);
+      setEventID(0);
+      setEventSelected(false);
+    } else {
+      setEventSelected(true);
+      console.log('EventID:', event.target.value, !eventSelected);
+
+      EventArchiveGET(event.target.value as number)
+        .then(respon => {
+          if (respon) {
+            if (respon.ArchiveID > 0) {
+              setArchive(respon);
+              var imagesTp: ImageDetail[] = [];
+              var Tbtemp: tableDetails[] = [];
+              var clipsTp: Clip[] = [];
+              var ClTab: ClipTable[] = [];
+              console.log('Images:', respon.Images.length);
+              if (respon.Images && respon.Images.length) {
+                for (let i = 0; i < respon.Images.length; i++) {
+                  var imgDetail = EmptyImageDetail();
+                  var tb = emptyTableDetails();
+                  tb.id = respon.Images[i].ImageID;
+                  tb.caption = respon.Images[i].ImageURL
+
+                  tb.filename = respon.Images[i].Filename;
+                  Tbtemp = [...Tbtemp, tb];
+                  imgDetail.ImageID = respon.Images[i].ImageID;
+                  imgDetail.Filename = respon.Images[i].Filename;
+                  imgDetail.ImageURL = respon.Images[i].ImageURL;
+                  imgDetail.Caption = respon.Images[i].Caption;
+                  imgDetail.EventID = respon.Images[i].EventID;
+                  imagesTp = [...imagesTp, imgDetail];
+                }
+              }
+              if (respon.Clips && respon.Clips.length) {
+                for (let i = 0; i < respon.Clips.length; i++) {
+                  var clip = EmptyClip();
+                  var ctb: ClipTable = { id: respon.Clips[i].ClipID, clipURL: respon.Clips[i].ClipURL, caption: respon.Clips[i].Caption };
+                  ClTab = [...ClTab, ctb];
+                  clip.ClipID = respon.Clips[i].ClipID;
+                  clip.ClipURL = respon.Clips[i].ClipURL;
+                  clip.Caption = respon.Clips[i].Caption;
+                  clip.EventID = respon.Clips[i].EventID;
+                  clipsTp = [...clipsTp, clip];
+                }
+              }
+              setClTab(ClTab);
+              setTable(Tbtemp);
+              setImages(imagesTp);
+              setClips(clipsTp);
+              setValue("Report", respon.Report);
+            } else {
+              console.log("Error: " + (respon.Report))
+              // empty archive details
+              clearForm(1);
+
+            }
+          }
+        }).catch(error => {
+          console.log(error)
+        });
+    }
   }
-}
 
 
   /**
@@ -389,14 +390,14 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
   const handleAddClip = () => {
     let clipURL = watch('NextURL');
     const caption = watch('Clipcaption');
-  
+
     if (clipURL !== "") {
       let clipID = '';
-  
+
       // Extract the video ID from different YouTube URL formats
       const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
       const match = clipURL.match(youtubeRegex);
-  
+
       if (match && match[1]) {
         clipID = match[1];
       } else {
@@ -404,12 +405,12 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
         setSnackOpen(true);
         return;
       }
-  
+
       const newClip = EmptyClip();
       newClip.ClipURL = clipID;
       newClip.Caption = caption;
       newClip.EventID = eventID;
-  
+
       ClipPOST(newClip).then((respon) => {
         if (respon) {
           if (respon.ClipID > 0) {
@@ -437,7 +438,7 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
       setSnackOpen(true);
     }
   }
-  
+
 
 
   function handleSaveArchive() {
@@ -480,7 +481,7 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
       setSnackOpen(true)
     } else {
       setEventSelected(false);
-    setEventID(0);
+      setEventID(0);
     }
     console.log('Form cleared');
   }
@@ -488,146 +489,190 @@ function handleEventSelect(event: SelectChangeEvent<Number>) {
   const FormSubmitHandler: SubmitHandler<ArchiveEntry> = (data: ArchiveEntry) => {
     console.log(data);
   }
+    /**
+     * Navigates to the dashboard page
+     */
+    const NavDash = () => {
+        history('/Dashboard');
+    }
 
+const deleteArchive = async () => {
+       try {
+           const id = getValues('ArchiveID');
+           if (id > 0) {
+               const deleteResponse = await ArchiveDELETE(id);
+               if (deleteResponse.status === 204) {
+                   // reset the form
+                   clearForm(0);
+                } else {
+                    setSnackMessage('Error Deleting Archive');
+                    setSnackOpen(true);
+                }
+            } else {
+                setSnackMessage('No Archive ID to delete');
+                setSnackOpen(true);
+            }
+        } catch (error) {
+            console.error("Error deleting archive data:", error);
+            setSnackMessage('Error Deleting Archive Entry');
+            setSnackOpen(true);
+        }
+    }
 
-  return (
-    <>
-      <form onSubmit={handleSubmit(FormSubmitHandler)}>
-        <Grid container spacing={2} >
-          <Grid item xs={12} sx={{ paddingBottom: 2 }}>  {/* //Title full width */}
-            <Paper elevation={3}>
-              {/* align the text centrally */}
-              <Typography variant="h2" component="h2" sx={{ textAlign: 'center' }} >Add Archive Details</Typography>
-            </Paper>
-          </Grid>
-          <Grid />
-          <Grid item xs={12} > {/* //Event dropdown  */}
-            <FormControl fullWidth><InputLabel id="ExistingTracks">Events</InputLabel>
-              <Select label="Select an event" value={eventID} onChange={handleEventSelect} fullWidth >
-                <MenuItem value={0} >Select Event</MenuItem>
-                {eventList && eventList.map((event) => (
-                  <MenuItem key={event.EventID} value={event.EventID}>{event.Title + " " + StringtoDate(event.EventDate.toString())}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} >
-            <TextField
-              label="Event Report"
-              fullWidth
-              multiline
-              value={watch('Report') ? watch('Report') : ''}
-              rows={4}
-              {...register('Report')}
-            />
-          </Grid>
-          <Grid item xs={12} sx={styleGridPadded.Grid}>  {/* //Image titles */}
-            <Typography variant="h6">Image uploads</Typography>
-          </Grid>
-          <Grid item xs={12} >   {/* image adding row */}
-            {/* Use the currentFile to populate the img tag if a file is present */}
-            {/* <div style={{ width: '100%', height: '100%', backgroundImage: `url(${iconImage ? URL.createObjectURL(iconImage) : ''})` }}></div> */}
-            {/* <img src={ IconURL }  alt="Thumbnail" /> */}
-            <img src={iconImage ? URL.createObjectURL(iconImage) : 'https://via.placeholder.com/80'} alt="profile"  />
+    const buttons = [
+      <Button variant="contained" onClick={handleSaveArchive}>Save Archive</Button>,
+      <Button variant="contained" onClick={deleteArchive}>Delete Archive</Button>,
+      <Button variant="contained" onClick={NavDash}>Dashboard</Button>,
+    ];
+    
+    return (
+      <>
+        <form onSubmit={handleSubmit(FormSubmitHandler)}>
+          <Grid container spacing={2} >
+            <Grid item xs={12} sx={{ paddingBottom: 2 }}>  {/* //Title full width */}
+              <Paper elevation={3}>
+                {/* align the text centrally */}
+                <Typography variant="h2" component="h2" sx={{ textAlign: 'center' }} >Add Archive Details</Typography>
+              </Paper>
+            </Grid>
+            <Grid />
+            <Grid item xs={12} > {/* //Event dropdown  */}
+              <FormControl fullWidth><InputLabel id="ExistingTracks">Events</InputLabel>
+                <Select label="Select an event" value={eventID} onChange={handleEventSelect} fullWidth >
+                  <MenuItem value={0} >Select Event</MenuItem>
+                  {eventList && eventList.map((event) => (
+                    <MenuItem key={event.EventID} value={event.EventID}>{event.Title + " " + StringtoDate(event.EventDate.toString())}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} >
+              <TextField
+                label="Event Report"
+                fullWidth
+                multiline
+                value={watch('Report') ? watch('Report') : ''}
+                rows={4}
+                {...register('Report')}
+              />
+            </Grid>
+            <Grid item xs={12} sx={styleGridPadded.Grid}>  {/* //Image titles */}
+              <Typography variant="h6">Image uploads</Typography>
+            </Grid>
+            <Grid item xs={12} >   {/* image adding row */}
+              {/* Use the currentFile to populate the img tag if a file is present */}
+              {/* <div style={{ width: '100%', height: '100%', backgroundImage: `url(${iconImage ? URL.createObjectURL(iconImage) : ''})` }}></div> */}
+              {/* <img src={ IconURL }  alt="Thumbnail" /> */}
+              <img src={iconImage ? URL.createObjectURL(iconImage) : 'https://via.placeholder.com/80'} alt="profile" />
 
-          </Grid>
-          <Grid item xs={12}>
-            <Button component="label"
-              disabled={!eventSelected}
-              role={undefined}
-              variant="contained"
-              tabIndex={-1}
-              startIcon={<ImageSearch />}>Locate Image
-              <VisuallyHiddenInput type="file" onChange={selectFile} accept='image/*'/>
-            </Button>
-            <TextField
-              label="Selected image file"
-              fullWidth
-              disabled={true}
-              margin="normal"
-              value={watch('NextFile')}
-              {...register('NextFile')}
-            />
-            {currentFile && <Typography variant="body2">Selected file: {currentFile.name}</Typography>}
-          </Grid>
-          <Grid item xs={12} >
-            <TextField
-              label="Image caption"
-              fullWidth
-              multiline
-              rows={4}
-              {...register('Imagecaption')}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              disabled={!currentFile}
-              onClick={upload}
-              startIcon={<CloudUpload />}
-            >
-              Upload Image
-            </Button>
-          </Grid>
-          <Grid item xs={12}>
-            <DataGrid
-              rows={table}
-              initialState={{
-                columns:
-                  { columnVisibilityModel: { id: false } }
-              }}
-              columns={Imagecolumns}
-            />
-          </Grid>
+            </Grid>
+            <Grid item xs={12}>
+              <Button component="label"
+                disabled={!eventSelected}
+                role={undefined}
+                variant="contained"
+                tabIndex={-1}
+                startIcon={<ImageSearch />}>Locate Image
+                <VisuallyHiddenInput type="file" onChange={selectFile} accept='image/*' />
+              </Button>
+              <TextField
+                label="Selected image file"
+                fullWidth
+                disabled={true}
+                margin="normal"
+                value={watch('NextFile')}
+                {...register('NextFile')}
+              />
+              {currentFile && <Typography variant="body2">Selected file: {currentFile.name}</Typography>}
+            </Grid>
+            <Grid item xs={12} >
+              <TextField
+                label="Image caption"
+                fullWidth
+                multiline
+                rows={4}
+                {...register('Imagecaption')}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                disabled={!currentFile}
+                onClick={upload}
+                startIcon={<CloudUpload />}
+              >
+                Upload Image
+              </Button>
+            </Grid>
+            <Grid item xs={12}>
+              <DataGrid
+                rows={table}
+                initialState={{
+                  columns:
+                    { columnVisibilityModel: { id: false } }
+                }}
+                columns={Imagecolumns}
+              />
+            </Grid>
 
-          <Grid item xs={12} sx={styleGridPadded.Grid}>
-            <Typography variant="h6">YouTube and Instagram links</Typography>
+            <Grid item xs={12} sx={styleGridPadded.Grid}>
+              <Typography variant="h6">YouTube and Instagram links</Typography>
+            </Grid>
+            <Grid />
+            <Grid item xs={12} >
+              <TextField
+                label="Clip URL"
+                fullWidth
+                {...register('NextURL')}
+              />
+            </Grid>
+            <Grid item xs={12} >
+              <TextField
+                label="Clip Caption"
+                fullWidth
+                multiline
+                rows={4}
+                {...register('Clipcaption')}
+              />
+            </Grid>
+            <Grid item xs={12} >
+              <Button variant="contained" disabled={!eventSelected} onClick={handleAddClip}>Add Clip</Button>
+            </Grid>
+            <Grid item xs={12}>
+              <DataGrid
+                rows={ClTab}
+                initialState={{
+                  columns:
+                    { columnVisibilityModel: { id: false } }
+                }}
+                columns={clipColumns}
+              />
+            </Grid>
+            <Grid />
+            <Grid item xs={12}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  '& > *': {
+                    m: 1,
+                  },
+                }}
+              >
+                <ButtonGroup size="large" aria-label="Large button group">
+                  {buttons}
+                </ButtonGroup>
+              </Box>
+            </Grid>
           </Grid>
-          <Grid />
-          <Grid item xs={12} >
-            <TextField
-              label="Clip URL"
-              fullWidth
-              {...register('NextURL')}
-            />
-          </Grid>
-          <Grid item xs={12} >
-            <TextField
-              label="Clip Caption"
-              fullWidth
-              multiline
-              rows={4}
-              {...register('Clipcaption')}
-            />
-          </Grid>
-          <Grid item xs={12} >
-            <Button variant="contained" disabled={!eventSelected} onClick={handleAddClip}>Add Clip</Button>
-          </Grid>
-          <Grid item xs={12}>
-            <DataGrid
-              rows={ClTab}
-              initialState={{
-                columns:
-                  { columnVisibilityModel: { id: false } }
-              }}
-              columns={clipColumns}
-            />
-          </Grid>
-          <Grid />
-          <Grid item xs={12} >
-            <Button variant="contained" disabled={!eventSelected} fullWidth onClick={handleSaveArchive}>Save Archive</Button>
-          </Grid>
-        </Grid>
-        <Snackbar
-          open={Snackopen}
-          autoHideDuration={6000}
-          onClose={handleClose}
-          message={SnackMessage}
-          action={action}
-        />
+            {/* Feedback Messages */}
+             <NotificationSnackbar
+                 open={snackOpen}
+                 message={snackMessage}
+                 onClose={() => setSnackOpen(false)}
+             />
 
-      </form>
-    </>
-  );
-}
-
-//
+        </form>
+      </>
+    );
+  }

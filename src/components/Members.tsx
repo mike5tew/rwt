@@ -1,11 +1,10 @@
-// The members component is a login page that allows the users to get to the music repository.
-
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { User, EmptyUser } from '../types/types.d';
 import { login } from 'src/services/queries';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
 // import the users array from the .env file
 
 // the login is a simple form that takes in a username and password
@@ -13,35 +12,37 @@ import { login } from 'src/services/queries';
 // when the user clicks the login button, the username and password are checked
 // if the username and password are correct, the user is redirected to the music repository
 
-
 export default function Members() {
-const history= useNavigate();
+  const history = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [open, setOpen] = useState(false);
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = useState('');
 
   const handleLogin = () => {
     const user: User = { ...EmptyUser() };
     user.Username = username;
     user.Password = password;
     user.Role = 'user';
-     // send the user info to the login endpoint
+    // send the user info to the login endpoint
     // if the user is authenticated, redirect to the music page
     login(user).then((data) => {
-      if (data) {
+      //check the response.statuscode
+
+      if (data.status === 200) {
         document.cookie = `username=${username}`;
         history('/membersPage');
-
       } else {
         // show a snackbar with an error message
         document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-        setOpen(true);
+        setSnackMessage('Invalid username or password');
+        setSnackOpen(true);
         console.log('Invalid username or password: ', data);
       }
     }
     );
   }
-  
+
   return (
     <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
       <Grid item xs={12}>
@@ -58,7 +59,6 @@ const history= useNavigate();
           />
           <TextField
             label="Password"
-            
             fullWidth
             margin="normal"
             type="password"
@@ -76,14 +76,12 @@ const history= useNavigate();
       </Grid>
       <Box sx={{ height: 8 }} />
       <Grid item xs={12}>
-      <Snackbar
-        open={open}
-        autoHideDuration={6000}
-        onClose={() => setOpen(false)}
-        TransitionComponent={Fade}
-        message="Invalid username or password"
-      />
-      <Box sx={{ height: 8 }} />
+        <NotificationSnackbar
+          open={snackOpen}
+          message={snackMessage}
+          onClose={() => setSnackOpen(false)}
+        />
+        <Box sx={{ height: 8 }} />
       </Grid>
     </Grid>
   );

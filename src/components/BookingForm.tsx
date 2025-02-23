@@ -14,6 +14,7 @@ import Fade from '@mui/material/Fade';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import { messagePOST } from 'src/services/queries';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
 
 const schema = yup.object().shape({
     eventname: yup.string().required(),
@@ -31,21 +32,21 @@ export default function BookingForm() {
     const { register, handleSubmit, control, formState: { errors }, watch } = useForm({
         resolver: yupResolver(schema),
     });
-    const [SnackMessage, setSnackMessage] = React.useState('Message Sent');
-    const [open, setOpen] = React.useState(false);
+    const [snackMessage, setSnackMessage] = React.useState('Message Sent');
+    const [snackOpen, setSnackOpen] = React.useState(false);
     const [openError, setOpenError] = React.useState(false);
     const [state, setState] = React.useState<{
-        open: boolean;
+        snackOpen: boolean;
         Transition: React.ComponentType<TransitionProps & { children: React.ReactElement<any, any>; }>;
     }>({
-        open: false,
+        snackOpen: false,
         Transition: Fade,
     });
 
     const handleClick = () => {
         setState({
             ...state,
-            open: true,
+            snackOpen: true,
         });
         clearForm();
     };
@@ -82,7 +83,7 @@ export default function BookingForm() {
             if (data.MessageContent === 'message sent') {
                 console.log(data);
                 setSnackMessage('Message Sent');
-                setOpen(true);
+                setSnackOpen(true);
                 handleClick();
             } else {
                 handleClickError();
@@ -204,14 +205,11 @@ export default function BookingForm() {
                     <Link href="https://www.instagram.com" target="_blank">
                         <InstagramIcon />
                     </Link>
-
-                    <Snackbar
-                        open={open}
-                        autoHideDuration={6000}
-                        onClose={() => setOpen(false)}
-                        TransitionComponent={Fade}
-                        message={SnackMessage}
-                    />
+            <NotificationSnackbar
+                open={snackOpen}
+                message={snackMessage}
+                onClose={() => setSnackOpen(false)}
+            />
                 </Grid>
             </Container>
         </form>

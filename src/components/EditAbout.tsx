@@ -1,14 +1,14 @@
 // This page allows the user to edit the text from the about and appeal pages.
 
-import React, {useEffect, useState} from 'react';
-import { styled } from '@mui/material/styles';
-import { Button, Typography, Divider, Snackbar, TextField, Fade, Grid } from '@mui/material';
-import { purple } from '@mui/material/colors';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import {useEffect, useState} from 'react';
+import { Button, Typography, Divider, TextField, Grid } from '@mui/material';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { SiteInfoGET, SiteinfoPUT } from '../services/queries';
 import { SiteInfo } from '../types/types.d';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
+import { ButtonGroup } from 'react-bootstrap';
 
 
 const schema = yup.object().shape({
@@ -42,17 +42,8 @@ export default function EditAbout() {
     const history = useNavigate();
 
 
-    const [snackOpen, setSnackOpen] = useState(false);
     const [snackMessage, setSnackMessage] = useState('');
-    const [open, setOpen] = useState(false);
-    const [openError, setOpenError] = useState(false);
-    const [state, setState] = useState<{
-        open: boolean;
-        Transition: typeof Fade;
-    }>({
-        open: false,
-        Transition: Fade,
-    });
+    const [snackOpen, setSnackOpen] = useState(false);
     
 
         // id, HomeTitle, HomeText, AboutTitle, AboutText, ArchiveTitle, ArchiveText, NoticesTitle, NoticesText, BookingTitle, BookingText, MembersTitle, MembersText, AppealTitle, AppealText, SettingsTitle, SettingsText
@@ -98,14 +89,13 @@ export default function EditAbout() {
 
         SiteinfoPUT(data).then((respon) => {
             console.log(respon);
+            setSnackMessage('Changes saved');
             setSnackOpen(true);
         })
         .catch((error) => {
             console.error('Error:', error);
         });
-    }
-    
-        
+    };
 
     return (
         <>
@@ -360,18 +350,22 @@ export default function EditAbout() {
                     </Grid>
 
         <Grid item xs={12}>
+            <ButtonGroup>                
             <Button variant="contained" type="submit">
                 Save Changes
             </Button>
+            <Button variant="contained" onClick={() => history('/Settings')}>
+                Back
+            </Button>
+            </ButtonGroup>
+        </Grid>
         <Grid item xs={12}/>
         </Grid>
-        </Grid>
-        <Snackbar
-            open={snackOpen}
-            autoHideDuration={6000}
-            onClose={() => setSnackOpen(false)}
-            message="Your updates have been saved"
-        />
+             <NotificationSnackbar
+                 open={snackOpen}
+                 message={snackMessage}
+                 onClose={() => setSnackOpen(false)}
+             />
         </form>
         </>
     );

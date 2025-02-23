@@ -25,6 +25,7 @@ import Grid from '@mui/material/Grid';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CampaignIcon from '@mui/icons-material/Campaign';
+import { ArrowBack } from '@mui/icons-material';
 
 
 const MiniDrawer = () => {
@@ -107,9 +108,8 @@ const MiniDrawer = () => {
     { EntName: 'Booking', type: 'page', icon: <CalendarMonthIcon />, link: '/BookingForm' },
     { EntName: 'Appeal', type: 'page', icon: <PersonAddAlt1Icon />, link: '/appeal' },
     { EntName: 'Members', type: 'page', icon: <GroupsIcon />, link: '/Members' },
-    { EntName: 'Admin', type: 'page', icon: <SettingsIcon />, link: '/Settings' },
+    { EntName: 'Admin', type: 'page', icon: <SettingsIcon />, link: '/Settings' }
   ]);
-  // update the button background color to yellow
 
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
@@ -122,26 +122,26 @@ const MiniDrawer = () => {
   };
   // A menuitem is a single entry in the menu, e.g. Home, Planning, Students, etc.
   interface menuItem { EntName: string, type: string, icon: any, link: string }
-  // a menutype contains a name and an array of menuitems
-  interface menuType { menuName: string, arrMenu: Array<menuItem> }
   
-
-  const navigate = useNavigate();
   // This is the function that will be called when a menu item is clicked.
+  const navigate = useNavigate();
+
   // Using the name that is passed it will either set the menuName state or call the page using the router.
   const clickListener = (mItem: menuItem) => {
-    //console.log('Menu item clicked:', mItem);
-    if (mItem.type === 'menu') {
+    if (mItem.type === 'navigation' && mItem.link === 'back') {
+      navigate(-1);
+    } else if (mItem.type === 'menu') {
       for (let i = 0; i < menuName.length; i++) {
         if (menuName[i].link === mItem.link) {
           break;
         }
       }
     } else {
-      //console.log('Navigating to:', mItem.link);
       navigate(mItem.link);
     }
   };
+
+
   return (
     <Box sx={{
       display: 'flex',

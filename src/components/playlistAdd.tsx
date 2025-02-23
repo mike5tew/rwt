@@ -81,6 +81,10 @@ export default function PlayListAdd() {
     }
 
     useEffect(() => {
+        if (document.cookie === '' || document.cookie !== 'role=admin') {
+            console.log('No cookie');
+            history('/Dashboard');
+        }
         // retrieve the full music list and the upcoming events
         musicList().then(respon => {
             setTrackList(respon);

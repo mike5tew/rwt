@@ -80,9 +80,13 @@ export default function App() {
         if (themeRes) {
           //urlencode the image path to avoid issues with spaces in the path
           const bgImg = `${process.env.REACT_APP_API_URL}/${themeRes.BackgroundImage}`;
-          console.log("Setting background image to:", bgImg);
+          // console.log("Setting background image to:", bgImg);
           localStorage.setItem('BackgroundImage', bgImg);
-
+          // is the screensize a mobile device?
+          if (getScreenSize() === "mobile") {
+            // we take the font size and divide it by 2
+            themeRes.TextSize = themeRes.TextSize / 2;
+          }
           setThemeDetails(themeRes);
         } else {
           console.log("No theme details found");
@@ -181,6 +185,7 @@ export default function App() {
           },
         },
       },
+      // The font size is retrieved from the db but needs to be adjusted for mobile devices
       typography: {
         fontFamily: themeDetails.TextFont,
         fontSize: themeDetails.TextSize, // Base font size in pixels

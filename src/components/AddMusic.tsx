@@ -1,24 +1,25 @@
 // React and core imports
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom';
-
+import { useEffect, useState } from 'react'
 // Material UI components
-import { Container, Button, TextField, Typography, Select, FormControl, InputLabel, MenuItem, Snackbar, Fade } from '@mui/material';
+import { Container, Button, TextField, Typography, Select, FormControl, InputLabel, MenuItem, Snackbar, Fade, ButtonGroup, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { TransitionProps } from '@mui/material/transitions';
 
 // Form handling
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 // API and types
-import { MusicGET, MusicPOST, MusicTrackPUT, musicTrackDELETE } from '../services/queries';
+import { MusicGET, MusicPOST, MusicTrackPUT, musicTrackDELETE, MusicTrackGET } from '../services/queries';
 import { MusicTrack } from '../types/types.d';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
+import { useNavigate } from 'react-router-dom';
+
+
 
 /**
  * Component for adding and editing music tracks
  * Provides form interface for managing music track details including
  * track name, artist, and various part recordings (Soprano, Alto, etc.)
- */
+*/
 export default function AddMusic() {
     const { register, setValue, watch, getValues, handleSubmit, control, formState: { errors } } = useForm<MusicTrack>({
         defaultValues: {
@@ -33,37 +34,33 @@ export default function AddMusic() {
             Piano: ""
         }
     });
-    const [action, setAction] = useState(<></>);
-    const [SnackMessage, setSnackMessage] = useState(''); 
-    
-    const [state, setState] = useState<{
-        open: boolean;
-        Transition: React.ComponentType<TransitionProps & { children: React.ReactElement<any, any>; }>;
-    }>({
-        open: false,
-        Transition: Fade,
-    });
+    const [snackMessage, setSnackMessage] = useState('');
     const [snackOpen, setSnackOpen] = useState(false);
-    const [open, setOpen] = React.useState(false);
     const [musicList, setMusicList] = useState<MusicTrack[]>([]);
-
+    /**
+     * Navigates to the dashboard page
+     */
+    const history = useNavigate();  
+    const NavDash = () => {
+        history('/Dashboard');
+    }
     /**
      * Handles form submission for both new tracks and updates
      * @param data MusicTrack data from the form
-     */
-    const FormSubmitHandler: SubmitHandler<MusicTrack> = (data: MusicTrack) => {
-        if (data.MusicTrackID === 0) {
-            console.log('Adding new track', data);
-            const mPost = async () => {
-                var newTrack = await MusicPOST(data)
-                if (newTrack) {
-                    setSnackMessage('Track Added');
-                    setSnackOpen(true);
-                    setMusicList([...musicList, newTrack]);
+    */
+   const FormSubmitHandler: SubmitHandler<MusicTrack> = (data: MusicTrack) => {
+       if (data.MusicTrackID === 0) {
+           console.log('Adding new track', data);
+           const mPost = async () => {
+               var newTrack = await MusicPOST(data)
+               if (newTrack) {
+                   setSnackMessage('Track Added');
+                   setSnackOpen(true);
+                   setMusicList([...musicList, newTrack]);
                 } else {
                     setSnackMessage('Error Adding Track');
                     setSnackOpen(true);
-
+                    
                 }
             }
             mPost();
@@ -88,89 +85,93 @@ export default function AddMusic() {
             }
         }
     }
-
+    
     /**
      * Fetches music list on component mount
-     */
-    useEffect(() => {
-        const fetchMusic = async () => {
-            const music = await MusicGET(-1);
-            if (music) {
-                setMusicList(music);
+    */
+   useEffect(() => {
+    // if the cookie is not set, with a role of admin, redirect to the dashboard
+    if (document.cookie === '' || document.cookie !== 'role=admin') {
+        console.log('No cookie');
+        history('/Dashboard');
+    }
+       const fetchMusic = async () => {
+           const music = await MusicGET(-1);
+           if (music) {
+               setMusicList(music);
             }
         }
         fetchMusic();
     }
-        , []);
-
-
-    const handleClose = () => {
-        setState({
-            ...state,
-            open: false,
-        });
-    };
-
-
+    , []);
+    
     /**
      * Populates form with selected track details
-     */
-    const viewDetails = async () => {
-        const id = getValues('MusicTrackID');
-
-        try {
-            const mtrack = await MusicGET(id);
-            if (mtrack) {
-                setValue('TrackName', mtrack[0].TrackName);
-                setValue('Artist', mtrack[0].Artist);
-                setValue('Lyrics', mtrack[0].Lyrics);
-                setValue('Soprano', mtrack[0].Soprano);
-                setValue('Alto', mtrack[0].Alto);
-                setValue('Tenor', mtrack[0].Tenor);
-                setValue('AllParts', mtrack[0].AllParts);
-                setValue('Piano', mtrack[0].Piano);
+    */
+   const viewDetails = async () => {
+       const id = getValues('MusicTrackID');
+       
+       try {
+           const mtrack = await MusicTrackGET(id);
+           console.log(mtrack);
+           if (mtrack) {
+               setValue('TrackName', mtrack.TrackName);
+               setValue('Artist', mtrack.Artist);
+               setValue('Lyrics', mtrack.Lyrics);
+               setValue('Soprano', mtrack.Soprano);
+               setValue('Alto', mtrack.Alto);
+               setValue('Tenor', mtrack.Tenor);
+               setValue('AllParts', mtrack.AllParts);
+               setValue('Piano', mtrack.Piano);
             }
         } catch (error) {
             console.error("Error fetching music data:", error);
             // Handle error, e.g., display an error message to the user
         }
     };
-
+    
     /**
      * Handles deletion of a music track
-     */
-    const deleteTrack = async () => {
-        try {
-            const id =  getValues('MusicTrackID');
-
-            if (id > 0) {
-                const deleteResponse = await musicTrackDELETE(id);
-                if (deleteResponse === 'success') {
-                    setOpen(true);
-                    // reset the form
-                    setValue('MusicTrackID', 0);
-                    setValue('Artist', '');
-                    setValue('TrackName', '');
-                    setValue('Lyrics', '');
-                    setValue('Soprano', '');
-                    setValue('Alto', '');
-                    setValue('Tenor', '');
-                    setValue('AllParts', '');
-                    setValue('Piano', '');
-                    // snackbar the deletion
-                    // remove the track from the array
-                    setMusicList(musicList.filter((track) => track.MusicTrackID !== id));
+    */
+   const deleteTrack = async () => {
+       try {
+           const id = getValues('MusicTrackID');
+           
+           if (id > 0) {
+               const deleteResponse = await musicTrackDELETE(id);
+               if (deleteResponse.status === 204) {
+                   // reset the form
+                   console.log('Track Deleted', deleteResponse);
+                   setValue('MusicTrackID', 0);
+                   setValue('Artist', '');
+                   setValue('TrackName', '');
+                   setValue('Lyrics', '');
+                   setValue('Soprano', '');
+                   setValue('Alto', '');
+                   setValue('Tenor', '');
+                   setValue('AllParts', '');
+                   setValue('Piano', '');
+                   // snackbar the deletion
+                   setSnackMessage('Track Deleted');
+                   setSnackOpen(true);
+                   // remove the track from the array
+                   setMusicList(musicList.filter((track) => track.MusicTrackID !== id));
                 } else {
                     setSnackMessage('Error Deleting Track');
                     setSnackOpen(true);
                 }
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.error("Error deleting music data:", error);
-            // Handle error, e.g., display an error message to the user
+            setSnackMessage('Error Deleting Track');
+            setSnackOpen(true);
         }
     }
+    const buttons = [
+        <Button variant="contained"  onClick={deleteTrack}>Delete Track</Button>,
+        <Button type="submit" variant="contained">Save Details</Button>,
+        <Button variant="contained" onClick={NavDash}>Dashboard</Button>,
+    ];
 
 
     return (
@@ -288,29 +289,32 @@ export default function AddMusic() {
                                     helperText={errors.Piano?.message}
                                 />
                             </Grid>
-                            <Grid item xs={3}>
-                                <Button type="submit" variant="contained">Save Details</Button>
-                            </Grid>
-                            <Grid item xs={9} sx={{ align: 'right' }}>
-                                <Button variant="contained" onClick={deleteTrack}   >Delete Track</Button>
-                            </Grid>
                             <Grid item xs={12}>
-                                <Link to="/Music">
-                                    <Button variant="contained">Back</Button>
-                                </Link>
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        '& > *': {
+                                            m: 1,
+                                        },
+                                    }}
+                                >   
+                                    <ButtonGroup size="large" aria-label="Large button group">
+                                        {buttons}
+                                    </ButtonGroup>
+                                </Box>
+                                    </Grid>
                             </Grid>
-                        </Grid>
                     </form>
                 </Grid>
             </Grid>
 
             {/* Feedback Messages */}
-            <Snackbar
+            <NotificationSnackbar
                 open={snackOpen}
-                autoHideDuration={6000}
-                onClose={handleClose}
-                message={SnackMessage}
-                action={action}
+                message={snackMessage}
+                onClose={() => setSnackOpen(false)}
             />
         </Container>
     );

@@ -4,13 +4,13 @@ import React from 'react';
 import { Button, Typography, Snackbar, TextField, Fade, Paper } from '@mui/material';
 import Grid from '@mui/material/Grid';
 // import { Button } from 'reactstrap';
-import { useForm, SubmitHandler, Controller, set } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Form, Link, useNavigate } from 'react-router-dom'; 
 // Import useHistory
 import { Message } from '../types/types.d';
 import { messagePOST } from '../services/queries';
 // import db from '../services/db';
-import { ThemeProvider } from '@mui/material/styles';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
 
 export default function Appeal() {
     const { register, handleSubmit, watch, setValue } = useForm<Message>(
@@ -23,8 +23,8 @@ export default function Appeal() {
             },
         }
     );
-    const [alertOpen, setAlertOpen] = React.useState(false);
-    const [alertMessage, setAlertMessage] = React.useState('');
+    const [snackMessage, setSnackMessage] = React.useState('');
+            const [snackOpen, setSnackOpen] = React.useState(false);
 
    const navigate = useNavigate(); // Create a history object
 
@@ -48,14 +48,14 @@ export default function Appeal() {
         messagePOST(data).then(() => {
             // Redirect to the home page
             navigate('/');
-            setAlertMessage('Message sent');
-            setAlertOpen(true);
+            setSnackMessage('Message sent');
+            setSnackOpen(true);
             // Clear the form
             setValue('MessageFrom', '');
             setValue('MessageContent', '');
         }).catch((error: string) => {
-            setAlertMessage('Error: ' + error);
-            setAlertOpen(true);
+            setSnackMessage('Error: ' + error);
+            setSnackOpen(true);
         }
         );
     }
@@ -98,12 +98,10 @@ export default function Appeal() {
             <Button type="submit" variant="contained">Submit</Button>
             </Grid >
             </Grid >
-            <Snackbar
-                open={alertOpen}
-                autoHideDuration={6000}
-                onClose={() => setAlertOpen(false)}
-                TransitionComponent={Fade}
-                message={alertMessage}
+            <NotificationSnackbar
+                open={snackOpen}
+                message={snackMessage}
+                onClose={() => setSnackOpen(false)}
             />
             </form>
     );

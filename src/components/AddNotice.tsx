@@ -10,8 +10,13 @@ import { Link } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import { EventDetails } from '../types/types.d';
 import { EventsUpcomingGET } from 'src/services/queries';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
 
 export default function AddNotice() {
+    const [snackOpen, setSnackOpen] = React.useState(false);
+    const [snackMessage, setSnackMessage] = React.useState('');
+
+    
     /**
      * State to store upcoming events/notices
      */
@@ -53,6 +58,11 @@ export default function AddNotice() {
                     </Grid>
                 ))}
             </Grid>
+             <NotificationSnackbar
+                            open={snackOpen}
+                            message={snackMessage}
+                            onClose={() => setSnackOpen(false)}
+                        />
         </Container>
     );
 }

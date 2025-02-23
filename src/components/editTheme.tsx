@@ -1,7 +1,7 @@
 // this page allows the usert to create a new theme for the website
 // using react-hook-form
 import { useState, useEffect } from 'react';
-import { set, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Paper, Snackbar, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { TextField } from '@mui/material';

@@ -1,32 +1,29 @@
 // This page displays displays the upcoming events and the playlist for that event
 
-import { Container, Button, Typography, Divider, Paper, Snackbar, Link, Box } from '@mui/material';
+import { Container, Button, Typography, Divider, Paper, Link, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { User, EmptyUser, EventDetails, EmptyEventDetails, PlaylistEntry, EmptyPlaylistEntry, MusicTrack, EmptyMusicTrack } from '../types/types.d';
+import { EventDetails } from '../types/types.d';
 import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
 import { TreeItem } from '@mui/x-tree-view';
 import { upcomingPlaylists } from 'src/services/queries';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function MembersPage() {
-    const history = useNavigate();
-    const [Snackopen, setSnackOpen] = useState(false);
-    const [SnackMessage, setSnackMessage] = useState('');
-    const [action, setAction] = useState(<></>);
-    const handleClose = () => {
-        setSnackOpen(false);
-    };
     // events is the state containg an initial empty array of events
     const [events, setEvents] = useState<EventDetails[]>([]);
-    
-
+       const history = useNavigate();  
+        const NavDash = () => {
+            history('/Dashboard');
+        }
     useEffect(() => {
-        // rediret to the login page if the user is not logged in
-        // if (document.cookie === '') {
-        //     history('/Members');
-        // }
+        // if the cookie is not set, redirect to the members page
+        if (document.cookie === '') {
+            console.log('No cookie');
+            history('/Members');
+        }
+        // fetch the upcoming events
         upcomingPlaylists().then((data) => {
             for (let i = 0; i < data.length; i++) {
                 data[i].EventDate = new Date(data[i].EventDate);                    
@@ -49,14 +46,16 @@ return (
                 <Divider />
             </Grid>
                         {events && events.map((event) => (
-                            <Grid item xs={12} key={event.EventID}>
+                            <>
+                            <Grid item xs={1} ><Button variant="contained" href={`/MembersPage/${event.EventID}`}>View Playlist</Button></Grid>
+                            <Grid item xs={10} key={event.EventID}>
                                 <Paper>
                                     <Typography variant="h5">{event.Title}</Typography>
                                     <Typography variant="body1">{event.EventDate.toDateString()}</Typography>
                                     <Typography variant="body1">{event.StartTime +" to "+ event.EndTime}</Typography>
                                     <Typography variant="body1">Event location: {event.Location}</Typography>
                                     <Typography variant="body1">Meeting point: {event.MeetingPoint}</Typography>
-
+                                    <Typography variant="h5">Playlist</Typography>
                                     {/* cycle through the playlist and  */}
                                     <SimpleTreeView>
                     {event.Playlist && event.Playlist.map((entry, index) => (
@@ -81,11 +80,16 @@ return (
                             <TreeItem key={entry.MusicTrack.MusicTrackID+ "t"} itemId={index.toString()+"t"} label="Tenor" >Download</TreeItem>
                         </Link>
                         </TreeItem>
+                        
                     ))}
                 </SimpleTreeView>
                                 </Paper>
                             </Grid>
+                            </>
                         ))}
+                        <Grid item xs={12}>
+                            <Button onClick={NavDash} variant="contained">Back</Button>
+                            </Grid>
                     </Grid>
                 </Container>
                 );

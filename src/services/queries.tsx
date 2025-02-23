@@ -99,14 +99,30 @@ export async function MusicTrackPOST(req: MusicTrack): Promise<MusicTrack> {
     return data;
 }
 
-export async function musicTrackDELETE(req: number): Promise<string> {
-    const respon = await fetch(`${baseUrl}/musicTrackDELETE/${req}`);
-    const data = await respon.json();
-    return data;
+export async function musicTrackDELETE(req: number): Promise<Response> {
+    const url = `${baseUrl}/musicTrackDELETE/${req}`;
+    console.log('DELETE request to:', url);
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        });
+        console.log('Delete response status:', response.status);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Delete error:', errorText);
+            throw new Error(errorText);
+        }
+        return response;
+    } catch (error) {
+        console.error('Delete failed:', error);
+        throw error;
+    }
 }
 
-export async function MusicTrackPUT(req: MusicTrack): Promise<string> {
-    const respon = await fetch(`${baseUrl}/uusicTrackPUT`, {
+export async function MusicTrackPUT(req: MusicTrack): Promise<Response> {
+    const respon = await fetch(`${baseUrl}/musicTrackPUT`, {
         method: 'PUT',
         body: JSON.stringify(req),
         headers: { 'Content-Type': 'application/json' },
@@ -144,8 +160,8 @@ export async function messagePOST(req: Message): Promise<Message> {
     });
 }
 
-export async function login(req: User): Promise<String> {
-    return fetchData<string>('login', {
+export async function login(req: User): Promise<Response> {
+    return fetchData<Response>('login', {
         method: 'POST',
         body: JSON.stringify(req),
         headers: { 'Content-Type': 'application/json' },
@@ -281,8 +297,27 @@ export async function ArchivePOST(req: ArchiveEntry): Promise<ArchiveEntry> {
     });
 }
 
-export async function archiveDELETE(req: number): Promise<string> {
-    return fetchData<string>(`archiveDELETE/${req}`);
+export async function ArchiveDELETE(req: number): Promise<Response> {
+
+    const url = `${baseUrl}/archiveDELETE/${req}`;
+    console.log('DELETE request to:', url);
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        });
+        console.log('Delete response status:', response.status);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Delete error:', errorText);
+            throw new Error(errorText);
+        }
+        return response;
+    } catch (error) {
+        console.error('Delete failed:', error);
+        throw error;
+    }
 }
 
 export async function archivePUT(req: ArchiveEntry): Promise<string> {
@@ -360,8 +395,11 @@ export async function MusicGET(req: number): Promise<MusicTrack[]> {
     if (req === -1) {
         return fetchData<MusicTrack[]>('musicListGET');
     } else {
-        return fetchData<MusicTrack[]>(`MusicTrackGET/${req}`);
+        return fetchData<MusicTrack[]>(`musicTrackGET/${req}`);
     }
+}
+export async function MusicTrackGET(req: number): Promise<MusicTrack> {
+    return fetchData<MusicTrack>(`musicTrackGET/${req}`);
 }
 
 export async function EventArchivesGET(req: number): Promise<ArchiveEntry[]> {
