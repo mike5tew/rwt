@@ -15,7 +15,7 @@ export default function MembersPage() {
     const [events, setEvents] = useState<EventDetails[]>([]);
        const history = useNavigate();  
         const NavDash = () => {
-            history('/Dashboard');
+            history('/AdminDashboard');
         }
     useEffect(() => {
         // if the cookie is not set, redirect to the members page
@@ -47,8 +47,7 @@ return (
             </Grid>
                         {events && events.map((event) => (
                             <>
-                            <Grid item xs={1} ><Button variant="contained" href={`/MembersPage/${event.EventID}`}>View Playlist</Button></Grid>
-                            <Grid item xs={10} key={event.EventID}>
+                            <Grid item xs={12} key={event.EventID}>
                                 <Paper>
                                     <Typography variant="h5">{event.Title}</Typography>
                                     <Typography variant="body1">{event.EventDate.toDateString()}</Typography>

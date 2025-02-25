@@ -62,7 +62,7 @@ export default function Settings() {
         login(user).then((data) => {
           if (data) {
             document.cookie = `username=${username}`;
-            history('/adminDashboard');
+            history('/AdminDashboard');
     
           } else {
             // show a snackbar with an error message

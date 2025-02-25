@@ -1,6 +1,5 @@
 // This page provides the links to the pages that are available to the admin.  It will have links to the pages that allow the admin to add notices, add events, add images, and add music.  It will also have a link to the contact form.
 
-import React from 'react';
 import { Container, Typography, Paper, Button  } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
@@ -9,7 +8,8 @@ import Grid from '@mui/material/Grid';
 
 export default function AdminDashboard() {
     const history = useNavigate();
-    if (document.cookie === '') {
+    // if the cookie is not set, and the role is not admin, redirect to the members page
+    if (document.cookie === '' || document.cookie.indexOf('role=admin') === -1) {
         console.log('No cookie');
         history('/Members');
     }

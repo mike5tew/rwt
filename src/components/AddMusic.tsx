@@ -42,7 +42,7 @@ export default function AddMusic() {
      */
     const history = useNavigate();  
     const NavDash = () => {
-        history('/Dashboard');
+        history('/AdminDashboard');
     }
     /**
      * Handles form submission for both new tracks and updates
@@ -93,7 +93,7 @@ export default function AddMusic() {
     // if the cookie is not set, with a role of admin, redirect to the dashboard
     if (document.cookie === '' || document.cookie !== 'role=admin') {
         console.log('No cookie');
-        history('/Dashboard');
+        history('/AdminDashboard');
     }
        const fetchMusic = async () => {
            const music = await MusicGET(-1);

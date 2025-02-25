@@ -161,11 +161,16 @@ export async function messagePOST(req: Message): Promise<Message> {
 }
 
 export async function login(req: User): Promise<Response> {
-    return fetchData<Response>('login', {
+    const response = await fetch(`${baseUrl}/login`, {
         method: 'POST',
-        body: JSON.stringify(req),
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(req)
     });
+    return response;
 }
 
 export function loginAddUser(req: any, res: any): Promise<void> {

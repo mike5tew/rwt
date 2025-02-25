@@ -24,23 +24,23 @@ export default function Members() {
     user.Username = username;
     user.Password = password;
     user.Role = 'user';
-    // send the user info to the login endpoint
-    // if the user is authenticated, redirect to the music page
-    login(user).then((data) => {
-      //check the response.statuscode
-
-      if (data.status === 200) {
-        document.cookie = `username=${username}`;
+    
+    login(user)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error('Invalid credentials');
+        }
+        const userData = await response.json();
+        document.cookie = `username=${userData.Username}`;
+        document.cookie = `role=${userData.Role}`;
         history('/membersPage');
-      } else {
-        // show a snackbar with an error message
+      })
+      .catch((error) => {
+        console.error('Login error:', error);
         document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
         setSnackMessage('Invalid username or password');
         setSnackOpen(true);
-        console.log('Invalid username or password: ', data);
-      }
-    }
-    );
+      });
   }
 
   return (

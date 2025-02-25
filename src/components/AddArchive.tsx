@@ -171,7 +171,7 @@ export default function AddArchive() {
   useEffect(() => {
     if (document.cookie === '' || document.cookie !== 'role=admin') {
       console.log('No cookie');
-      history('/Dashboard');
+      history('/AdminDashboard');
   }
     // get the event list from the database
     PastEventsList().then((res) => {
@@ -493,7 +493,7 @@ export default function AddArchive() {
      * Navigates to the dashboard page
      */
     const NavDash = () => {
-        history('/Dashboard');
+        history('/AdminDashboard');
     }
 
 const deleteArchive = async () => {
