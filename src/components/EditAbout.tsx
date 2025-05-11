@@ -50,7 +50,7 @@ export default function EditAbout() {
         useEffect(() => {
             // get the info from the json file and set the default values
             // console.log(Info);
-            if (document.cookie === '') {
+            if (document.cookie === '' || document.cookie.indexOf('role=administrator') === -1) {
                 history('/Settings');
             }
             SiteInfoGET()

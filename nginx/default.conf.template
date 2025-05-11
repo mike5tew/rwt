@@ -1,0 +1,116 @@
+# /etc/nginx/templates/default.conf.template
+upstream api_server {
+    server ${NGINX_BACKEND_HOST};
+}
+
+server {
+    listen 80;
+    server_name _;
+    
+    location / {
+        return 301 https://$host$request_uri;
+    }
+    
+    location /health.txt {
+        root /usr/share/nginx/html;
+        access_log off;
+        expires -1;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on; 
+    server_name rwtchoir.org www.rwtchoir.org localhost;
+    
+    # SSL Configuration
+    ssl_certificate /etc/nginx/ssl/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # Security Headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options SAMEORIGIN;
+
+    # Root Configuration
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    # Block common sensitive files/paths and probes silently
+    location ~* ^/(?:\.(?:env|git|aws|svn|hg)|docker-compose.*\.yml|config\.json|\.env\..*|phpinfo|info\.php|test\.php|php\.php|php_info\.php|i\.php|pi\.php|config\.phpinfo|actuator/health|server-status|telescope/requests|sites/all/modules/elfinder/connectors/php/connector\.php|form\.html|upl\.php|t4|geoip/|systembc/password\.php|password\.php|css/style\.css)$ {
+        access_log off;
+        log_not_found off;
+        return 404;
+    }
+
+    # Silence WordPress, PHP, and common bot/probe requests in error and access logs
+    location ~* ^/(wp-admin|wp-includes|wp-content|wp-login\.php|wp-config\.php|xmlrpc\.php|xmlrpc\.php[0-9a-zA-Z]*|wp-index\.php|wp-admin\.php|wp-contentt\.php|wp-configs\.php|defaults\.php|system\.php|colors\.php|updates\.php|alfa-rex1\.php|alfa\.php|alfanew\.php7|locale\.php|wxo\.php|colour\.php|files\.php|install\.php|config\.php7|config\.php|theme\.php|block-bindings\.php|class_api\.php|inputs\.php|root\.php|menu\.php|plugin\.php|cloud\.php|configs\.php|update\.php|2\.php|input\.php|aaa\.php|boaform|boaform/.*|api/bin/.*|api/user/.*|spip\.php|22\.php|room\.php|disagreed\.php|text\.php|alfa-rex\.php|alfa-rex\.php7|feeds\.php|radio\.php|dropdown\.php|autoload_classmap\.php|post\.php|flower\.php|admin\.php|file\.php|meta\.php|index\.php|about\.php|randkeyword\.php|goods\.php|hehe\.php|yindu\.php|baxa1\.phP8|baxa1\.php|user\.php|wp-2019\.php|chosen\.php|functions\.php|cron\.php|edit\.php|gecko-new\.php|cookie\.php|xleet\.php)$ {
+        access_log off;
+        log_not_found off;
+        return 404;
+    }
+
+    # Block and silence all /wp-includes requests (not a WordPress site)
+    location ~* ^/wp-includes/ {
+        access_log off;
+        log_not_found off;
+        return 404;
+    }
+
+    # Silence all direct .php or .php* file requests (common for bot probes)
+    location ~* \.php[0-9a-zA-Z]*$ {
+        access_log off;
+        log_not_found off;
+        return 404;
+    }
+
+    # Silence favicon and apple-touch-icon permission errors in logs
+    location ~* ^/favicon/ {
+        access_log off;
+        log_not_found off;
+        error_page 403 = @empty;
+        return 403;
+    }
+    location = /favicon.ico {
+        access_log off;
+        log_not_found off;
+        error_page 403 = @empty;
+        return 403;
+    }
+    location = /apple-touch-icon.png {
+        access_log off;
+        log_not_found off;
+        error_page 403 = @empty;
+        return 403;
+    }
+
+    location @empty {
+        return 204;
+    }
+
+    # Main Location Block
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    # API Proxy
+    location /api/ {
+        proxy_pass http://api_server/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+    # Health Check
+    location /health.txt {
+        access_log off;
+        expires -1;
+    }
+}

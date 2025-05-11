@@ -6,7 +6,7 @@
 import React from 'react';
 import { Container, Button, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Card from 'react-bootstrap/Card';
 import { EventDetails } from '../types/types.d';
 import { EventsUpcomingGET } from 'src/services/queries';
@@ -15,6 +15,7 @@ import { NotificationSnackbar } from './shared/NotificationSnackbar';
 export default function AddNotice() {
     const [snackOpen, setSnackOpen] = React.useState(false);
     const [snackMessage, setSnackMessage] = React.useState('');
+    const history = useNavigate();
 
     
     /**
@@ -26,6 +27,8 @@ export default function AddNotice() {
      * Fetch upcoming events on component mount
      */
     React.useEffect(() => {
+        if (document.cookie.indexOf('role=administrator') === -1) { history('/Settings'); }        
+
         const fetchEventsUpcoming = async () => {
             EventsUpcomingGET().then((data) => {
                 console.log(data);

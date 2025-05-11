@@ -9,7 +9,7 @@ import Grid from '@mui/material/Grid';
 export default function AdminDashboard() {
     const history = useNavigate();
     // if the cookie is not set, and the role is not admin, redirect to the members page
-    if (document.cookie === '' || document.cookie.indexOf('role=admin') === -1) {
+    if (document.cookie === '' || document.cookie.indexOf('role=administrator') === -1) {
         console.log('No cookie');
         history('/Members');
     }
@@ -43,7 +43,12 @@ export default function AdminDashboard() {
                 <Grid item xs={12}>
                     <Button onClick={() => history('/ViewMessages')} variant="contained">View messages</Button>
                 </Grid> 
-
+                <Grid item xs={12}>
+                    <Button onClick={() => history('/TeamAdd')} variant="contained">Add team member</Button>
+                    </Grid>
+                <Grid item xs={12}>
+                    <Button onClick={() => history('/AllImages')} variant="contained">View all images</Button>
+                </Grid>
             </Grid> 
         </Container>
     );

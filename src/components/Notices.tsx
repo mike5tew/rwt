@@ -24,6 +24,14 @@ export default function Notices() {
         });
     }, []);
 
+    function setOutDate(EventDate: Date): import("react").ReactNode {
+        return EventDate.toLocaleDateString('en-UK', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+    }
     return (
         <>
             <Grid container spacing={2}>
@@ -49,7 +57,7 @@ export default function Notices() {
                                         <CardTitle>{notice.Title}</CardTitle>
                                         <CardText>{notice.Invitation}</CardText>
                                         <CardText>{notice.Location}</CardText>
-                                        <CardText>{`${notice.EventDate.getDate()} ${notice.EventDate.toLocaleString('default', { month: 'long' })} ${notice.EventDate.getFullYear()}`}</CardText>
+                                        <CardText>{setOutDate(notice.EventDate)}</CardText>
                                         <CardText>{notice.Price}</CardText>
                                         <CardText>{`${notice.StartTime} to ${notice.EndTime}`}</CardText>
                                     </CardBody>

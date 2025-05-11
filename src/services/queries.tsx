@@ -1,8 +1,13 @@
-import { EventDetails, ArchiveEntry, Clip, ImageDetail, Message, User, PlaylistEntry, EmptyMusicTrack, MusicTrack, SiteInfo, ThemeDetails } from "../types/types.d";
+import { EventDetails, ArchiveEntry, Clip, ImageDetail, Message, User, PlaylistEntry, EmptyMusicTrack, MusicTrack, SiteInfo, ThemeDetails, Team } from "../types/types.d";
 
 // we need to change the functions below to fetching the data from an api
 
 const baseUrl = process.env.REACT_APP_API_URL || '/api';  // Allow configurable API URL
+if (!baseUrl) {
+    console.error('REACT_APP_API_URL is not defined. Defaulting to /api.');
+} else {
+    console.log(`Base API URL: ${baseUrl}`);
+}
 async function fetchData<T>(endpoint: string, options?: RequestInit): Promise<T> {
     console.log(`Fetching from: ${baseUrl}/${endpoint}`);
 
@@ -88,6 +93,17 @@ export async function ImagePUT(req: any, res: any) {
     const data = await respon.json();
     return data;
 }
+export async function ImagesGET(page: number, itemsPerPage: number): Promise<ImageDetail[]> {
+    const requestString = `ImagesGET?screen=${localStorage.getItem('screenSize')}&page=${page}&itemsPerPage=${itemsPerPage}`;
+    const data = await fetchData<ImageDetail[]>(requestString);
+    
+    // Transform the data to ensure it matches the frontend expectations
+    return data.map(image => ({
+        ...image,
+        ImageURL: `${process.env.REACT_APP_API_URL}/images/${image.filename}`,
+        ImagePath: `images/${image.filename}`
+    }));
+}
 
 export async function MusicTrackPOST(req: MusicTrack): Promise<MusicTrack> {
     const respon = await fetch(`${baseUrl}/musicListPOST`, {
@@ -121,7 +137,7 @@ export async function musicTrackDELETE(req: number): Promise<Response> {
     }
 }
 
-export async function MusicTrackPUT(req: MusicTrack): Promise<Response> {
+export async function MusicTrackPUT(req: MusicTrack): Promise<MusicTrack> {
     const respon = await fetch(`${baseUrl}/musicTrackPUT`, {
         method: 'PUT',
         body: JSON.stringify(req),
@@ -222,7 +238,7 @@ export async function ClipsFromEvent(id: number): Promise<Clip[]> {
 }
 // randomImget returns an array of imagedetails or a string
 export async function randomImagesGET(req: number): Promise<ArchiveEntry | string> {
-    console.log(`RandomImagesGET?screen=${localStorage.getItem('screenSize')}&images=${req}`);
+    console.log(`RandomImagesGET?images=${req}`);
     return fetchData<ArchiveEntry | string >( `RandomImagesGET?screen=${localStorage.getItem('screenSize')}&images=${req}` );
 }
 
@@ -353,6 +369,59 @@ export async function eventImages(req: number): Promise<ImageDetail[]> {
     return fetchData<ImageDetail[]>(`EventImagesGET/${req}`);
 }
 
+export async function EventsGET(): Promise<EventDetails[]> {
+    return fetchData<EventDetails[]>(`EventsListGET`);
+}
+
+export async function teamGET(): Promise<Team[]> {
+    try {
+        const data = await fetchData<Team[]>('teamGET');
+        console.log('teamGET response:', data); // Log the response for debugging
+        return data;
+    } catch (error) {
+        console.error('Error in teamGET:', error);
+        throw error;
+    }
+}
+export async function memberPOST(req: Team): Promise<Team> {
+    return fetchData<Team>('memberPOST', {
+        method: 'POST',
+        body: JSON.stringify(req),
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+export async function memberPUT(req: Team): Promise<Team> {
+    return fetchData<Team>('memberPUT', {
+        method: 'PUT',
+        body: JSON.stringify(req),
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+export async function memberGET(req: number): Promise<Team> {
+    return fetchData<Team>(`memberGET/${req}`);
+}
+export async function memberDELETE(req: number): Promise<Response> {
+    const url = `${baseUrl}/memberDELETE/${req}`;
+    console.log('DELETE request to:', url);
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        });
+        console.log('Delete response status:', response.status);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Delete error:', errorText);
+            throw new Error(errorText);
+        }
+        return response;
+    } catch (error) {
+        console.error('Delete failed:', error);
+        throw error;
+    }
+}
+
 export async function EventGET(req: number): Promise<EventDetails> {
     return fetchData<EventDetails>(`EventGET/${req}`);
 }
@@ -365,8 +434,26 @@ export async function EventPOST(req: EventDetails): Promise<EventDetails> {
     });
 }
 
-export async function EventDELETE(req: number): Promise<string> {
-    return fetchData<string>(`EventDELETE/${req}`);
+export async function EventDELETE(req: number): Promise<Response> {
+    const url = `${baseUrl}/EventDELETE/${req}`;
+    console.log('DELETE request to:', url);
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        });
+        console.log('Delete response status:', response.status);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Delete error:', errorText);
+            throw new Error(errorText);
+        }
+        return response;
+    } catch (error) {
+        console.error('Delete failed:', error);
+        throw error;
+    }
 }
 
 export async function EventPUT(req: EventDetails): Promise<string> {

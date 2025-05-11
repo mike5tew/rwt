@@ -14,7 +14,6 @@ import { FormControl } from '@mui/material';
 import { HexColorPicker } from "react-colorful";
 import { DataGrid, GridCellParams } from '@mui/x-data-grid';
 import '../styles/fonts.css';
-
 import ImageSelect, { ImageSelection } from './ImageSelect';
 import { themeDetailsGET, ThemeDetailsPUT } from '../services/queries';
 
@@ -88,7 +87,7 @@ export default function EditTheme() {
     useEffect(() => {
         themeDetailsGET()
             .then((respon) => {
-                //console.log(respon.data)
+                console.log(respon)
                 if (typeof respon.ButtonColour != null) {
                 setValue("ButtonColour", respon.ButtonColour)
                 }

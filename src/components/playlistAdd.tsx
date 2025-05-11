@@ -81,10 +81,10 @@ export default function PlayListAdd() {
     }
 
     useEffect(() => {
-        if (document.cookie === '' || document.cookie !== 'role=admin') {
-            console.log('No cookie');
-            history('/AdminDashboard');
-        }
+        // given that the cookie at login is created with both user and role, 
+        // document.cookie should contain role=administrator
+        if (document.cookie.indexOf('role=administrator') === -1) { history('/Settings'); }        
+
         // retrieve the full music list and the upcoming events
         musicList().then(respon => {
             setTrackList(respon);

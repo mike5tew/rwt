@@ -7,13 +7,13 @@ import styled from '@emotion/styled';
 import { ImageSearch, CloudUpload } from '@mui/icons-material';
 import { TextField, RadioGroup, FormControlLabel, Radio, IconButton } from '@mui/material';
 import { DataGrid, GridCellParams } from '@mui/x-data-grid';
-import { EmptyImageDetail, ImageDetail } from '../types/types.d';
+import { EmptyImageDetail, ImageDetail, EmptyDatURLResponse } from '../types/types.d';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import UploadService from '../services/FileUploadService';
 import { set } from 'react-hook-form';
 import FileResizeService from '../services/ResizeImage';
 import FileUploadService from '../services/FileUploadService';
-import { EmptyDatURLResponse } from '../types/types.d';
+
 import { ImageDELETE, ImageBackGET } from '../services/queries';
 import { flexbox } from '@mui/system';
 
@@ -53,7 +53,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
             then(() => {
                 // remove the image from the images array
                 // console.log("images length before delete: " + images.length)
-                const newImages = images.filter((image) => image.ImageID !== id);
+                const newImages = images.filter((image) => image.imageID !== id);
                 setImages(newImages);
 
                 // console.log("images length after delete: " + images.length)
@@ -93,7 +93,7 @@ const ImageSelect = (props: ImagesSelectedProps) => {
     ]
     const tableRowsImages = images && images.map((image) => {
         //console.log("image: ", image)
-        return { image: image, filename: image.Filename, caption: image.ImageURL, id: image.ImageID, type: gatherType(image.EventID), width: image.Width, height: image.Height }
+        return { image: image, filename: image.filename, caption: image.imageURL, id: image.imageID, type: gatherType(image.eventID), width: image.width, height: image.height }
     })
 
     const handleImageSelect = () => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,16 +102,42 @@ const ImageSelect = (props: ImagesSelectedProps) => {
 
     const setImageValue = (type: string, filename: string) => {
         if (type === "logo") {
-            const ThisSelection: ImageSelection = { logoImage: filename, backgroundImage: BackgroundDetails.Filename }
+            const ThisSelection: ImageSelection = { logoImage: filename, backgroundImage: BackgroundDetails.filename }
             setLogoImageName(filename)
             // The onSelect function is passed in as a prop from the parent component and is used to update the logo and background images
             onSelect(ThisSelection)
         } else {
-            const ThisSelection: ImageSelection = { logoImage: LogoDetails.Filename, backgroundImage: filename }
+            const ThisSelection: ImageSelection = { logoImage: LogoDetails.filename, backgroundImage: filename }
             setBackgroundImageName(filename)
             onSelect(ThisSelection)
         }
 
+    }
+
+    const processImageUrl = (filename: string | null, screensize: string): string => {
+      if (!filename) return '/default-image.png'; // Handle empty filenames
+      return screensize === 'mobile'
+        ? `${process.env.REACT_APP_API_URL}/images/mobile/${filename}`
+        : `${process.env.REACT_APP_API_URL}/images/desktop/${filename}`;
+    };
+    
+
+    function processImages(Imgs: ImageDetail[]): ImageDetail[] {
+        return Imgs.map(Img => {
+          const imgDetail = EmptyImageDetail();
+          imgDetail.imageID = Img.imageID;
+          // Use the full Filename path directly without /api prefix
+          imgDetail.filename = Img.filename;
+          imgDetail.imageURL = processImageUrl(Img.filename, 'mobile');
+          imgDetail.caption = Img.caption;
+          imgDetail.eventID = Img.eventID;
+          imgDetail.width = Img.width || 450;  // Add default width if not provided
+          imgDetail.height = Img.height || 450;  // Add default height if not provided
+          imgDetail.rows = 1;
+          imgDetail.cols = 1;
+            return imgDetail;
+            
+        });
     }
 
     const selectFile = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,32 +183,22 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         setLogoImageName(props.logoImage);
         setBackgroundImageName(props.backgroundImage);
         ImageBackGET()
-            .then((respon) => {
-                // console.log(respon.data)
-                // the data needs converting to an array of imagedetail objects
-                var newImages: ImageDetail[] = []
-                for (var i = 0; i < respon.length; i++) {
-                    var newImage: ImageDetail = EmptyImageDetail()
-                    newImage.ImageID = respon[i].ImageID
-                    console.log("EventID",respon[i].EventID)
-                    newImage.EventID = respon[i].EventID
-                    newImage.Filename =  respon[i].Filename
-                    newImage.Caption = respon[i].Caption
-                    newImage.ImageURL = `${process.env.REACT_APP_API_URL}/${respon[i].ImageURL}`;
-                    newImage.Height = respon[i].Height
-                    newImage.Width = respon[i].Width
-                    console.log("newImage: " + newImage.ImageURL)
-                    newImages.push(newImage)
-                }
-                setImages(newImages)
-            })
+            .then((data) => {
+              
+                    console.log("respon: ", data)
+                    const imageElements = Array.isArray(data) ? processImages(data) : [];
+                    console.log("respon: ", data)
+
+                setImages(imageElements)
+               
+            }
+            )
             .catch((error) => {
-                setSnackMessage("Error getting the images from the database 6784 " + error)
-                setSnackOpen(true)
-                //                console.log(error)
-            })
-    }
-        , [])
+                console.error('Error:', error);
+                setImages([]);
+            });
+    }, [props.logoImage, props.backgroundImage]);
+    // snackbar message to say the image has been uploaded
 
     const [Snackopen, setSnackOpen] = useState(false);
     const [SnackMessage, setSnackMessage] = useState("");
@@ -204,18 +220,19 @@ const ImageSelect = (props: ImagesSelectedProps) => {
         }
         console.log("ImageSelect: " + ImageSelect)
         if (ImageSelect === "Logo") {
-            FileResizeService.ResizeImage(currentFile, 200, -1)
+            FileResizeService.ResizeImage(currentFile, 200, -1, "logo")
                 .then((res) => {
                     const LogoDetails = res.FileDetails;
                     const logoFile = res.ReturnedFile;
-    
+
                     return FileUploadService.upload(
                         logoFile,
-                        LogoDetails.Filename,
+                        LogoDetails.filename,
                         -1,
-                        LogoDetails.Width,
-                        LogoDetails.Height,
-                        ''
+                        LogoDetails.width,
+                        LogoDetails.height,
+                        '',
+                        'lg'
                     );
                 })
                 .then((formData) => {
@@ -225,24 +242,18 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                     if (!retF || typeof retF !== 'object') {
                         throw new Error('Invalid response from server');
                     }
-                    // ...Update state and notify user...
-
-                    setLogoImageName(retF.Filename);
+                    setLogoImageName(retF.filename);
                     setCurrentFile(undefined);
                     setNextFile('');
-                    // Update images array
-                    console.log("retF: " + retF.Filename)
-                    console.log("retF: " + retF.ImageURL)
                     const newLogoDetails = {
                         ...LogoDetails,
-                        ImageID: retF.ImageID,
+                        imageID: retF.imageID,
                         EventID: -1,
-                        ImageURL: `${process.env.REACT_APP_API_URL}/${retF.ImageURL}`,
-                        Filename: retF.Filename,
+                        ImageURL: `${process.env.REACT_APP_API_URL}/${retF.imageURL}`,
+                        Filename: retF.filename,
                     };
                     setImages([...images, newLogoDetails]);
-                    // Notify parent component
-                    onSelect({ logoImage: retF.Filename, backgroundImage: BackgroundDetails.Filename });
+                    onSelect({ logoImage: retF.filename, backgroundImage: BackgroundDetails.filename });
                     setSnackMessage("Logo Image uploaded successfully");
                     setSnackOpen(true);
                 })
@@ -252,39 +263,62 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                     setSnackOpen(true);
                 });
         } else {
+            // Upload main background image (desktop)
             FileResizeService.getSize(currentFile)
                 .then((backgroundDetails) => {
                     return FileUploadService.upload(
                         currentFile,
-                        backgroundDetails.Filename,
+                        backgroundDetails.filename,
                         0,
-                        backgroundDetails.Width,
-                        backgroundDetails.Height,
-                        ''
+                        backgroundDetails.width,
+                        backgroundDetails.height,
+                        '',
+                        'bk'
                     ).then((formData) => {
                         return FileUploadService.SendFile(formData);
                     }).then((retF) => {
                         if (!retF || typeof retF !== 'object') {
                             throw new Error('Invalid response from server');
                         }
-                        // ...Update state and notify user...
-                        setBackgroundImageName(retF.Filename);
-                        setCurrentFile(undefined);
-                        setNextFile('');
-                        // Update images array
-                        
-                        const newBackgroundDetails = {
-                            ...backgroundDetails,
-                            ImageID: retF.ImageID,
-                            EventID: retF.EventID,
-                            ImageURL: `${process.env.REACT_APP_API_URL}/${retF.ImageURL}`,
-                            Filename: retF.Filename,
-                        };
-                        setImages([...images, newBackgroundDetails]);
-                        // Notify parent component
-                        onSelect({ logoImage: LogoDetails.Filename, backgroundImage: retF.Filename });
-                        setSnackMessage("Background Image uploaded successfully");
-                        setSnackOpen(true);
+                        // Now upload a mobile version
+                        FileResizeService.ResizeImage(currentFile, 200, 0, "mobile")
+                            .then((res) => {
+                                const mobileDetails = res.FileDetails;
+                                const mobileFile = res.ReturnedFile;
+                                return FileUploadService.upload(
+                                    mobileFile,
+                                    mobileDetails.filename,
+                                    0,
+                                    mobileDetails.width,
+                                    mobileDetails.height,
+                                    '',
+                                    'mb'
+                                );
+                            })
+                            .then((mobileFormData) => {
+                                return FileUploadService.SendFile(mobileFormData);
+                            })
+                            .then(() => {
+                                setBackgroundImageName(retF.filename);
+                                setCurrentFile(undefined);
+                                setNextFile('');
+                                const newBackgroundDetails = {
+                                    ...backgroundDetails,
+                                    imageID: retF.imageID,
+                                    eventID: retF.eventID,
+                                    imageURL: `${process.env.REACT_APP_API_URL}/${retF.imageURL}`,
+                                    filename: retF.filename,
+                                };
+                                setImages([...images, newBackgroundDetails]);
+                                onSelect({ logoImage: LogoDetails.filename, backgroundImage: retF.filename });
+                                setSnackMessage("Background Image uploaded successfully");
+                                setSnackOpen(true);
+                            })
+                            .catch((error) => {
+                                console.error('Error uploading mobile background image:', error);
+                                setSnackMessage("Error uploading the mobile background image: " + error.message);
+                                setSnackOpen(true);
+                            });
                     });
                 })
                 .catch((error) => {
@@ -293,11 +327,9 @@ const ImageSelect = (props: ImagesSelectedProps) => {
                     setSnackOpen(true);
                 });
         }
-    };
-    
+    }
 
-
-return(
+    return(
         <>
             <Grid container spacing={3} >
                 <Grid item xs={12}>

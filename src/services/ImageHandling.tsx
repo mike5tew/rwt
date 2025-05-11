@@ -3,6 +3,7 @@ import { ImageDetail, EmptyImageDetail, Clip } from '../types/types.d';
 import YouTube, { YouTubeProps } from 'react-youtube';
 import Box from '@mui/material/Box';
 
+
 function srcset(image: string, width: number, rows: number, cols: number) {
     return {
       src: `${image}?w=${width * cols}&h=${width * rows}&fit=crop&auto=format`,
@@ -10,33 +11,46 @@ function srcset(image: string, width: number, rows: number, cols: number) {
     };
 }
 
-export function processImages(Imgs: ImageDetail[]): JSX.Element[] {
+export function processImages(Imgs: ImageDetail[], screen: string): JSX.Element[] {
     return Imgs.map(Img => {
       const imgDetail = EmptyImageDetail();
-      imgDetail.ImageID = Img.ImageID;
+      imgDetail.imageID = Img.imageID;
       
       // Use the full Filename path directly without /api prefix
-      imgDetail.Filename = Img.Filename;  // Remove the /api prefix
-      console.log("Filename", imgDetail.Filename);
-      imgDetail.Caption = Img.Caption;
-      imgDetail.EventID = Img.EventID;
-      imgDetail.Width = Img.Width || 450;  // Add default width if not provided
-      imgDetail.Height = Img.Height || 450;  // Add default height if not provided
-      imgDetail.Rows = 1;
-      imgDetail.Cols = 1;
+      imgDetail.filename = Img.filename;  
+      imgDetail.imageURL = processImageUrl(Img.filename, screen);
+      imgDetail.caption = Img.caption;
+      imgDetail.eventID = Img.eventID;
+      imgDetail.width = Img.width || 450;  // Add default width if not provided
+      imgDetail.height = Img.height || 450;  // Add default height if not provided
+      imgDetail.rows = 1;
+      imgDetail.cols = 1;
 
       return (
-        <ImageListItem key={imgDetail.ImageID} cols={1} rows={1}>
+        <ImageListItem key={imgDetail.imageID} cols={1} rows={1}>
           <img
-            {...srcset(imgDetail.Filename, imgDetail.Width, imgDetail.Rows, imgDetail.Cols)}
-            alt={imgDetail.Caption || 'Archive image'}
+            {...srcset(imgDetail.imageURL, imgDetail.width, imgDetail.rows, imgDetail.cols)}
+            alt={imgDetail.caption || 'Archive image'}
             loading="lazy"
           />
-          <ImageListItemBar title={imgDetail.Caption} />
+          <ImageListItemBar title={imgDetail.caption} />
         </ImageListItem>
       );
     });
 }
+
+export const processImageUrl = (filename: string | null, screensize: string): string => {
+  if (!filename) return '/default-image.png'; // Handle empty filenames
+ // const coreFilename = removePrefix(filename); // Remove 'mb' or 'dt' prefix
+  return screensize === 'mobile'
+    ? `${process.env.REACT_APP_API_URL}/images/mobile/${filename}`
+    : `${process.env.REACT_APP_API_URL}/images/desktop/${filename}`;
+};
+
+// export const removePrefix = (filename: string | null): string => {
+//   if (!filename) return ''; // Handle null or undefined filenames
+//   return filename.replace(/^(mb|dt)/, ''); // Remove 'mb' or 'dt' prefix
+// };
 
 const onPlayerReady: YouTubeProps['onReady'] = (event) => {
     event.target.pauseVideo();

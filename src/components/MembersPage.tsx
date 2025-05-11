@@ -3,9 +3,8 @@
 import { Container, Button, Typography, Divider, Paper, Link, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useState, useEffect } from 'react';
-import { EventDetails } from '../types/types.d';
-import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
-import { TreeItem } from '@mui/x-tree-view';
+import { EventDetails, MusicTrack } from '../types/types.d';
+import MusicTreeList from './MusicTreeList';
 import { upcomingPlaylists } from 'src/services/queries';
 import { useNavigate } from 'react-router-dom';
 
@@ -34,62 +33,60 @@ export default function MembersPage() {
     }
     , []);
 
-return (
-    <Container>
-        <Grid container spacing={2}>
-            <Grid item xs={12}>
-                <Box>   
-                    <Typography variant="h3">Upcoming Events</Typography>
-                </Box>
-            </Grid>
-            <Grid item xs={12}>
-                <Divider />
-            </Grid>
-                        {events && events.map((event) => (
-                            <>
-                            <Grid item xs={12} key={event.EventID}>
-                                <Paper>
-                                    <Typography variant="h5">{event.Title}</Typography>
-                                    <Typography variant="body1">{event.EventDate.toDateString()}</Typography>
-                                    <Typography variant="body1">{event.StartTime +" to "+ event.EndTime}</Typography>
-                                    <Typography variant="body1">Event location: {event.Location}</Typography>
-                                    <Typography variant="body1">Meeting point: {event.MeetingPoint}</Typography>
-                                    <Typography variant="h5">Playlist</Typography>
-                                    {/* cycle through the playlist and  */}
-                                    <SimpleTreeView>
-                    {event.Playlist && event.Playlist.map((entry, index) => (
-                        entry.ID=== 0) ? null : (  
-                        <TreeItem itemId={index.toString()} label={entry.MusicTrack.TrackName}>
-                        <Link href={entry.MusicTrack.Lyrics} >
-                            <TreeItem  key={entry.MusicTrack.MusicTrackID+ "l"} itemId={index.toString()+"l"} label="Lyrics" >Download</TreeItem>
-                        </Link>
-                        <Link href={entry.MusicTrack.Piano} >
-                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "p"} itemId={index.toString()+"p"} label="Piano" >Download</TreeItem>
-                        </Link>
-                        <Link href={entry.MusicTrack.AllParts} >
-                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "ap"} itemId={index.toString()+"ap"} label="All Parts" >Download</TreeItem>
-                        </Link>
-                        <Link href={entry.MusicTrack.Soprano} >
-                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "s"} itemId={index.toString()+"s"} label="Soprano" >Download</TreeItem>
-                        </Link>
-                        <Link href={entry.MusicTrack.Alto} >
-                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "a"} itemId={index.toString()+"a"} label="Alto" >Download</TreeItem>
-                        </Link>
-                        <Link href={entry.MusicTrack.Tenor} >
-                            <TreeItem key={entry.MusicTrack.MusicTrackID+ "t"} itemId={index.toString()+"t"} label="Tenor" >Download</TreeItem>
-                        </Link>
-                        </TreeItem>
-                        
-                    ))}
-                </SimpleTreeView>
-                                </Paper>
-                            </Grid>
-                            </>
-                        ))}
-                        <Grid item xs={12}>
-                            <Button onClick={NavDash} variant="contained">Back</Button>
-                            </Grid>
+    function getTrackList(entry: EventDetails) {
+        //extract the playlist from the event details in the form of an array of music tracks
+        var musicList: MusicTrack[] = [];
+        for (let i = 0; i < entry.Playlist.length; i++) {
+            musicList.push(entry.Playlist[i].MusicTrack);
+        }
+        return musicList;
+    }
+    // function to navigate to the music page
+    const MusicPage = () => {
+        history('/Music');
+    }
+
+    // function to display the playlist for the event
+    const EventPlayList = (event: EventDetails) => {
+        if (event.Playlist && event.Playlist.length > 0) {
+            return <MusicTreeList TrackList={getTrackList(event)} />;
+        }
+        return null;
+    }
+
+    return (
+        <Container>
+            <Grid container spacing={2}>
+                <Grid item xs={12}>
+                    <Box>   
+                        <Typography variant="h3">Upcoming Events</Typography>
+                    </Box>
+                </Grid>
+                <Grid item xs={12}>
+                    <Divider />
+                </Grid>
+                <Grid item xs={12}>
+                    <Button onClick={MusicPage} variant="contained">Repertoire</Button>
+                </Grid>
+                <Grid item xs={12}>
+                    <Divider />
+                </Grid>
+                {events && events.map((event) => (
+                    <Grid item xs={12} key={event.EventID}>
+                        <Paper>
+                            <Typography variant="h5">{event.Title}</Typography>
+                            <Typography variant="body1">{event.EventDate.toDateString()}</Typography>
+                            <Typography variant="body1">{event.StartTime +" to "+ event.EndTime}</Typography>
+                            <Typography variant="body1">Event location: {event.Location}</Typography>
+                            <Typography variant="body1">Meeting point: {event.MeetingPoint}</Typography>
+                            {EventPlayList(event)}
+                        </Paper>
                     </Grid>
-                </Container>
-                );
+                ))}
+                <Grid item xs={12}>
+                    <Button onClick={NavDash} variant="contained">Back</Button>
+                </Grid>
+            </Grid>
+        </Container>
+    );
 }

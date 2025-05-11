@@ -27,9 +27,9 @@ export default function About() {
           console.error('Error:', data);
           return;
         }
-
+        const screenSize = localStorage.getItem('screenSize') || 'desktop';
         const clipElements = Array.isArray(data.Clips) ? processClips(data.Clips) : [];
-        const imageElements = Array.isArray(data.Images) ? processImages(data.Images) : [];
+        const imageElements = Array.isArray(data.Images) ? processImages(data.Images, screenSize) : [];
         
         // Don't wrap the elements - let ImageList handle the layout
         const combinedElements = [...clipElements, ...imageElements]

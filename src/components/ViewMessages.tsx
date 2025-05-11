@@ -7,12 +7,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Message } from '../types/types.d';
 import { messageDELETE, messagesGET } from '../services/queries';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
 // form detail from react hook form
 
 export default function ViewMessages() {
     const history = useNavigate();
-    const [Snackopen, setSnackOpen] = useState(false);
-    const [SnackMessage, setSnackMessage] = useState('');
+    const [snackOpen, setSnackOpen] = useState(false);
+    const [snackMessage, setSnackMessage] = useState('');
     const [action, setAction] = useState(<></>);
     const handleClose = () => {
         setSnackOpen(false);
@@ -21,10 +22,8 @@ export default function ViewMessages() {
     const [Messages, setMessages] = useState<Message[]>([]);
 
     useEffect(() => {
-        if (document.cookie === '') {
-            console.log('No cookie');
-            history('/Members');
-        }
+        if (document.cookie.indexOf('role=administrator') === -1) { history('/Settings'); }        
+        // get the messages from the database
         messagesGET().then((data) => {
             setMessages(data);
         }
@@ -82,12 +81,10 @@ export default function ViewMessages() {
                     </>
                 ))}
             </Grid>
-            <Snackbar
-                open={Snackopen}
-                autoHideDuration={6000}
-                onClose={handleClose}
-                message={SnackMessage}
-                action={action}
+           <NotificationSnackbar
+                open={snackOpen}
+                message={snackMessage}
+                onClose={() => setSnackOpen(false)}
             />
         </Container>
     );

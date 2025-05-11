@@ -9,13 +9,15 @@ function upload(
     eventID: number,
     width: number,
     height: number,
-    caption: string
+    caption: string,
+    uploadType: string
 ): Promise<FormData> {
     return new Promise<FormData>((resolve) => {
         let formData = new FormData();
         formData.append("file", file);
         formData.append("eventID", eventID.toString());
         formData.append("caption", caption);
+        formData.append("uploadType", uploadType);
         formData.append("width", width.toString());
         formData.append("height", height.toString());
         formData.append("filename", filename);
@@ -33,7 +35,7 @@ export function SendFile(formData: FormData): Promise<ImageDetail> {
     })
     .then((response) => {
         if (response.ok) {
-            console.log("Sendfile resp", response);
+            console.log("returned resp", response);
             return response.json() as Promise<ImageDetail>;
         } else {
             return response.text().then((text) => {

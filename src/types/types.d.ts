@@ -15,32 +15,35 @@ export function getScreenSize(): ScreenSize {
 }
 
 export interface ImageDetail {
-    ImageID: number;
-    ImageURL: string;
-    Filename: string;
-    Caption: string;
-    Rows: number;
-    Cols: number;
-    Height: number;
-    Width: number;
-    EventID: number;
-    Imagetype: number;
+        imageID: number;
+        filename: string;
+        caption: string;
+        eventID: number;
+        height: number;
+        width: number;
+        cols: number;
+        rows: number;
+        imagetype: string;
+        // Optional properties     
+        // These can be added if needed
+        imageURL?: string;
+        imagePath?: string;
 }
 
 export function EmptyImageDetail(): ImageDetail {
     return {
-        ImageID: 0,
-        ImageURL: "",
-        Filename: "",
-        Caption: "",
-        Rows: 1,
-        Cols: 1,
-        Height: 0,
-        Width: 0,
-        EventID: 0,
-        Imagetype: 0
+        imageID: 0,
+        filename: "",
+        caption: "",
+        eventID: 0,
+        height: 0,
+        width: 0,
+        cols: 0,
+        rows: 0,
+        imagetype: ""
     };
 }
+
 
 export interface DatURLResponse {
     ReturnedFile: File;
@@ -53,7 +56,30 @@ export function EmptyDatURLResponse(): DatURLResponse {
     };
 }
 
+//type TeamMember struct {
+// 	ID          int         `json:"ID"`
+// 	Name        string      `json:"Name"`
+// 	Description string      `json:"Description"`
+// 	Image       ImageDetail `json:"Image"`
+// }
 
+export interface Team {
+    ID: number;
+    Name: string;
+    Description: string;
+    Image: ImageDetail;
+}
+ 
+export function EmptyTeam(): Team {
+    return {
+        ID: 0,
+        Name: "",
+        Description: "",
+        Image: EmptyImageDetail()
+    };
+}
+
+//id, eventID, location, eventDate, startTime, endTime, price, title
 
 //eventID, location, eventDate, startTime, endTime, price, title
 export interface EventDetails {
@@ -209,6 +235,7 @@ export interface MusicTrack {
     Soprano: string;
     Alto: string;
     Tenor: string;
+    Bass: string;
     AllParts: string;
     Piano: string;
 }
@@ -361,7 +388,10 @@ export interface MusicTrack {
     Alto: string,
     Tenor: string,
     AllParts: string,
-    Piano: string
+    Piano: string,
+    Artist: string,
+    ExtraTitle: string,
+    ExtraLink: string
 }
 
 export function EmptyMusicTrack(): MusicTrack {
@@ -372,10 +402,18 @@ export function EmptyMusicTrack(): MusicTrack {
         Soprano: "",
         Alto: "",
         Tenor: "",
+        Bass: "",
         AllParts: "",
-        Piano: ""
+        Piano: "",
+        Artist: "",
+        ExtraTitle: "",
+        ExtraLink: ""
     };
 }
 
 
 declare module '*.ttf';
+declare module "*.jpg";
+declare module "*.png";
+declare module "*.svg";
+declare module "*.gif";

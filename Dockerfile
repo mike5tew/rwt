@@ -6,6 +6,9 @@ ENV NODE_ENV=$ENV
 
 WORKDIR /app
 
+# Copy build env first
+COPY .env.build .env
+
 # Set environment variables for Node
 ENV NODE_OPTIONS="--max_old_space_size=4096"
 
@@ -13,48 +16,76 @@ ENV NODE_OPTIONS="--max_old_space_size=4096"
 RUN mkdir -p /app/src/assets/fonts
 
 COPY package*.json ./
-# Set npm configuration
+# Configure npm
 RUN npm config set registry https://registry.npmjs.org/ \
     && npm config set fetch-retry-maxtimeout 600000 \
     && npm config set fetch-retry-mintimeout 10000 \
     && npm config set fetch-retries 5 \
     && npm config set legacy-peer-deps true
 
-# Install dependencies with specific npm config
-RUN npm config set legacy-peer-deps true \
-    && npm ci \
+# Install dependencies
+RUN set -x \
+    && echo "Available disk space before npm install:" \
+    && df -h /tmp /var/cache /app \
+    && npm ci --no-optional --prefer-offline \
     && npm install @babel/plugin-proposal-private-property-in-object \
-    && npm cache clean --force
+    && npm cache clean --force \
+    && rm -rf /tmp/* /var/cache/* /root/.npm/*
 
 COPY .env .
-
-# Copy source files (includes public directory)
 COPY . .
 
-# Build with production settings
-RUN npm run build || (echo "Build failed" && exit 1)
+# Build the application
+RUN npm run build
 
 # Stage 2: Production (Nginx server)
-FROM nginx:alpine AS production
+FROM nginx:1.25-bookworm AS production
 
-VOLUME ["/app/build"]
+# Install required tools
+RUN apt-get update -o Acquire::Retries=3 && \
+    apt-get install -y --no-install-recommends \
+    bash \
+    dos2unix \
+    wget \
+    curl \
+    netcat-openbsd \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Configure nginx and create directories
-RUN mkdir -p /var/cache/nginx \
-    && mkdir -p /usr/share/nginx/html/fonts \
-    && chown -R nginx:nginx /var/cache/nginx \
-    && chmod -R 755 /var/cache/nginx
-
-# Copy built files and config
+# Copy built files
 COPY --from=builder /app/build /usr/share/nginx/html
 COPY --from=builder /app/src/assets/fonts /usr/share/nginx/html/fonts
-COPY ./combined.conf /etc/nginx/nginx.conf
-RUN cat /etc/nginx/nginx.conf # Add this line to print the file contents
 
-# Cleanup
-RUN rm -rf /var/cache/apk/* \
-    && rm -rf /tmp/*
+# Set permissions
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
+    chmod -R u=rwX,go=rX /usr/share/nginx/html
 
-EXPOSE 80
+# Copy nginx configuration template
+COPY ./nginx/default.conf.template /etc/nginx/templates/
 
-CMD ["nginx", "-g", "daemon off;"]
+# Verify template was copied correctly
+RUN if [ ! -f /etc/nginx/templates/default.conf.template ]; then \
+        echo "ERROR: Template file not found!" >&2; \
+        exit 1; \
+    fi
+
+# Create SSL directory structure (without generating self-signed certs)
+RUN mkdir -p /etc/nginx/ssl && \
+    chown nginx:nginx /etc/nginx/ssl && \
+    chmod 710 /etc/nginx/ssl
+
+# Copy helper scripts
+COPY ./wait-for-it.sh /usr/local/bin/wait-for-it.sh
+COPY ./start-nginx.sh /usr/local/bin/
+
+# Set executable permissions
+RUN chmod +x /usr/local/bin/wait-for-it.sh && \
+    chmod +x /usr/local/bin/start-nginx.sh
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost/health.txt || exit 1
+
+EXPOSE 80 443
+
+CMD ["/usr/local/bin/start-nginx.sh"]

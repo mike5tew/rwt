@@ -71,6 +71,12 @@ export default function AddArchive() {
   const { register, handleSubmit, watch, setValue, getValues } = useForm<ArchiveEntry>(
     { defaultValues: EmptyArchiveEntry() }
   );
+  const history = useNavigate();
+  // if the cookie is not set, and the role is not admin, redirect to the members page
+  if (document.cookie === '' || document.cookie.indexOf('role=administrator') === -1) {
+      console.log('No cookie');
+      history('/Members');
+  }
   const [table, setTable] = useState<tableDetails[]>([]);
   const [eventID, setEventID] = useState<number>(0);
   const [archive, setArchive] = useState<ArchiveEntry>(EmptyArchiveEntry());
@@ -85,7 +91,6 @@ export default function AddArchive() {
   const [snackMessage, setSnackMessage] = useState('');
   const [action, setAction] = useState(<></>);
   const [ClTab, setClTab] = useState<ClipTable[]>([]);
-  const history = useNavigate();
   const handleClose = () => {
     setSnackOpen(false);
   };
@@ -112,7 +117,7 @@ export default function AddArchive() {
     ImageDELETE(id).then((respon) => {
       if (respon) {
         setSnackMessage("Image removed successfully")
-        setImages(images.filter((image) => image.ImageID !== id))
+        setImages(images.filter((image) => image.imageID !== id))
         setTable(table.filter((image) => image.id !== id))
         setSnackOpen(true)
       }
@@ -169,10 +174,8 @@ export default function AddArchive() {
 
 
   useEffect(() => {
-    if (document.cookie === '' || document.cookie !== 'role=admin') {
-      console.log('No cookie');
-      history('/AdminDashboard');
-  }
+    if (document.cookie.indexOf('role=administrator') === -1) { history('/Settings'); }        
+    
     // get the event list from the database
     PastEventsList().then((res) => {
       // remove events that are in the future
@@ -209,40 +212,33 @@ export default function AddArchive() {
    * Validates file type and resizes image for preview
    */
   const selectFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files ? event.target.files[0] : null;
+    const file = event.target.files?.[0];
     if (!file) {
       setSnackMessage('No file selected');
       setSnackOpen(true);
       return;
     }
-
-    // Check if file is an image
+  
     const validTypes = ['image/jpg', 'image/jpeg', 'image/png'];
     if (!validTypes.includes(file.type)) {
-      console.log('Invalid file type:', file.type);
-      setSnackMessage(`Invalid file type: ${file.type}. Please select a JPG, JPEG or PNG file.`);
+      setSnackMessage(`Invalid file type: ${file.type}`);
       setSnackOpen(true);
       return;
     }
-
+  
     setFileType(file.type);
     setCurrentFile(file);
-
+  
     try {
-      const res = await changeFileSet(file);
-      ResizeImage.ResizeImage(res, 100, eventID).then((res: DatURLResponse) => {
-        setIconImage(res.ReturnedFile);
-        const sDat = URL.createObjectURL(res.ReturnedFile);
-        setIconURL(sDat);
-      });
+      const resizedImageResponse = await ResizeImage.ResizeImage(file, 100, eventID, '');
+      setIconImage(resizedImageResponse.ReturnedFile);
+      setIconURL(URL.createObjectURL(resizedImageResponse.ReturnedFile)); // Ensure the resized image URL is updated
     } catch (error) {
       console.error('Error:', error);
       setSnackMessage('Error processing image');
       setSnackOpen(true);
     }
-  }
-
-
+  };
 
   /**
    * Processes and uploads images
@@ -253,41 +249,39 @@ export default function AddArchive() {
       alert('Please select an image to upload');
       return;
     }
-    interface ImID {
-      ImageID: number;
-    }
+
     var ImDetails = EmptyImageDetail();
 
     // Resize the image for desktop
-    ResizeImage.ResizeImage(currentFile, 450, eventID)
+    ResizeImage.ResizeImage(currentFile, 800, eventID, "dt")
       .then((res: DatURLResponse) => {
         ImDetails = res.FileDetails;
-        ImDetails.Caption = watch('Imagecaption');
-        console.log('Resized image for desktop:', res.FileDetails.EventID);
+        ImDetails.caption = watch('Imagecaption');
+        console.log('Resized image for desktop:', res.FileDetails.eventID);
         // Upload the resized image
-        return FileUploadService.upload(res.ReturnedFile, res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption);
+        return FileUploadService.upload(res.ReturnedFile, res.ReturnedFile.name, eventID, res.FileDetails.width, res.FileDetails.height, res.FileDetails.caption, "dt");
       })
       .then((uploadRes: FormData) => {
         //console.log('File uploaded:', uploadRes);
         return FileUploadService.SendFile(uploadRes);
       }
-      ).then((respon: ImID) => {
+      ).then((respon: ImageDetail) => {
         if (respon) {
           console.log('File uploaded:', respon);
           let tb = emptyTableDetails();
-          tb.id = respon.ImageID;
-          tb.caption = ImDetails.Caption
-          tb.filename = ImDetails.Filename;
+          tb.id = respon.imageID;
+          tb.caption = ImDetails.caption
+          tb.filename = ImDetails.filename;
           setTable([...table, tb]);
           //            setImages((prevImages) => [...prevImages, ImDetails]);
         }
         // Resize the image for mobile
-        return ResizeImage.ResizeImage(currentFile, 250, eventID);
+        return ResizeImage.ResizeImage(currentFile, 250, eventID, "mb");
       })
       .then((res: DatURLResponse) => {
         // console.log('Resized image for mobile:', res);
         // Upload the resized image for mobile
-        return FileUploadService.upload(res.ReturnedFile, "mb" + res.ReturnedFile.name, eventID, res.FileDetails.Width, res.FileDetails.Height, res.FileDetails.Caption);
+        return FileUploadService.upload(res.ReturnedFile, "mb" + res.ReturnedFile.name, eventID, res.FileDetails.width, res.FileDetails.height, res.FileDetails.caption, "mb");
       }
       ).then((uploadRes: FormData) => {
         return FileUploadService.SendFile(uploadRes);
@@ -315,17 +309,22 @@ export default function AddArchive() {
   };
 
 
-  function handleEventSelect(event: SelectChangeEvent<Number>) {
-    setEventID(event.target.value as number);
-    if (event.target.value === 0) {
+  function handleEventSelect(event: SelectChangeEvent<unknown>) {
+    const value = Number(event.target.value);
+    if (isNaN(value)) {
+      console.error("Invalid event ID");
+      return;
+    }
+    setEventID(value);
+    if (value === 0) {
       clearForm(0);
       setEventID(0);
       setEventSelected(false);
     } else {
       setEventSelected(true);
-      console.log('EventID:', event.target.value, !eventSelected);
+      console.log('EventID:', value, !eventSelected);
 
-      EventArchiveGET(event.target.value as number)
+      EventArchiveGET(value)
         .then(respon => {
           if (respon) {
             if (respon.ArchiveID > 0) {
@@ -334,21 +333,22 @@ export default function AddArchive() {
               var Tbtemp: tableDetails[] = [];
               var clipsTp: Clip[] = [];
               var ClTab: ClipTable[] = [];
-              console.log('Images:', respon.Images.length);
+              //console.log('Images:', respon.Images.length);
               if (respon.Images && respon.Images.length) {
                 for (let i = 0; i < respon.Images.length; i++) {
                   var imgDetail = EmptyImageDetail();
                   var tb = emptyTableDetails();
-                  tb.id = respon.Images[i].ImageID;
-                  tb.caption = respon.Images[i].ImageURL
+                  tb.id = respon.Images[i].imageID;
+                  // Provide a fallback empty string if ImageURL is undefined
+                  tb.caption = respon.Images[i].imageURL || ''; 
 
-                  tb.filename = respon.Images[i].Filename;
+                  tb.filename = respon.Images[i].filename;
                   Tbtemp = [...Tbtemp, tb];
-                  imgDetail.ImageID = respon.Images[i].ImageID;
-                  imgDetail.Filename = respon.Images[i].Filename;
-                  imgDetail.ImageURL = respon.Images[i].ImageURL;
-                  imgDetail.Caption = respon.Images[i].Caption;
-                  imgDetail.EventID = respon.Images[i].EventID;
+                  imgDetail.imageID = respon.Images[i].imageID;
+                  imgDetail.filename = respon.Images[i].filename;
+                  imgDetail.imageURL = respon.Images[i].imageURL;
+                  imgDetail.caption = respon.Images[i].caption;
+                  imgDetail.eventID = respon.Images[i].eventID;
                   imagesTp = [...imagesTp, imgDetail];
                 }
               }
@@ -489,190 +489,205 @@ export default function AddArchive() {
   const FormSubmitHandler: SubmitHandler<ArchiveEntry> = (data: ArchiveEntry) => {
     console.log(data);
   }
-    /**
-     * Navigates to the dashboard page
-     */
-    const NavDash = () => {
-        history('/AdminDashboard');
-    }
-
-const deleteArchive = async () => {
-       try {
-           const id = getValues('ArchiveID');
-           if (id > 0) {
-               const deleteResponse = await ArchiveDELETE(id);
-               if (deleteResponse.status === 204) {
-                   // reset the form
-                   clearForm(0);
-                } else {
-                    setSnackMessage('Error Deleting Archive');
-                    setSnackOpen(true);
-                }
-            } else {
-                setSnackMessage('No Archive ID to delete');
-                setSnackOpen(true);
-            }
-        } catch (error) {
-            console.error("Error deleting archive data:", error);
-            setSnackMessage('Error Deleting Archive Entry');
-            setSnackOpen(true);
-        }
-    }
-
-    const buttons = [
-      <Button variant="contained" onClick={handleSaveArchive}>Save Archive</Button>,
-      <Button variant="contained" onClick={deleteArchive}>Delete Archive</Button>,
-      <Button variant="contained" onClick={NavDash}>Dashboard</Button>,
-    ];
-    
-    return (
-      <>
-        <form onSubmit={handleSubmit(FormSubmitHandler)}>
-          <Grid container spacing={2} >
-            <Grid item xs={12} sx={{ paddingBottom: 2 }}>  {/* //Title full width */}
-              <Paper elevation={3}>
-                {/* align the text centrally */}
-                <Typography variant="h2" component="h2" sx={{ textAlign: 'center' }} >Add Archive Details</Typography>
-              </Paper>
-            </Grid>
-            <Grid />
-            <Grid item xs={12} > {/* //Event dropdown  */}
-              <FormControl fullWidth><InputLabel id="ExistingTracks">Events</InputLabel>
-                <Select label="Select an event" value={eventID} onChange={handleEventSelect} fullWidth >
-                  <MenuItem value={0} >Select Event</MenuItem>
-                  {eventList && eventList.map((event) => (
-                    <MenuItem key={event.EventID} value={event.EventID}>{event.Title + " " + StringtoDate(event.EventDate.toString())}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} >
-              <TextField
-                label="Event Report"
-                fullWidth
-                multiline
-                value={watch('Report') ? watch('Report') : ''}
-                rows={4}
-                {...register('Report')}
-              />
-            </Grid>
-            <Grid item xs={12} sx={styleGridPadded.Grid}>  {/* //Image titles */}
-              <Typography variant="h6">Image uploads</Typography>
-            </Grid>
-            <Grid item xs={12} >   {/* image adding row */}
-              {/* Use the currentFile to populate the img tag if a file is present */}
-              {/* <div style={{ width: '100%', height: '100%', backgroundImage: `url(${iconImage ? URL.createObjectURL(iconImage) : ''})` }}></div> */}
-              {/* <img src={ IconURL }  alt="Thumbnail" /> */}
-              <img src={iconImage ? URL.createObjectURL(iconImage) : 'https://via.placeholder.com/80'} alt="profile" />
-
-            </Grid>
-            <Grid item xs={12}>
-              <Button component="label"
-                disabled={!eventSelected}
-                role={undefined}
-                variant="contained"
-                tabIndex={-1}
-                startIcon={<ImageSearch />}>Locate Image
-                <VisuallyHiddenInput type="file" onChange={selectFile} accept='image/*' />
-              </Button>
-              <TextField
-                label="Selected image file"
-                fullWidth
-                disabled={true}
-                margin="normal"
-                value={watch('NextFile')}
-                {...register('NextFile')}
-              />
-              {currentFile && <Typography variant="body2">Selected file: {currentFile.name}</Typography>}
-            </Grid>
-            <Grid item xs={12} >
-              <TextField
-                label="Image caption"
-                fullWidth
-                multiline
-                rows={4}
-                {...register('Imagecaption')}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Button
-                disabled={!currentFile}
-                onClick={upload}
-                startIcon={<CloudUpload />}
-              >
-                Upload Image
-              </Button>
-            </Grid>
-            <Grid item xs={12}>
-              <DataGrid
-                rows={table}
-                initialState={{
-                  columns:
-                    { columnVisibilityModel: { id: false } }
-                }}
-                columns={Imagecolumns}
-              />
-            </Grid>
-
-            <Grid item xs={12} sx={styleGridPadded.Grid}>
-              <Typography variant="h6">YouTube and Instagram links</Typography>
-            </Grid>
-            <Grid />
-            <Grid item xs={12} >
-              <TextField
-                label="Clip URL"
-                fullWidth
-                {...register('NextURL')}
-              />
-            </Grid>
-            <Grid item xs={12} >
-              <TextField
-                label="Clip Caption"
-                fullWidth
-                multiline
-                rows={4}
-                {...register('Clipcaption')}
-              />
-            </Grid>
-            <Grid item xs={12} >
-              <Button variant="contained" disabled={!eventSelected} onClick={handleAddClip}>Add Clip</Button>
-            </Grid>
-            <Grid item xs={12}>
-              <DataGrid
-                rows={ClTab}
-                initialState={{
-                  columns:
-                    { columnVisibilityModel: { id: false } }
-                }}
-                columns={clipColumns}
-              />
-            </Grid>
-            <Grid />
-            <Grid item xs={12}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  '& > *': {
-                    m: 1,
-                  },
-                }}
-              >
-                <ButtonGroup size="large" aria-label="Large button group">
-                  {buttons}
-                </ButtonGroup>
-              </Box>
-            </Grid>
-          </Grid>
-            {/* Feedback Messages */}
-             <NotificationSnackbar
-                 open={snackOpen}
-                 message={snackMessage}
-                 onClose={() => setSnackOpen(false)}
-             />
-
-        </form>
-      </>
-    );
+  /**
+   * Navigates to the dashboard page
+   */
+  const NavDash = () => {
+    history('/AdminDashboard');
   }
+
+  const deleteArchive = async () => {
+    try {
+      const id = getValues('ArchiveID');
+      if (id > 0) {
+        const deleteResponse = await ArchiveDELETE(id);
+        if (deleteResponse.status === 204) {
+          // reset the form
+          clearForm(0);
+        } else {
+          setSnackMessage('Error Deleting Archive');
+          setSnackOpen(true);
+        }
+      } else {
+        setSnackMessage('No Archive ID to delete');
+        setSnackOpen(true);
+      }
+    } catch (error) {
+      console.error("Error deleting archive data:", error);
+      setSnackMessage('Error Deleting Archive Entry');
+      setSnackOpen(true);
+    }
+  }
+
+  const buttons = [
+    <Button variant="contained" onClick={handleSaveArchive}>Save Archive</Button>,
+    <Button variant="contained" onClick={deleteArchive}>Delete Archive</Button>,
+    <Button variant="contained" onClick={NavDash}>Dashboard</Button>,
+  ];
+
+  return (
+    <>
+      <form onSubmit={handleSubmit(FormSubmitHandler)}>
+        <Grid container spacing={2} >
+          <Grid item xs={12} sx={{ paddingBottom: 2 }}>  {/* //Title full width */}
+            <Paper elevation={3}>
+              {/* align the text centrally */}
+              <Typography variant="h2" component="h2" sx={{ textAlign: 'center' }} >Add Archive Details</Typography>
+            </Paper>
+          </Grid>
+          <Grid />
+          <Grid item xs={12} > {/* //Event dropdown  */}
+            <FormControl fullWidth><InputLabel id="ExistingEvents">Events</InputLabel>
+              <Select label="Select an event" value={eventID} onChange={handleEventSelect} fullWidth >
+                <MenuItem value={0} >Select Event</MenuItem>
+                {eventList && eventList.map((event) => (
+                  <MenuItem key={event.EventID} value={event.EventID}>{event.Title + " " + StringtoDate(event.EventDate.toString())}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} >
+            <TextField
+              label="Event Report"
+              fullWidth
+              multiline
+              value={watch('Report') ? watch('Report') : ''}
+              rows={4}
+              {...register('Report')}
+              InputLabelProps={{
+                shrink: !!watch('Report') // Dynamically shrink label if Report exists
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sx={styleGridPadded.Grid}>  {/* //Image titles */}
+            <Typography variant="h6">Image uploads</Typography>
+          </Grid>
+          <Grid item xs={12} >   {/* image adding row */}
+            {/* Use the currentFile to populate the img tag if a file is present */}
+            {/* <div style={{ width: '100%', height: '100%', backgroundImage: `url(${iconImage ? URL.createObjectURL(iconImage) : ''})` }}></div> */}
+            {/* <img src={ IconURL }  alt="Thumbnail" /> */}
+
+            <img src={iconImage ? URL.createObjectURL(iconImage) : 'public/favicon-96x96.png'} alt="Thumbnail" style={{ width: '96px', height: '96px' }} />
+          </Grid>
+          <Grid item xs={12}>
+            <Button component="label"
+              disabled={!eventSelected}
+              role={undefined}
+              variant="contained"
+              tabIndex={-1}
+              startIcon={<ImageSearch />}>Locate Image
+              <VisuallyHiddenInput type="file" onChange={selectFile} accept='image/*' />
+            </Button>
+            <TextField
+              label="Selected image file"
+              fullWidth
+              disabled={true}
+              margin="normal"
+              value={watch('NextFile')}
+              {...register('NextFile')}
+              InputLabelProps={{
+                shrink: !!watch('NextFile') // Dynamically shrink label if NextFile exists
+              }}
+            />
+            {currentFile && <Typography variant="body2">Selected file: {currentFile.name}</Typography>}
+          </Grid>
+          <Grid item xs={12} >
+            <TextField
+              label="Image caption"
+              fullWidth
+              multiline
+              rows={4}
+              {...register('Imagecaption')}
+              InputLabelProps={{
+                shrink: !!watch('Imagecaption') // Dynamically shrink label if Imagecaption exists
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              disabled={!currentFile}
+              onClick={upload}
+              startIcon={<CloudUpload />}
+            >
+              Upload Image
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <DataGrid
+              rows={table}
+              initialState={{
+                columns:
+                  { columnVisibilityModel: { id: false } }
+              }}
+              columns={Imagecolumns}
+            />
+          </Grid>
+
+          <Grid item xs={12} sx={styleGridPadded.Grid}>
+            <Typography variant="h6">YouTube and Instagram links</Typography>
+          </Grid>
+          <Grid />
+          <Grid item xs={12} >
+            <TextField
+              label="Clip URL"
+              fullWidth
+              {...register('NextURL')}
+              InputLabelProps={{
+                shrink: !!watch('NextURL') // Dynamically shrink label if NextURL exists
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} >
+            <TextField
+              label="Clip Caption"
+              fullWidth
+              multiline
+              rows={4}
+              {...register('Clipcaption')}
+              InputLabelProps={{
+                shrink: !!watch('Clipcaption') // Dynamically shrink label if Clipcaption exists
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} >
+            <Button variant="contained" disabled={!eventSelected} onClick={handleAddClip}>Add Clip</Button>
+          </Grid>
+          <Grid item xs={12}>
+            <DataGrid
+              rows={ClTab}
+              initialState={{
+                columns:
+                  { columnVisibilityModel: { id: false } }
+              }}
+              columns={clipColumns}
+            />
+          </Grid>
+          <Grid />
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                '& > *': {
+                  m: 1,
+                },
+              }}
+            >
+              <ButtonGroup size="large" aria-label="Large button group">
+                {buttons}
+              </ButtonGroup>
+            </Box>
+          </Grid>
+        </Grid>
+        {/* Feedback Messages */}
+        <NotificationSnackbar
+          open={snackOpen}
+          message={snackMessage}
+          onClose={() => setSnackOpen(false)}
+        />
+
+      </form>
+    </>
+  );
+}

@@ -1,10 +1,8 @@
 // This is settings login page.  A successful login will reveal the links to create archive entries, create events, and edit the text from the about and appeal pages.  It will also have a link to the choir's facebook and instagram pages.
 
-import React, {useState} from 'react';
-import { styled } from '@mui/material/styles';
-import { Button, Typography, Link, Divider, Paper, Snackbar, TextField, Fade, Box } from '@mui/material';
+import React, { useState } from 'react';
+import { Button, Typography, Divider, Paper, TextField, Fade } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import { purple } from '@mui/material/colors';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -12,71 +10,59 @@ import { TransitionProps } from '@mui/material/transitions';
 import { User, EmptyUser } from '../types/types.d';
 import { useNavigate } from 'react-router-dom';
 import { login } from 'src/services/queries';
+import { NotificationSnackbar } from './shared/NotificationSnackbar';
 
-
-const ColorButton = styled(Button)({
-    color: 'white',
-    backgroundColor: purple[500],
-    '&:hover': {
-        backgroundColor: purple[700],
-    },
-    });
 
 const schema = yup.object().shape({
-    username: yup.string().required(),
-    password: yup.string().required(),
+  username: yup.string().required(),
+  password: yup.string().required(),
 });
 
 export default function Settings() {
-    const { register, handleSubmit, control, formState: { errors } } = useForm({
-        resolver: yupResolver(schema),
-    });
-    const history= useNavigate();
+  const { control, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+  });
+  const history = useNavigate();
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-  
-    const [snackOpen, setSnackOpen] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [openError, setOpenError] = useState(false);
-    const [state, setState] = useState<{
-        open: boolean;
-        Transition: React.ComponentType<TransitionProps & {children: React.ReactElement<any, any>;}>;
-      }>({
-        open: false,
-        Transition: Fade,
-      });
-    const handleClick = () => {
-        setSnackOpen(true);
-        setOpen(true);
-        console.log(open);
-    };
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-    const handleLogin = () => {
-        const user: User = { ...EmptyUser() };
-        user.Username = username;
-        user.Password = password;
-        user.Role = 'admin';
-         // send the user info to the login endpoint
-        // if the user is authenticated, redirect to the music page
-        login(user).then((data) => {
-          if (data) {
-            document.cookie = `username=${username}`;
-            history('/AdminDashboard');
-    
-          } else {
-            // show a snackbar with an error message
-            document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
-            setOpenError(true);
-            console.log('Invalid username or password: ', data);
-          }
+  const [snackOpen, setSnackOpen] = useState(false);
+  const [snackMessage, setSnackMessage] = useState('');
+
+
+  const handleLogin = () => {
+    const user: User = { ...EmptyUser() };
+    user.Username = username;
+    user.Password = password;
+
+    login(user)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error('Invalid credentials');
         }
-        );
-      }
+        const userData = await response.json();
+        if (userData.Role === 'administrator') {
+          document.cookie = `username=${userData.Username}`;
+          document.cookie = `role=${userData.Role}`;
+          history('/AdminDashboard');
+        } else {
+          setSnackMessage('Invalid username or password');
+          setSnackOpen(true);
+        }
 
-    return (
+      })
+      .catch((error) => {
+        console.error('Login error:', error);
+        document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+        setSnackMessage('Invalid username or password');
+        setSnackOpen(true);
+      });
+  }
 
-      <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
+  return (
+
+    <Grid container justifyContent="center" alignItems="center" sx={{ height: '100vh' }}>
       <Grid item xs={12}>
         <Paper sx={{ padding: 2 }}>
           <Typography variant="h4" align="center" gutterBottom>
@@ -84,7 +70,7 @@ export default function Settings() {
           </Typography>
           <TextField
             label="Username"
-            
+
             fullWidth
             margin="normal"
             value={username}
@@ -92,7 +78,7 @@ export default function Settings() {
           />
           <TextField
             label="Password"
-            
+
             fullWidth
             margin="normal"
             type="password"
@@ -109,15 +95,14 @@ export default function Settings() {
         </Paper>
       </Grid>
       <Grid item xs={12}>
-      <Snackbar
-        open={openError}
-        autoHideDuration={6000}
-        onClose={() => setOpenError(false)}
-        TransitionComponent={Fade}
-        message="Invalid username or password"
+        {/* Feedback Messages */}
+        <NotificationSnackbar
+          open={snackOpen}
+          message={snackMessage}
+          onClose={() => setSnackOpen(false)}
         />
-    </Grid>
+      </Grid>
     </Grid>
 
-    );
+  );
 }

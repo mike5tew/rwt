@@ -9,8 +9,8 @@ import Archive from './components/Archive';
 import ErrorPage from './components/ErrorPage';
 import Appeal from './components/Appeal';
 import Settings from './components/Settings';
-import Music from './components/Music';
 import Members from './components/Members';
+import Music from './components/Music';
 import AddMusic from './components/AddMusic';
 import AddNotice from './components/AddNotice';
 import EditAbout from './components/EditAbout';
@@ -19,12 +19,15 @@ import EventAdd from './components/EventAdd';
 import PlayListAdd from './components/PlaylistAdd';
 import AddArchive from './components/AddArchive';
 import AdminDashboard from './components/AdminDashboard';
+import AllImages from './components/AllImages';
 import ViewMessages from './components/ViewMessages';
 import MembersPage from './components/MembersPage';
 import MiniDrawer from './components/Drawer';
 import EditTheme from './components/EditTheme';
 import { getScreenSize, ThemeDetails } from 'src/types/types';
 import { SiteInfoGET, themeDetailsGET } from './services/queries';
+import MeetTheTeam from './components/MeetTheTeam';
+import TeamAdd from './components/TeamAdd';
 
 /**
  * Main application component that handles theme management and routing
@@ -227,11 +230,14 @@ export default function App() {
           <Route path="Appeal" element={<Appeal />} />
           <Route path="About" element={<About />} />
           <Route path="BookingForm" element={<BookingForm />} />
-          <Route path="Music" element={<Music />} />
           <Route path="Members" element={<Members />} />
           <Route path="AddMusic" element={<AddMusic />} />
           <Route path="AddNotice" element={<AddNotice />} />
           <Route path="EditAbout" element={<EditAbout />} />
+          <Route path="MeetTheTeam" element={<MeetTheTeam />} />
+          <Route path="AllImages" element={<AllImages />} />
+          <Route path="TeamAdd" element={<TeamAdd />} />
+          <Route path="Music" element={<Music />} />
           <Route path="EventAdd" element={<EventAdd />} />
           <Route path="PlayListAdd" element={<PlayListAdd />} />
           <Route path="AddArchive" element={<AddArchive />} />

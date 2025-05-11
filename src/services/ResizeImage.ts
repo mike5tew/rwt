@@ -1,4 +1,4 @@
-// cretae an interface for the file object
+// create an interface for the file object
 import { EmptyImageDetail, ImageDetail } from '../types/types.d';
 
 export interface DatURLResponse {
@@ -12,28 +12,29 @@ export function EmptyDatURLResponse(): DatURLResponse {
     };
 }
 
-export function ResizeImage(originalImage: File, newWidth: number, eventID: number): Promise<DatURLResponse> {
+export function ResizeImage(originalImage: File, newWidth: number, eventID: number, imagetype: string): Promise<DatURLResponse> {
     return new Promise<DatURLResponse>((resolve, reject) => {
         const reader = new FileReader();
         // set the prefix for the filename based on the newWidth
+        //console.log('originalImage.name: ' + originalImage.name, ' originalImage.width: ' + newWidth);
         reader.readAsDataURL(originalImage);
-        var prefix = ""; 
-        switch (newWidth) {
-            case 100:
-                prefix = "";
-                break;
-            case 250:
-                prefix = "mb";
-                break;
-            case 450:
-                prefix = "dt";
-                break;
-            case 200:
-                prefix = "lg";
-                break;
-            default:
-                prefix = "bg";
-        }
+        // var prefix = ""; 
+        // switch (newWidth) {
+        //     case 100:
+        //         prefix = "th";
+        //         break;
+        //     case 250:
+        //         prefix = "mb";
+        //         break;
+        //     case 800:
+        //         prefix = "dt";
+        //         break;
+        //     case 200:
+        //         prefix = "lg";
+        //         break;
+        //     default:
+        //         prefix = "bg";
+        // }
 
         // Add error handling for FileReader
         reader.onerror = function (errorEvent) {
@@ -49,13 +50,27 @@ export function ResizeImage(originalImage: File, newWidth: number, eventID: numb
 
             img.src = readerEvent.target?.result as string;
             img.onload = () => {
-//                console.log('img.naturalWidth: ' + img.naturalWidth);
+                console.log('BEFORE initial width ' + img.naturalWidth, 'newwidth: ' + newWidth);
                 var canvas = document.createElement('canvas');
-          
+                
+                // these images can be very large, so we need to calculate the height based on the width
+                // calculate the height based on the width
+                // however they are also being display two accross on the screen so we should not resize if the width is less than 800
+                let newHeight = 0;
+                if (newWidth<img.naturalWidth && imagetype === "dt") {
+                    newHeight = newWidth * img.naturalHeight / img.naturalWidth;
+                    console.log('newWidth: ' + newWidth + ' img.naturalHeight: ' + img.naturalHeight + ' img.naturalWidth: ' + img.naturalWidth);
+                    // round the height to the nearest whole number
+                    newHeight = Math.round(newHeight);
+                } else {
+                    // if the image is smaller than the new width, then use the natural height
+                    newHeight = img.naturalHeight;
+                    newWidth = img.naturalWidth;
+                    //console.log('newWidth2: ' + newWidth + ' img.naturalHeight2: ' + img.naturalHeight + ' img.naturalWidth2: ' + img.naturalWidth);
+
+                }
+                
                 canvas.width = newWidth;
-                let newHeight = newWidth * img.naturalHeight / img.naturalWidth;
-                // round the height to the nearest whole number
-                newHeight = Math.round(newHeight);
                 canvas.height = newHeight;
                 var filename = originalImage.name;
                 var filetype = originalImage.type;
@@ -87,28 +102,22 @@ export function ResizeImage(originalImage: File, newWidth: number, eventID: numb
                     }
                     
                 const datURL = EmptyDatURLResponse();
-                const nFile = new File([uInt8Array], prefix+eventID+filename, { type: filetype });
-                // validate the file
-                if (!nFile) {
-                    reject(new Error('Failed to create new file'));
-                    return;
-                }
+                const nFile = new File([uInt8Array], eventID+filename, { type: filetype });
+                const objectURL = URL.createObjectURL(nFile); // Create an object URL for the resized image
                 datURL.ReturnedFile = nFile;
-                
-                datURL.FileDetails = EmptyImageDetail();
-                datURL.FileDetails.ImageURL = dataURL;
-                datURL.FileDetails.Filename = prefix+filename;
-                datURL.FileDetails.EventID = eventID;
-                datURL.FileDetails.Height = newHeight;
-                datURL.FileDetails.Width = newWidth;
-                datURL.FileDetails.Caption = '';
-                datURL.FileDetails.Imagetype = 1;
-                datURL.FileDetails.Rows = 1;
+                datURL.FileDetails.imageURL = objectURL; // Use the object URL for the resized image
+                datURL.FileDetails.filename = filename;
+                datURL.FileDetails.eventID = eventID;
+                datURL.FileDetails.height = newHeight;
+                datURL.FileDetails.width = newWidth;
+                datURL.FileDetails.caption = '';
+                datURL.FileDetails.imagetype = imagetype
+                datURL.FileDetails.rows = 1;
                 if (newWidth > newHeight) {
-                    datURL.FileDetails.Cols = 2;
+                    datURL.FileDetails.cols = 2;
                 }
                 else {
-                    datURL.FileDetails.Cols = 1;
+                    datURL.FileDetails.cols = 1;
                 }
                 resolve(datURL);                
             };
@@ -134,13 +143,12 @@ function getSize(file: File) {
             img.src = readerEvent.target?.result as string;
             img.onload = () => {
                 var ImDet = EmptyImageDetail();
-                ImDet.Filename = file.name;
-                ImDet.Height = img.naturalHeight;
-                ImDet.Width = img.naturalWidth;
-                ImDet.Caption = '';
-                ImDet.Imagetype = 1;
-                ImDet.Rows = 1;
-                ImDet.Cols = 1;
+                ImDet.filename = file.name;
+                ImDet.height = img.naturalHeight;
+                ImDet.width = img.naturalWidth;
+                ImDet.caption = '';
+                ImDet.rows = 1;
+                ImDet.cols = 1;
                 resolve(ImDet);
             }
         }

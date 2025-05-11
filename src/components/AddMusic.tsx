@@ -12,6 +12,17 @@ import { MusicGET, MusicPOST, MusicTrackPUT, musicTrackDELETE, MusicTrackGET } f
 import { MusicTrack } from '../types/types.d';
 import { NotificationSnackbar } from './shared/NotificationSnackbar';
 import { useNavigate } from 'react-router-dom';
+// We need to make the title of the track a required field
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';  
+// Define validation schema
+const schema = yup.object().shape({
+    TrackName: yup.string().required('Track Name is required'),
+});
+
+// Component for adding and editing music tracks
+
+
 
 
 
@@ -30,8 +41,11 @@ export default function AddMusic() {
             Soprano: "",
             Alto: "",
             Tenor: "",
+            Bass: "",
             AllParts: "",
-            Piano: ""
+            Piano: "",
+            ExtraLink: "",
+            ExtraTitle: ""
         }
     });
     const [snackMessage, setSnackMessage] = useState('');
@@ -48,41 +62,56 @@ export default function AddMusic() {
      * Handles form submission for both new tracks and updates
      * @param data MusicTrack data from the form
     */
+    const mPost = async (data: MusicTrack) => {
+        // Ensure piano field is properly handled
+        var newTrack = await MusicPOST({ ...data, Piano: data.Piano || "" });
+        if (newTrack) {
+            setSnackMessage('Track Added');
+            setSnackOpen(true);
+            setMusicList([...musicList, newTrack]);
+            // reset the form
+            resetForm();
+         } else {
+             setSnackMessage('Error Adding Track');
+             setSnackOpen(true);
+             
+         }
+     }
+     const mPut = async (data: MusicTrack) => {
+         // Ensure piano field is properly handled
+         var newTrack = await MusicTrackPUT({ ...data, Piano: data.Piano || "" });
+         if (newTrack) {
+             setSnackMessage('Track Updated');
+             setSnackOpen(true);
+             setMusicList([...musicList, newTrack]);
+                // reset the form
+                resetForm();
+         } else {
+             setSnackMessage('Error Updating Track');
+             setSnackOpen(true);
+         }
+        }   
+
+        const resetForm = () => {
+            setValue('MusicTrackID', 0);
+            setValue('Artist', '');
+            setValue('TrackName', '');
+            setValue('Lyrics', '');
+            setValue('Soprano', '');
+            setValue('Alto', '');
+            setValue('Tenor', '');
+            setValue('Bass', '');
+            setValue('AllParts', '');
+            setValue('Piano', '');
+            setValue('ExtraLink', '');
+            setValue('ExtraTitle', '');
+        }
+
    const FormSubmitHandler: SubmitHandler<MusicTrack> = (data: MusicTrack) => {
        if (data.MusicTrackID === 0) {
-           console.log('Adding new track', data);
-           const mPost = async () => {
-               var newTrack = await MusicPOST(data)
-               if (newTrack) {
-                   setSnackMessage('Track Added');
-                   setSnackOpen(true);
-                   setMusicList([...musicList, newTrack]);
-                } else {
-                    setSnackMessage('Error Adding Track');
-                    setSnackOpen(true);
-                    
-                }
-            }
-            mPost();
+           mPost(data);
         } else {
-            const mPost = async () => {
-                const respon = await MusicTrackPUT(data);
-                if (respon) {
-                    for (var i = 0; i < musicList.length; i++) {
-                        if (musicList[i].MusicTrackID === data.MusicTrackID) {
-                            musicList[i] = data;
-                            break;
-                        }
-                    }
-                    setMusicList(musicList);
-                    mPost();
-                    //setOpen(true);
-                } else {
-                    setSnackMessage('Error Updating Track');
-                    setSnackOpen(true);
-                }
-                //replace the existing track with the new data in the array
-            }
+            mPut(data);
         }
     }
     
@@ -91,10 +120,8 @@ export default function AddMusic() {
     */
    useEffect(() => {
     // if the cookie is not set, with a role of admin, redirect to the dashboard
-    if (document.cookie === '' || document.cookie !== 'role=admin') {
-        console.log('No cookie');
-        history('/AdminDashboard');
-    }
+    if (document.cookie.indexOf('role=administrator') === -1) { history('/Settings'); }        
+    
        const fetchMusic = async () => {
            const music = await MusicGET(-1);
            if (music) {
@@ -116,13 +143,17 @@ export default function AddMusic() {
            console.log(mtrack);
            if (mtrack) {
                setValue('TrackName', mtrack.TrackName);
-               setValue('Artist', mtrack.Artist);
-               setValue('Lyrics', mtrack.Lyrics);
-               setValue('Soprano', mtrack.Soprano);
-               setValue('Alto', mtrack.Alto);
-               setValue('Tenor', mtrack.Tenor);
-               setValue('AllParts', mtrack.AllParts);
-               setValue('Piano', mtrack.Piano);
+               setValue('Artist', mtrack.Artist || "");
+               setValue('Lyrics', mtrack.Lyrics || "");
+               setValue('Soprano', mtrack.Soprano || "");
+               setValue('Alto', mtrack.Alto || "");
+               setValue('Tenor', mtrack.Tenor || "");
+                setValue('Bass', mtrack.Bass || "");
+               setValue('AllParts', mtrack.AllParts || "");
+               // Ensure piano field is properly handled
+               setValue('Piano', mtrack.Piano || "");
+                setValue('ExtraLink', mtrack.ExtraLink || "");
+                setValue('ExtraTitle', mtrack.ExtraTitle || "");
             }
         } catch (error) {
             console.error("Error fetching music data:", error);
@@ -138,6 +169,7 @@ export default function AddMusic() {
            const id = getValues('MusicTrackID');
            
            if (id > 0) {
+               // Ensure piano field is properly handled
                const deleteResponse = await musicTrackDELETE(id);
                if (deleteResponse.status === 204) {
                    // reset the form
@@ -149,8 +181,11 @@ export default function AddMusic() {
                    setValue('Soprano', '');
                    setValue('Alto', '');
                    setValue('Tenor', '');
+                     setValue('Bass', '');
                    setValue('AllParts', '');
                    setValue('Piano', '');
+                     setValue('ExtraLink', '');
+                        setValue('ExtraTitle', '');
                    // snackbar the deletion
                    setSnackMessage('Track Deleted');
                    setSnackOpen(true);
@@ -271,6 +306,16 @@ export default function AddMusic() {
                             </Grid>
                             <Grid item xs={12}>
                                 <TextField
+                                    label="Bass"
+                                    fullWidth
+                                    value={watch('Bass')}
+                                    {...register('Bass')}
+                                    error={!!errors.Bass}
+                                    helperText={errors.Bass?.message}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
                                     label="All Parts"
                                     fullWidth
                                     value={watch('AllParts')}
@@ -287,6 +332,26 @@ export default function AddMusic() {
                                     {...register('Piano')}
                                     error={!!errors.Piano}
                                     helperText={errors.Piano?.message}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    label="Extra Title"
+                                    fullWidth
+                                    value={watch('ExtraTitle')}
+                                    {...register('ExtraTitle')}
+                                    error={!!errors.ExtraTitle}
+                                    helperText={errors.ExtraTitle?.message}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    label="Extra Link"
+                                    fullWidth
+                                    value={watch('ExtraLink')}
+                                    {...register('ExtraLink')}
+                                    error={!!errors.ExtraLink}
+                                    helperText={errors.ExtraLink?.message}
                                 />
                             </Grid>
                             <Grid item xs={12}>

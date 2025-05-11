@@ -1,0 +1,20 @@
+#!/bin/bash
+
+echo "=== Certificate Date Issue Detected ==="
+echo "Your certificate is future-dated! Not valid until May 6, 2025."
+echo ""
+
+echo "Options to fix this issue:"
+echo ""
+echo "1. Contact Sectigo (your certificate provider) immediately"
+echo "   - Tell them they issued a future-dated certificate (valid from May 6, 2025)"
+echo "   - Request a replacement certificate with current dates"
+echo ""
+echo "2. Temporary fix (ONLY FOR TESTING, NOT RECOMMENDED FOR PRODUCTION):"
+echo "   - You could change your server's system date to match the certificate:"
+echo "   - sudo date -s \"2025-05-07 12:00:00\""
+echo "   - Warning: This will cause other issues with your server!"
+echo ""
+echo "3. Restore your previous certificate if you still have it"
+echo ""
+echo "The proper solution is to contact Sectigo for a correctly-dated certificate."

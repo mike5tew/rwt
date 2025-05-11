@@ -20,6 +20,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
 import InfoIcon from '@mui/icons-material/Info';
+import InterpreterModeIcon from '@mui/icons-material/InterpreterMode';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -106,7 +107,7 @@ const MiniDrawer = () => {
     { EntName: 'Archive', type: 'page', icon: <AutoStoriesIcon />, link: '/Archive' },
     { EntName: 'Notices', type: 'page', icon: <CampaignIcon />, link: '/Notices' },
     { EntName: 'Booking', type: 'page', icon: <CalendarMonthIcon />, link: '/BookingForm' },
-    { EntName: 'Appeal', type: 'page', icon: <PersonAddAlt1Icon />, link: '/appeal' },
+    { EntName: 'Meet the team', type: 'page', icon: <InterpreterModeIcon />, link: '/Meettheteam' },
     { EntName: 'Members', type: 'page', icon: <GroupsIcon />, link: '/Members' },
     { EntName: 'Admin', type: 'page', icon: <SettingsIcon />, link: '/Settings' }
   ]);

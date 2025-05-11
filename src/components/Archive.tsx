@@ -32,7 +32,7 @@ export default function Archive() {
 
     function processArchives(archives: ArchiveEntry[]): JSX.Element[] {
         let elements: JSX.Element[] = [];
-        
+    let screenSize = localStorage.getItem("screenSize") || 'desktop';  
         archives.forEach(archive => {
             // Create a container for each archive's content
             const archiveContent = (
@@ -47,7 +47,7 @@ export default function Archive() {
                         <Grid item xs={12}>
                             <ImageList cols={2} gap={8}>
                                 {Array.isArray(archive.Clips) && processClips(archive.Clips)}
-                                {Array.isArray(archive.Images) && processImages(archive.Images)}
+                                {Array.isArray(archive.Images) && processImages(archive.Images, screenSize)}
                             </ImageList>
                         </Grid>
                     </Grid>
@@ -69,8 +69,9 @@ export default function Archive() {
             .catch((error) => console.log(error));
     }, []);
 
-    function returnDateString(eventDate: Date) {
-        const date = new Date(eventDate);
+    function returnDateString(eventDate: Date | string) {
+        const date = new Date(eventDate); // Ensure it's parsed as a Date
+        if (isNaN(date.getTime())) return 'Invalid Date'; // Handle invalid dates
         const day = date.getDate();
         const month = date.toLocaleString('default', { month: 'long' });
         const year = date.getFullYear().toString().slice(-2);
@@ -86,7 +87,7 @@ export default function Archive() {
                             whiteSpace: "pre-wrap",
                             fontSize: isMobile ? '1.5rem' : undefined 
                         }}>
-                            {localStorage.getItem("ArchiveTitle")}
+                            {localStorage.getItem("ArchiveTitle") || "Default Archive Title"}
                         </Typography>
                     </Paper>
                 </Grid>
@@ -96,7 +97,7 @@ export default function Archive() {
                             whiteSpace: "pre-wrap",
                             fontSize: isMobile ? '0.9rem' : undefined
                         }}>
-                            {localStorage.getItem("ArchiveText")}
+                            {localStorage.getItem("ArchiveText") || "Default Archive Text"}
                         </Typography>
                     </Paper>
                 </Grid>
