@@ -281,7 +281,7 @@ export default function AddArchive() {
       .then((res: DatURLResponse) => {
         // console.log('Resized image for mobile:', res);
         // Upload the resized image for mobile
-        return FileUploadService.upload(res.ReturnedFile, "mb" + res.ReturnedFile.name, eventID, res.FileDetails.width, res.FileDetails.height, res.FileDetails.caption, "mb");
+        return FileUploadService.upload(res.ReturnedFile, res.ReturnedFile.name, eventID, res.FileDetails.width, res.FileDetails.height, res.FileDetails.caption, "mb");
       }
       ).then((uploadRes: FormData) => {
         return FileUploadService.SendFile(uploadRes);
